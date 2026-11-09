@@ -14,7 +14,7 @@ collecte.py ─► API SIRENE + IGN + Annuaire         index.html ─► lit dat
 
 | Fichier | Rôle |
 |---|---|
-| `index.html` | La page : annuaire (carte + liste), nouveautés, qualité des données |
+| `index.html` | La page : annuaire (carte + liste), vie des entreprises (BODACC et mouvements SIRENE), qualité des données |
 | `collecte.py`, `referentiels.py` | La collecte quotidienne (API SIRENE, journal) |
 | `localisation.py` | Le choix de la position de chaque établissement (voir plus bas) |
 | `bodacc.py` | Les annonces du BODACC du territoire (onglet *Vie des entreprises*) |

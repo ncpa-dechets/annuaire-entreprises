@@ -123,7 +123,7 @@ td.num{white-space:nowrap}
 .leaflet-control-layers{font-size:12.5px}
 .evide{display:inline-block;width:10px;height:10px;border-radius:50%;border:1.6px solid #6f6f6f;background:rgba(111,111,111,.15);vertical-align:-1px;margin-right:6px}
 
-/* ---- Vues Nouveautés et Qualité ---- */
+/* ---- Vues Vie des entreprises et Qualité ---- */
 .page{overflow:auto;padding:20px 24px 40px}
 .page .inner{max-width:1200px;margin:0 auto}
 .page h2{font-size:20px;margin:0 0 4px}
@@ -159,7 +159,29 @@ td.detail{font-size:12px;color:#444;max-width:420px}
 .guide dd{margin:3px 0 0 16px;line-height:1.45;color:#333;max-width:560px}
 .guide ul{line-height:1.5;max-width:900px;padding-left:20px}
 .guide li{margin-bottom:5px}
-#b-graphe svg{width:100%;max-width:900px;height:auto;display:block}
+#b-graphe .graphe{position:relative;max-width:900px}
+#b-graphe svg{width:100%;height:auto;display:block;overflow:visible}
+#b-graphe .mois{cursor:pointer;outline:none}
+#b-graphe .mois .zone{fill:transparent}
+#b-graphe .mois text{fill:#666}
+#b-graphe .mois.survol .zone,#b-graphe .mois:focus-visible .zone{fill:#f1f1ec}
+#b-graphe .mois:focus-visible .zone{stroke:var(--rouge);stroke-width:1.5}
+#b-graphe .mois.sel .zone{fill:#fbecec}
+#b-graphe .mois.sel text{fill:var(--rouge);font-weight:700}
+#b-graphe svg:has(.mois.survol) .mois:not(.survol) .barre{opacity:.45}
+#b-graphe .infobulle{position:absolute;z-index:10;pointer-events:none;background:#fff;border:1px solid var(--bord);border-radius:6px;
+  box-shadow:0 4px 14px rgba(0,0,0,.15);padding:7px 10px;font-size:12.5px;min-width:190px;transform:translateY(-100%)}
+#b-graphe .infobulle[hidden]{display:none}
+#b-graphe .infobulle .t{font-weight:700;margin-bottom:4px;text-transform:capitalize}
+#b-graphe .infobulle .l{display:flex;align-items:center;gap:7px;line-height:1.6}
+#b-graphe .infobulle .l b{margin-left:auto;padding-left:12px;font-variant-numeric:tabular-nums}
+#b-graphe .infobulle .aide{color:var(--mut);font-size:11.5px;margin-top:4px}
+.bandeau{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:#fbecec;border:1px solid #f0c9cc;border-radius:6px;padding:8px 12px;margin:4px 0 12px}
+.sommaire{display:flex;flex-wrap:wrap;gap:6px 18px;margin:2px 0 10px;font-size:13px}
+.sommaire a{color:var(--rouge);text-decoration:none;font-weight:600}
+.sommaire a:hover{text-decoration:underline}
+.page h3.partie{font-size:17px;margin:26px 0 8px;padding-bottom:4px;border-bottom:2px solid var(--vert);scroll-margin-top:10px}
+.page h4.sous{font-size:14px;margin:16px 0 4px}
 #b-graphe .leg{display:flex;gap:16px;font-size:12.5px;color:var(--mut);margin:4px 0 8px}
 #b-graphe .leg span{display:inline-flex;align-items:center;gap:6px}
 code{background:var(--fond);padding:1px 5px;border-radius:4px;font-size:12.5px}
@@ -193,7 +215,6 @@ code{background:var(--fond);padding:1px 5px;border-radius:4px;font-size:12.5px}
   </div>
   <nav class="onglets" role="tablist">
     <button role="tab" aria-selected="true" data-vue="v-annuaire">Annuaire</button>
-    <button role="tab" aria-selected="false" data-vue="v-nouveautes">Nouveautés</button>
     <button role="tab" aria-selected="false" data-vue="v-bodacc">Vie des entreprises</button>
     <button role="tab" aria-selected="false" data-vue="v-qualite">Qualité des données</button>
   </nav>
@@ -284,48 +305,44 @@ code{background:var(--fond);padding:1px 5px;border-radius:4px;font-size:12.5px}
     </div>
   </section>
 
-  <!-- ===================== NOUVEAUTÉS ===================== -->
-  <section id="v-nouveautes" class="vue page" hidden>
-    <div class="inner">
-      <h2>Nouveautés</h2>
-      <p class="note">Chaque nuit, l'annuaire est comparé à celui de la veille. Un nouvel établissement peut être une
-        création ou une arrivée sur le territoire ; un établissement sorti, une fermeture ou un départ.</p>
-      <div class="outils">
-        <label>Période<select id="n-periode">
-          <option value="7">7 derniers jours</option><option value="30" selected>30 derniers jours</option>
-          <option value="90">90 derniers jours</option><option value="365">12 derniers mois</option></select></label>
-        <label>Commune<select id="n-commune"><option value="">Toutes les communes</option></select></label>
-        <label>Secteur<select id="n-secteur"><option value="">Tous les secteurs</option></select></label>
-        <button class="btn" id="n-export" style="margin-left:auto">Télécharger (Excel)</button>
-      </div>
-      <div class="gros"><div><b id="n-entrees">–</b><span>nouveaux établissements</span></div>
-        <div><b id="n-sorties">–</b><span>établissements sortis</span></div></div>
-      <div id="n-contenu"></div>
-    </div>
-  </section>
-
   <!-- ===================== VIE DES ENTREPRISES (BODACC) ===================== -->
   <section id="v-bodacc" class="vue page" hidden>
     <div class="inner">
       <h2>Vie des entreprises</h2>
-      <p class="note">Annonces légales publiées au BODACC pour les entreprises du territoire : créations, radiations,
-        procédures collectives et ventes de fonds. Seules les entreprises inscrites au registre du commerce y figurent
-        (pas les associations ni la plupart des artisans). Une procédure collective donne plusieurs annonces successives.</p>
+      <p class="note">Deux sources complémentaires. Les <b>annonces légales du BODACC</b> disent ce qui arrive aux
+        entreprises inscrites au registre du commerce : création, radiation, difficultés, reprise. Les <b>mouvements de
+        l'annuaire</b> comparent chaque nuit le répertoire SIRENE à celui de la veille : ils couvrent toutes les structures
+        (associations comprises), mais sans dire pourquoi un établissement apparaît ou disparaît.</p>
       <div class="outils">
         <label>Période<select id="b-periode">
-          <option value="30">30 derniers jours</option><option value="90">90 derniers jours</option>
-          <option value="365" selected>12 derniers mois</option><option value="730">24 derniers mois</option></select></label>
+          <option value="7">7 derniers jours</option><option value="30">30 derniers jours</option>
+          <option value="90">90 derniers jours</option><option value="365" selected>12 derniers mois</option>
+          <option value="730">24 derniers mois</option></select></label>
         <label>Commune<select id="b-commune"><option value="">Toutes les communes</option></select></label>
         <label>Recherche<input id="b-texte" type="search" placeholder="Nom, activité, SIREN…"></label>
         <label class="case"><input type="checkbox" id="b-sci" checked> Masquer les SCI</label>
         <label class="case"><input type="checkbox" id="b-pp"> Masquer les commerçants en nom propre</label>
         <button class="btn" id="b-export" style="margin-left:auto">Télécharger (Excel)</button>
       </div>
+      <nav class="sommaire" aria-label="Parties de l'onglet">
+        <a href="#p-bodacc">Annonces légales (BODACC)</a><a href="#p-sirene">Mouvements de l'annuaire (SIRENE)</a><a href="#guide-titre">Comprendre les annonces</a>
+      </nav>
+      <div id="b-mois"></div>
+
+      <h3 class="partie" id="p-bodacc">Annonces légales (BODACC)</h3>
       <div class="evts" id="b-evts"></div>
       <div class="gros" id="b-chiffres"></div>
-      <h3>Mois par mois, sur 12 mois</h3>
+      <h4 class="sous">Mois par mois, sur 12 mois</h4>
+      <p class="note" style="margin-top:0">Survolez un mois pour le détail ; cliquez dessus pour n'afficher que ce mois.</p>
       <div id="b-graphe"></div>
       <div id="b-contenu"></div>
+
+      <h3 class="partie" id="p-sirene">Mouvements de l'annuaire (SIRENE)</h3>
+      <p class="note">Chaque nuit, l'annuaire est comparé à celui de la veille. Un nouvel établissement peut être une
+        création ou une arrivée sur le territoire ; un établissement sorti, une fermeture ou un départ.</p>
+      <div class="outils"><label>Secteur<select id="s-secteur"><option value="">Tous les secteurs</option></select></label></div>
+      <div class="gros" id="s-chiffres"></div>
+      <div id="s-contenu"></div>
 
       <section class="guide" aria-labelledby="guide-titre">
         <h3 id="guide-titre">Comprendre les annonces</h3>
@@ -393,7 +410,7 @@ code{background:var(--fond);padding:1px 5px;border-radius:4px;font-size:12.5px}
           <li><b>SCI</b> : sociétés civiles immobilières, qui détiennent un patrimoine sans activité économique sur place.
             Elles sont masquées par défaut, comme dans l'annuaire.</li>
           <li>Le BODACC ne concerne que les entreprises inscrites au registre du commerce : pas les associations, et
-            rarement les artisans et professions libérales. L'onglet <i>Nouveautés</i> (répertoire SIRENE) couvre toutes les
+            rarement les artisans et professions libérales. Les <i>mouvements de l'annuaire</i> (répertoire SIRENE) couvrent toutes les
             structures, mais sans donner la raison d'une apparition ou d'une disparition.</li>
           <li>Un <i>rectificatif</i> remplace l'annonce qu'il corrige. Une annonce annulée est retirée.</li>
         </ul>
@@ -786,26 +803,31 @@ function exportGeojson(){
 }
 
 /* =========================================================================
-   Nouveautés
+   Mouvements de l'annuaire (journal SIRENE), dans l'onglet Vie des entreprises
    ========================================================================= */
-function nouveautes(){
+function mouvementsSirene(f){
+  mouvementsSirene.donnees = {ent:[], sor:[]};
   if (!journal.length){
-    $("n-contenu").innerHTML = `<p class="note">Le suivi démarre après la deuxième collecte : il compare chaque jour l'annuaire à celui de la veille.</p>`;
-    $("n-entrees").textContent = $("n-sorties").textContent = "0"; return;
+    $("s-chiffres").innerHTML = "";
+    $("s-contenu").innerHTML = `<p class="note">Le suivi démarre après la deuxième collecte nocturne : il compare chaque jour
+      l'annuaire à celui de la veille.</p>`;
+    return;
   }
-  const d = new Date(); d.setDate(d.getDate() - Number($("n-periode").value));
-  const debut = d.toISOString().slice(0,10), com = $("n-commune").value, sec = $("n-secteur").value;
-  const j = journal.filter(r => r.date >= debut && (!com || r.commune === com) && (!sec || r.section === sec));
+  const sec = $("s-secteur").value;
+  const j = journal.filter(r => r.date >= f.debut && (!f.fin || r.date < f.fin) && (!f.com || r.commune === f.com)
+    && (!sec || r.section === sec) && (!f.sansSCI || r.type_structure !== "Société civile immobilière (SCI)")
+    && f.mots.every(m => norm([r.nom, r.naf_libelle, r.siret].join(" ")).includes(m)));
   const ent = j.filter(r => r.evenement === "Nouvel établissement").sort((a,b) => b.date.localeCompare(a.date));
   const sor = j.filter(r => r.evenement === "Établissement sorti").sort((a,b) => b.date.localeCompare(a.date));
-  $("n-entrees").textContent = nb(ent.length); $("n-sorties").textContent = nb(sor.length);
+  mouvementsSirene.donnees = {ent, sor};
+  $("s-chiffres").innerHTML = `<div><b>${nb(ent.length)}</b><span>nouveaux établissements</span></div>
+    <div><b>${nb(sor.length)}</b><span>établissements sortis</span></div>`;
   const tab = (rows, lien) => rows.length ? `<div class="cadre"><table><thead><tr><th>Date</th><th>Nom</th><th>Commune</th><th>Activité</th><th>Effectif</th></tr></thead><tbody>` +
     rows.map(r => `<tr><td class="num">${dateFr(r.date)}</td><td>${lien && parSiret.has(r.siret) ? `<a class="lien" data-voir="${esc(r.siret)}">${esc(r.nom)}</a>` : esc(r.nom)}</td>
       <td>${esc(r.commune)}</td><td>${esc(r.naf_libelle)}</td><td class="num">${esc(r.tranche_libelle)}</td></tr>`).join("") + `</tbody></table></div>`
     : `<p class="note">Aucun mouvement sur cette période.</p>`;
-  $("n-contenu").innerHTML = `<div class="deux"><div><h3>Nouveaux établissements</h3>${tab(ent, true)}</div>
-    <div><h3>Établissements sortis</h3>${tab(sor, false)}</div></div>`;
-  nouveautes.donnees = {ent, sor};
+  $("s-contenu").innerHTML = `<div class="deux"><div><h4 class="sous">Nouveaux établissements</h4>${tab(ent, true)}</div>
+    <div><h4 class="sous">Établissements sortis</h4>${tab(sor, false)}</div></div>`;
 }
 
 /* =========================================================================
@@ -841,23 +863,41 @@ function ligneBodacc(e){
     ${l.length > 1 ? `<span style="color:var(--mut)"> (${l.length} annonces)</span>` : ""}</td></tr>`;
 }
 
+const MOISC = ["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+const MOISL = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+const moisLong = m => `${MOISL[+m.slice(5) - 1]} ${m.slice(0, 4)}`;
+let moisChoisi = null;   // « 2026-10 » quand un mois a été cliqué sur le graphique
+
 function filtresBodacc(){
-  const d = new Date(); d.setDate(d.getDate() - Number($("b-periode").value));
-  return {debut:d.toISOString().slice(0,10), com:$("b-commune").value, mots:norm($("b-texte").value).split(/\s+/).filter(Boolean),
+  let debut, fin = "";
+  if (moisChoisi){
+    const [a, m] = moisChoisi.split("-").map(Number);
+    debut = `${moisChoisi}-01`; fin = m === 12 ? `${a + 1}-01-01` : `${a}-${String(m + 1).padStart(2, "0")}-01`;
+  } else {
+    const d = new Date(); d.setDate(d.getDate() - Number($("b-periode").value)); debut = d.toISOString().slice(0,10);
+  }
+  return {debut, fin, com:$("b-commune").value, mots:norm($("b-texte").value).split(/\s+/).filter(Boolean),
     sansPP:$("b-pp").checked, sansSCI:$("b-sci").checked};
 }
-const passeBodacc = (b, f, avecPeriode = true) => (!avecPeriode || b.date >= f.debut) && (!f.com || b.com === f.com)
-  && (!f.sansPP || !b.pp) && (!f.sansSCI || !b.sci) && f.mots.every(m => b.q.includes(m));
+const passeBodacc = (b, f, avecPeriode = true) => (!avecPeriode || (b.date >= f.debut && (!f.fin || b.date < f.fin)))
+  && (!f.com || b.com === f.com) && (!f.sansPP || !b.pp) && (!f.sansSCI || !b.sci) && f.mots.every(m => b.q.includes(m));
+function choisirMois(m){
+  moisChoisi = moisChoisi === m ? null : m;
+  vieEntreprises();
+}
 // Effectif : « 3 à 5 salariés » + année et origine (établissements locaux, ou entreprise entière si hors annuaire)
 const effBodacc = b => !b.srcEff ? `<span style="color:var(--mut)">${esc(b.eff || "Non renseigné")}</span>`
   : `${esc(b.eff)}<br><span class="sansloc" style="margin:0">${b.srcEff.startsWith("Entreprise") ? "toute l'entreprise" : "sur le territoire"}${b.aeff ? ", " + esc(b.aeff) : ""}</span>`;
 
 function vieEntreprises(){
+  const f = filtresBodacc();
+  $("b-mois").innerHTML = moisChoisi ? `<div class="bandeau">Seul le mois de <b>${moisLong(moisChoisi)}</b> est affiché, dans les deux parties.
+    <button type="button" class="btn" data-a="periode">Revenir à la période choisie</button></div>` : "";
+  mouvementsSirene(f);
   if (!B.length){
     $("b-contenu").innerHTML = `<p class="note">Les annonces du BODACC seront disponibles après la prochaine collecte nocturne.</p>`;
     return;
   }
-  const f = filtresBodacc();
   const periode = B.filter(b => passeBodacc(b, f));
   const lignes = periode.filter(b => evtsCoches.has(b.evt));
   vieEntreprises.lignes = lignes;
@@ -904,21 +944,49 @@ function grapheBodacc(f){
   const max = Math.max(1, ...series.flatMap(([k]) => Object.values(v[k])));
   const W = 900, H = 170, bas = 22, haut = 12, pas = W / mois.length, lb = Math.min(16, (pas - 10) / 3);
   const y = n => H - bas - (H - bas - haut) * n / max;
-  const MOISC = ["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
-  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Annonces par mois">`;
+  grapheBodacc.donnees = {mois, series, v};
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="group" aria-label="Annonces par mois sur 12 mois">`;
   [0, .5, 1].forEach(t => { const n = Math.round(max * t);
     svg += `<line x1="0" x2="${W}" y1="${y(n)}" y2="${y(n)}" stroke="#e6e6e1"/><text x="2" y="${y(n) - 3}" font-size="10" fill="#888">${n}</text>`; });
   mois.forEach((m, i) => {
     const x0 = i * pas + (pas - 3 * lb - 4) / 2;
-    series.forEach(([k, l, c], j) => { const n = v[k][m];
-      svg += `<rect x="${x0 + j * (lb + 2)}" y="${y(n)}" width="${lb}" height="${H - bas - y(n)}" fill="${c}" rx="2"><title>${l} – ${MOISC[+m.slice(5) - 1]} ${m.slice(0,4)} : ${n}</title></rect>`; });
-    svg += `<text x="${i * pas + pas / 2}" y="${H - 6}" font-size="11" fill="#666" text-anchor="middle">${MOISC[+m.slice(5) - 1]}</text>`;
+    const resume = series.map(([k, l]) => `${l} : ${v[k][m]}`).join(", ");
+    // Un groupe par mois : zone de survol sur toute la hauteur, focalisable au clavier, cliquable
+    svg += `<g class="mois${m === moisChoisi ? " sel" : ""}" data-m="${m}" tabindex="0" role="button"
+      aria-pressed="${m === moisChoisi}" aria-label="${moisLong(m)} – ${resume}. Activer pour n'afficher que ce mois.">
+      <rect class="zone" x="${i * pas + 1}" y="0" width="${pas - 2}" height="${H}" rx="4"/>`;
+    series.forEach(([k, , c], j) => { const n = v[k][m];
+      svg += `<rect class="barre" x="${x0 + j * (lb + 2)}" y="${y(n)}" width="${lb}" height="${Math.max(0, H - bas - y(n))}" fill="${c}" rx="2"/>`; });
+    svg += `<text x="${i * pas + pas / 2}" y="${H - 6}" font-size="11" text-anchor="middle">${MOISC[+m.slice(5) - 1]}</text></g>`;
   });
-  $("b-graphe").innerHTML = `<div class="leg">${series.map(([, l, c]) => `<span><span class="pastille" style="background:${c}"></span>${l}</span>`).join("")}</div>${svg}</svg>`;
+  $("b-graphe").innerHTML = `<div class="leg">${series.map(([, l, c]) => `<span><span class="pastille" style="background:${c}"></span>${l}</span>`).join("")}</div>
+    <div class="graphe">${svg}</svg><div class="infobulle" role="status" hidden></div></div>`;
+}
+
+// Infobulle du graphique : survol, focus clavier ou toucher d'un mois
+function bulleMois(g){
+  const cadre = $("b-graphe").querySelector(".graphe"), bulle = cadre?.querySelector(".infobulle");
+  if (!bulle) return;
+  if (!g){ bulle.hidden = true; cadre.querySelectorAll(".mois.survol").forEach(x => x.classList.remove("survol")); return; }
+  const {series, v} = grapheBodacc.donnees, m = g.dataset.m;
+  cadre.querySelectorAll(".mois.survol").forEach(x => x !== g && x.classList.remove("survol"));
+  g.classList.add("survol");
+  bulle.innerHTML = `<div class="t">${moisLong(m)}</div>` + series.map(([k, l, c]) =>
+    `<div class="l"><span class="pastille" style="background:${c}"></span><span>${l}</span><b>${nb(v[k][m])}</b></div>`).join("") +
+    `<div class="aide">${m === moisChoisi ? "Cliquer pour revenir à la période" : "Cliquer pour n'afficher que ce mois"}</div>`;
+  bulle.hidden = false;
+  // Placée au-dessus du mois, sans dépasser du cadre
+  const rc = cadre.getBoundingClientRect(), rz = g.querySelector(".zone").getBoundingClientRect();
+  const w = bulle.offsetWidth, x = Math.min(Math.max(rz.left - rc.left + rz.width / 2 - w / 2, 0), rc.width - w);
+  bulle.style.left = `${x}px`;
+  const haut = Math.min(...[...g.querySelectorAll(".barre")].map(b => b.getBoundingClientRect().top));
+  bulle.style.top = `${Math.max(haut - rc.top - 8, 0)}px`;
 }
 
 function exportBodacc(){
-  const l = vieEntreprises.lignes; if (!l || !l.length){ toast("Aucune annonce à exporter"); return; }
+  // Un classeur : annonces BODACC + nouveaux et sortis de l'annuaire, avec les filtres affichés
+  const l = vieEntreprises.lignes || [], s = mouvementsSirene.donnees || {ent:[], sor:[]};
+  if (!l.length && !s.ent.length && !s.sor.length){ toast("Rien à exporter avec ces filtres"); return; }
   const lignes = l.map(b => ({...b, siren:b.sirens.join(", "), ppTxt:b.pp ? "Oui" : "Non", sciTxt:b.sci ? "Oui" : "Non"}));
   const cols = [["date","Date de parution"],["evt","Événement"],["nom","Nom"],["siren","SIREN"],["forme","Forme juridique"],
     ["sciTxt","SCI"],["ppTxt","Commerçant en nom propre"],["act","Activité"],["com","Commune"],["cp","Code postal"],
@@ -926,7 +994,10 @@ function exportBodacc(){
     ["detail","Détail"],["type","Type d'avis"],["url","Annonce"]];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, feuille(lignes, cols), "Annonces BODACC");
-  XLSX.writeFile(wb, `bodacc_ncpa_${jour()}.xlsx`);
+  const colsS = [["date","Date"],["nom","Nom"],["commune","Commune"],["naf_libelle","Activité"],["tranche_libelle","Effectif"],["type_structure","Structure"],["siret","SIRET"]];
+  XLSX.utils.book_append_sheet(wb, feuille(s.ent, colsS), "Nouveaux (annuaire)");
+  XLSX.utils.book_append_sheet(wb, feuille(s.sor, colsS), "Sortis (annuaire)");
+  XLSX.writeFile(wb, `vie_des_entreprises_ncpa_${jour()}.xlsx`);
 }
 
 /* =========================================================================
@@ -1017,26 +1088,29 @@ function construireFiltres(){
     cocherSecteurs(true); vueEnsemble();
   };
 
-  // Nouveautés : listes déroulantes
-  communes.forEach(c => $("n-commune").insertAdjacentHTML("beforeend", `<option>${esc(c)}</option>`));
-  presentes.forEach(s => $("n-secteur").insertAdjacentHTML("beforeend", `<option value="${s}">${esc(SECTIONS[s])}</option>`));
-  ["n-periode", "n-commune", "n-secteur"].forEach(id => $(id).addEventListener("change", nouveautes));
-  $("n-export").onclick = () => {
-    const d = nouveautes.donnees; if (!d) return;
-    const cols = [["date","Date"],["nom","Nom"],["commune","Commune"],["naf_libelle","Activité"],["tranche_libelle","Effectif"],["type_structure","Structure"],["siret","SIRET"]];
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, feuille(d.ent, cols), "Nouveaux");
-    XLSX.utils.book_append_sheet(wb, feuille(d.sor, cols), "Sortis");
-    XLSX.writeFile(wb, `mouvements_entreprises_ncpa_${jour()}.xlsx`);
-  };
-  $("n-contenu").addEventListener("click", ev => {
+  // Vie des entreprises (BODACC + mouvements SIRENE)
+  [...new Set([...communes, ...B.map(b => b.com)])].sort((a,b) => a.localeCompare(b, "fr"))
+    .forEach(c => $("b-commune").insertAdjacentHTML("beforeend", `<option>${esc(c)}</option>`));
+  presentes.forEach(s => $("s-secteur").insertAdjacentHTML("beforeend", `<option value="${s}">${esc(SECTIONS[s])}</option>`));
+  $("b-periode").addEventListener("change", () => { moisChoisi = null; vieEntreprises(); });
+  ["b-commune", "b-pp", "b-sci", "s-secteur"].forEach(id => $(id).addEventListener("change", vieEntreprises));
+  $("b-mois").addEventListener("click", ev => { if (ev.target.closest('[data-a="periode"]')){ moisChoisi = null; vieEntreprises(); } });
+  // Graphique : survol, focus clavier, clic ou Entrée sur un mois
+  const graphe = $("b-graphe"), moisDe = ev => ev.target.closest?.(".mois");
+  graphe.addEventListener("mouseover", ev => { const g = moisDe(ev); if (g) bulleMois(g); });
+  graphe.addEventListener("mouseleave", () => bulleMois(null));
+  graphe.addEventListener("focusin", ev => { const g = moisDe(ev); if (g) bulleMois(g); });
+  graphe.addEventListener("focusout", () => bulleMois(null));
+  graphe.addEventListener("click", ev => { const g = moisDe(ev); if (g) choisirMois(g.dataset.m); });
+  graphe.addEventListener("keydown", ev => {
+    const g = moisDe(ev); if (!g || (ev.key !== "Enter" && ev.key !== " ")) return;
+    ev.preventDefault(); const m = g.dataset.m; choisirMois(m);
+    graphe.querySelector(`.mois[data-m="${m}"]`)?.focus();
+  });
+  $("s-contenu").addEventListener("click", ev => {
     const s = ev.target.closest("[data-voir]")?.dataset.voir; if (!s) return;
     montrerVue("v-annuaire"); const e = parSiret.get(s); setTimeout(() => surligner(e, true), 100);
   });
-  // Vie des entreprises (BODACC)
-  [...new Set([...communes, ...B.map(b => b.com)])].sort((a,b) => a.localeCompare(b, "fr"))
-    .forEach(c => $("b-commune").insertAdjacentHTML("beforeend", `<option>${esc(c)}</option>`));
-  ["b-periode", "b-commune", "b-pp", "b-sci"].forEach(id => $(id).addEventListener("change", vieEntreprises));
   $("b-texte").addEventListener("input", debounce(vieEntreprises, 200));
   $("b-evts").addEventListener("change", ev => {
     ev.target.checked ? evtsCoches.add(ev.target.value) : evtsCoches.delete(ev.target.value); vieEntreprises();
@@ -1056,7 +1130,6 @@ function montrerVue(id){
   document.querySelectorAll(".onglets button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.vue === id)));
   document.querySelectorAll(".vue").forEach(v => v.hidden = v.id !== id);
   if (id === "v-annuaire") setTimeout(() => map.invalidateSize(), 50);
-  if (id === "v-nouveautes") nouveautes();
   if (id === "v-bodacc") vieEntreprises();
   if (id === "v-qualite" && !$("q-contenu").innerHTML) qualite();
 }
