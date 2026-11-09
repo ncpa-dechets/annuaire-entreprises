@@ -139,8 +139,9 @@ with st.sidebar:
         recence = st.selectbox("Date de création", ["Toutes", "Moins d'un an", "Moins de 3 ans", "Moins de 5 ans"])
 
     st.markdown("### Affichage")
-    proportionnel = st.radio("Taille des points", ["Selon l'effectif", "Identique"], horizontal=True,
-                             label_visibility="collapsed") == "Selon l'effectif"
+    proportionnel = st.radio("Taille des points", ["Selon l'effectif", "Identique"], horizontal=True) == "Selon l'effectif"
+    HAUTEURS = {"Moyenne": 600, "Grande": 800, "Très grande": 1000}
+    hauteur_carte = HAUTEURS[st.select_slider("Hauteur de la carte", list(HAUTEURS), value="Grande")]
 
     st.divider()
     attendu = mot_de_passe_attendu()
@@ -269,10 +270,10 @@ def vue_annuaire():
         return
     page = html_carte(f, communes_gj, proportionnel, focus, interne=interne)
     if hasattr(st, "iframe"):
-        st.iframe(page, height="content")      # la carte calcule elle-même sa hauteur
+        st.iframe(page, height=hauteur_carte)   # hauteur fixe : Streamlit réserve exactement cette place
     else:                                   # anciennes versions de Streamlit
         import streamlit.components.v1 as components
-        components.html(page, height=700)
+        components.html(page, height=hauteur_carte)
     n_sans = len(f) - n_loc
     if n_sans:
         st.markdown(f"<p class='note'>{nombre(n_sans)} établissement(s) sans localisation précise : "

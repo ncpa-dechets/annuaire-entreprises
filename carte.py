@@ -76,8 +76,8 @@ HTML = r"""<!doctype html>
 <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.1.3/leaflet-maplibre-gl.js"></script>
 <style>
 :root{--rouge:#B91E27;--vert:#B1B993;--txt:#1e1e1e;--mut:#5f6368}
-html,body{margin:0;overflow:hidden;font-family:Calibri,"Segoe UI",system-ui,sans-serif;color:var(--txt)}
-#map{position:relative;height:700px;width:100%;background:#f2f2ef}
+html,body{margin:0;height:100%;overflow:hidden;font-family:Calibri,"Segoe UI",system-ui,sans-serif;color:var(--txt)}
+#map{position:relative;height:100vh;width:100%;background:#f2f2ef}
 .coord input{width:100%;box-sizing:border-box;font:inherit;padding:3px 5px;margin-top:4px;border:1px solid #ccc;border-radius:3px}
 .fiche{min-width:230px;max-width:290px;font-size:13px;line-height:1.35}
 .fiche .n{font-size:15px;font-weight:700;margin:0 0 2px}
@@ -106,22 +106,6 @@ html,body{margin:0;overflow:hidden;font-family:Calibri,"Segoe UI",system-ui,sans
 const D = __DONNEES__;
 const C = {}; D.champs.forEach((c,i)=>C[c]=i+5);
 const esc = s => String(s??"").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
-
-// Hauteur : celle de la fenêtre du navigateur, moins un bandeau. Streamlit ajuste ensuite
-// la taille du cadre à ce contenu, ce qui évite tout chevauchement avec le texte qui suit.
-const elMap = document.getElementById("map");
-let enPleinEcran = false;
-function ajusterHauteur(){
-  let h = 700;
-  try { h = Math.max(480, window.parent.innerHeight - 140); } catch(e) {}
-  elMap.style.height = enPleinEcran ? "100vh" : h + "px";
-  try { map.invalidateSize(); } catch(e) {}           // la carte n'existe pas encore au premier appel
-}
-ajusterHauteur();
-try {
-  window.parent.addEventListener("resize", ajusterHauteur);
-  window.addEventListener("pagehide", () => window.parent.removeEventListener("resize", ajusterHauteur));
-} catch(e) {}
 
 const map = L.map("map", {preferCanvas:true, zoomControl:true});
 const plan = L.maplibreGL({style:"https://tiles.openfreemap.org/styles/positron",
@@ -204,8 +188,7 @@ function pleinEcran(actif){
     const v = {position:"fixed",top:"0",left:"0",width:"100vw",height:"100vh","max-height":"none","z-index":"1000000",background:"#fff"};
     PROPS.forEach(k => cadre.style.setProperty(k, v[k], "important"));
   } else PROPS.forEach(k => cadre.style.removeProperty(k));
-  enPleinEcran = actif;
-  ajusterHauteur();
+
   btnPE.textContent = actif ? "Quitter le plein écran" : "Plein écran";
   btnPE.setAttribute("aria-pressed", String(actif));
   setTimeout(()=>map.invalidateSize(), 150);
