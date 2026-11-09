@@ -8,14 +8,16 @@ Page HTML publiée par GitHub Pages ; données collectées par GitHub Actions.
 
 ```
 Chaque nuit (GitHub Actions)                     À chaque visite (GitHub Pages)
-collecte.py ─► API SIRENE + géocodage IGN        index.html ─► lit data/ et corrections_localisation.csv
+collecte.py ─► API SIRENE + IGN + Annuaire         index.html ─► lit data/ et corrections_localisation.csv
            └─► écrit data/ ─► commit ──────────────────────► carte, filtres, liste, exports
 ```
 
 | Fichier | Rôle |
 |---|---|
 | `index.html` | La page : annuaire (carte + liste), nouveautés, qualité des données |
-| `collecte.py`, `referentiels.py` | La collecte quotidienne (API SIRENE, géocodage, journal) |
+| `collecte.py`, `referentiels.py` | La collecte quotidienne (API SIRENE, journal) |
+| `localisation.py` | Le choix de la position de chaque établissement (voir plus bas) |
+| `bodacc.py` | Les annonces du BODACC du territoire (onglet *Vie des entreprises*) |
 | `.github/workflows/maj_quotidienne.yml` | La planification nocturne |
 | `corrections_localisation.csv` | Vos corrections de position, à remplir à la main |
 | `data/` | Données produites par le robot (ne pas modifier) |
@@ -52,10 +54,31 @@ la clé SIRENE reste protégée dans les secrets du dépôt.
 
 - **Effectifs** : SIRENE ne donne qu'une tranche, souvent mise à jour avec retard.
   Cercles et total de salariés sont des ordres de grandeur.
-- **Localisation** : coordonnées SIRENE, sinon adresse géocodée par l'IGN (uniquement si le
-  résultat tombe dans la bonne commune). Les autres sont listés dans l'onglet *Qualité des données*.
+- **Localisation** (`localisation.py`) : chaque établissement a une source et une précision
+  (*au numéro*, *lieu nommé*, *rue ou lieu-dit*, *vérifiée*). Ordre de préférence :
+  - adresse avec numéro : coordonnées SIRENE, sinon géocodage IGN au numéro ;
+  - adresse sans numéro : SIRENE ne place alors le point qu'au milieu de la rue. On cherche d'abord
+    le lieu nommé du complément d'adresse (camping, ZA, résidence…) dans les données IGN ;
+  - puis la position de l'[Annuaire des entreprises](https://annuaire-entreprises.data.gouv.fr)
+    (API Recherche d'entreprises, sans clé), **seulement si** elle tombe dans la bonne commune et
+    près de la rue ou du lieu indiqué. Environ une sur quatre est écartée par ce contrôle ;
+  - en dernier recours, le géocodage IGN à la rue ou au lieu-dit, jamais au centre de la commune,
+    et seulement si le nom de la rue trouvée correspond à celui de l'adresse.
+
+  Les positions approximatives apparaissent en cercles évidés sur la carte et sont listées dans
+  l'onglet *Qualité des données*. Les réponses des services sont gardées en cache dans `data/`
+  (`geocodage_cache.csv`, `lieux_cache.csv`, `annuaire_cache.csv`). Celles de l'Annuaire sont
+  redemandées tous les 90 jours.
 - **Fond de carte** : Positron (OpenFreeMap) par défaut, photo aérienne IGN en bascule. Si un poste
   ne peut pas afficher Positron (WebGL désactivé), la page passe automatiquement au Plan IGN.
+- **BODACC** (onglet *Vie des entreprises*) : créations, immatriculations, radiations, procédures
+  collectives et ventes de fonds publiées au BODACC (API de la DILA, sans clé), sur 2 ans. N'y
+  figurent que les entreprises inscrites au registre du commerce : pas les associations ni la
+  plupart des artisans. Les annonces paraissent quelques jours à quelques semaines après l'acte,
+  et une même procédure collective en produit plusieurs (ouverture, état des créances, clôture…).
+  Les commerçants en nom propre sont inclus, avec une case pour les masquer. Les rectificatifs
+  remplacent l'annonce d'origine, les annulations la retirent. Si le BODACC ne répond pas une nuit,
+  les annonces de la veille sont conservées et l'annuaire est mis à jour normalement.
 - **Garde-fou** : si une nuit l'API renvoie moins de 80 % des établissements de la veille,
   rien n'est écrasé. Pour passer outre, relancer le workflow à la main avec `forcer` = `1`.
 

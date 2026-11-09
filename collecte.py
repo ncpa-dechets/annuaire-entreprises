@@ -9,8 +9,8 @@ ou à la main :  INSEE_API_KEY=xxxx python collecte.py
   1. Liste et contours des communes de l'EPCI (geo.api.gouv.fr).
   2. Établissements actifs de chaque commune (API SIRENE de l'Insee, clé requise).
   3. Exclusion des entrepreneurs individuels, mise en forme (adresse, activité, effectif).
-  4. Coordonnées : celles de SIRENE (Lambert 93 converti en GPS), sinon géocodage
-     de l'adresse via la Géoplateforme IGN (résultats gardés en cache).
+  4. Coordonnées (voir localisation.py) : SIRENE quand l'adresse a un numéro, sinon lieu nommé
+     ou adresse géocodés par l'IGN, ou position vérifiée de l'Annuaire des entreprises.
   5. Comparaison avec la veille : nouveaux établissements / établissements sortis.
   6. Écriture des fichiers dans data/ (le robot GitHub les enregistre ensuite dans le dépôt).
 
@@ -30,24 +30,24 @@ from zoneinfo import ZoneInfo
 import pandas as pd
 import requests
 
+from bodacc import collecter_bodacc
+from localisation import localiser
 from referentiels import appliquer_corrections, DIVISIONS, SECTIONS, TRANCHES, TYPES_VOIE, section_de_division, type_structure
 
 EPCI = os.environ.get("EPCI_SIREN", "200065563")  # Normandie-Cabourg-Pays d'Auge
 DATA = Path(__file__).resolve().parent / "data"
 API_SIRENE = "https://api.insee.fr/api-sirene/3.11/siret"
 API_GEO = "https://geo.api.gouv.fr/communes"
-API_GEOCODAGE = "https://data.geopf.fr/geocodage/search"
 URL_NAF = "https://www.insee.fr/fr/statistiques/fichier/2120875/naf2008_liste_n5.xls"
 SEUIL_BAISSE = 0.80        # arrêt si moins de 80 % des établissements de la veille
 JOURNAL_JOURS = 730        # historique conservé dans le journal (2 ans)
-SCORE_GEOCODAGE_MIN = 0.5
 
 COLONNES = ["siret", "siren", "nom", "raison_sociale", "enseigne", "adresse", "complement_adresse",
             "code_postal", "commune", "code_commune", "naf", "naf_libelle", "nomenclature_naf",
             "section", "section_libelle", "division", "division_libelle",
             "tranche_effectif", "tranche_libelle", "effectif_min", "effectif_max", "annee_effectif",
             "employeur", "siege", "date_creation", "categorie_juridique", "type_structure",
-            "categorie_entreprise", "ess", "lat", "lon", "localisation"]
+            "categorie_entreprise", "ess", "lat", "lon", "localisation", "precision"]
 PARIS = ZoneInfo("Europe/Paris")
 
 
@@ -229,120 +229,6 @@ def transformer(e, naf_lib, noms_communes=None):
 
 
 # ---------------------------------------------------------------------------
-# Coordonnées
-# ---------------------------------------------------------------------------
-def emprise(gj, marge=0.02):
-    xs, ys = [], []
-
-    def parcourir(c):
-        if isinstance(c[0], (int, float)):
-            xs.append(c[0]); ys.append(c[1])
-        else:
-            for s in c:
-                parcourir(s)
-    for f in gj["features"]:
-        parcourir(f["geometry"]["coordinates"])
-    return min(xs) - marge, min(ys) - marge, max(xs) + marge, max(ys) + marge
-
-
-def geocoder(requetes, cache, paralleles=6, lot=150):
-    """Géocode {cle: (texte, code_commune)} en parallèle et complète le cache.
-    6 requêtes simultanées restent sous la limite de 50 par seconde de la Géoplateforme.
-    Si plus de la moitié d'un lot échoue, le service est jugé indisponible et on s'arrête."""
-    from concurrent.futures import ThreadPoolExecutor
-    import threading
-    local = threading.local()
-
-    def une(item):
-        cle, (texte, code) = item
-        if not hasattr(local, "s"):
-            local.s = requests.Session()
-        for essai in range(2):
-            try:
-                rep = local.s.get(API_GEOCODAGE, params={"q": texte, "citycode": code, "index": "address",
-                                                         "limit": 1}, timeout=10)
-            except requests.RequestException:
-                continue                                  # délai dépassé : un second essai
-            if rep.status_code == 429:
-                time.sleep(2)
-                continue
-            if 400 <= rep.status_code < 500:
-                return cle, ("", "")                      # requête refusée : adresse jugée introuvable
-            if rep.status_code != 200:
-                continue
-            feats = rep.json().get("features", [])
-            if feats:
-                pr = feats[0]["properties"]
-                if pr.get("score", 0) >= SCORE_GEOCODAGE_MIN and str(pr.get("citycode")) == code:
-                    lo, la = feats[0]["geometry"]["coordinates"]
-                    return cle, (str(la), str(lo))
-            return cle, ("", "")
-        return cle, None                                  # échec : rien n'est mis en cache
-
-    items, erreurs, faits = list(requetes.items()), 0, 0
-    debut = time.time()
-    with ThreadPoolExecutor(paralleles) as pool:
-        for k in range(0, len(items), lot):
-            echecs = 0
-            for cle, res in pool.map(une, items[k:k + lot]):
-                if res is None:
-                    echecs += 1
-                else:
-                    cache[cle] = res
-            faits += len(items[k:k + lot])
-            erreurs += echecs
-            log(f"   géocodage : {faits}/{len(items)} ({round(time.time() - debut)} s)")
-            if echecs > lot / 2:
-                erreurs += len(items) - faits
-                log("   ⚠ géocodeur IGN indisponible, arrêt du géocodage pour aujourd'hui")
-                break
-    return erreurs
-
-
-def localiser(df, gj):
-    from pyproj import Transformer
-    tr = Transformer.from_crs(2154, 4326, always_xy=True)
-    x0, y0, x1, y1 = emprise(gj)
-    x = pd.to_numeric(df["_x"], errors="coerce")
-    y = pd.to_numeric(df["_y"], errors="coerce")
-    lon, lat = tr.transform(x.fillna(0).values, y.fillna(0).values)
-    df["lon"], df["lat"] = lon, lat
-    ok = x.notna() & y.notna() & df["lon"].between(x0, x1) & df["lat"].between(y0, y1)
-    df.loc[~ok, ["lat", "lon"]] = None
-    df["localisation"] = ok.map({True: "SIRENE", False: "Non localisé"})
-
-    # Géocodage des adresses restantes, avec cache pour ne pas les refaire chaque jour.
-    # Seules les réponses obtenues sont gardées : une panne du service sera rattrapée le lendemain.
-    fcache = DATA / "geocodage_cache.csv"
-    cache = pd.read_csv(fcache, dtype=str, keep_default_na=False) if fcache.exists() \
-        else pd.DataFrame(columns=["cle", "lat", "lon"])
-    cache = dict(zip(cache["cle"], zip(cache["lat"], cache["lon"])))
-    a_faire = df.index[~ok & (df["adresse"] != "")]
-    df["_cle"] = df["adresse"] + "|" + df["code_commune"]
-    requetes = {}                                        # une seule requête par adresse distincte
-    for i in a_faire:
-        r = df.loc[i]
-        if r["_cle"] not in cache:
-            requetes[r["_cle"]] = (f"{r['adresse']} {r['code_postal']} {r['commune']}", r["code_commune"])
-    log(f"   {int(ok.sum())} établissements localisés par SIRENE, {len(a_faire)} sans coordonnées "
-        f"dont {len(requetes)} adresses nouvelles à géocoder")
-
-    erreurs = geocoder(requetes, cache)
-
-    for i in a_faire:
-        la, lo = cache.get(df.at[i, "_cle"], ("", ""))
-        if la:
-            df.loc[i, ["lat", "lon"]] = [float(la), float(lo)]
-            df.loc[i, "localisation"] = "Adresse géocodée"
-    pd.DataFrame([(k, v[0], v[1]) for k, v in cache.items()], columns=["cle", "lat", "lon"]) \
-        .sort_values("cle").to_csv(fcache, index=False, lineterminator="\n")
-    if erreurs:
-        log(f"   {erreurs} adresses non traitées (service lent ou indisponible) : nouvel essai la nuit prochaine")
-    df = df.drop(columns=["_cle"])
-    return df.drop(columns=["_x", "_y"])
-
-
-# ---------------------------------------------------------------------------
 # Journal des changements
 # ---------------------------------------------------------------------------
 def mettre_a_jour_journal(ancien, nouveau, jour):
@@ -401,7 +287,7 @@ def main():
                          "collecte jugée incomplète, données conservées. (FORCER=1 pour passer outre.)")
 
     log("3. Localisation")
-    df = localiser(df, gj)
+    df = localiser(df, gj, DATA)
 
     df, n_corr = appliquer_corrections(df, DATA.parent / "corrections_localisation.csv")
     if n_corr:
@@ -419,11 +305,22 @@ def main():
     jour = maintenant.date().isoformat()
     mettre_a_jour_journal(ancien, df.astype(str), jour)
 
+    log("5. Annonces du BODACC")
+    # Une panne du BODACC ne doit pas empêcher la mise à jour de l'annuaire : on garde alors le fichier de la veille.
+    try:
+        bodacc = collecter_bodacc(gj, df.astype(str), DATA, JOURNAL_JOURS)
+    except Exception as e:
+        log(f"   ⚠ BODACC non mis à jour aujourd'hui ({type(e).__name__} : {e}), annonces de la veille conservées")
+        ancien_meta = json.loads((DATA / "meta.json").read_text(encoding="utf-8")) if (DATA / "meta.json").exists() else {}
+        bodacc = ancien_meta.get("bodacc", {})
+
     meta = {
         "date_maj": maintenant.isoformat(timespec="minutes"), "epci": EPCI, "nb_communes": len(communes),
         "nb_etablissements": int(len(df)), "nb_entrepreneurs_individuels_exclus": int(exclus_ei),
         "localisation": {k: int(v) for k, v in df["localisation"].value_counts().items()},
+        "precision": {(k or "Non localisé"): int(v) for k, v in df["precision"].value_counts().items()},
         "duree_secondes": round(time.time() - debut), "source": "Insee, répertoire SIRENE (API Sirene 3.11)",
+        "bodacc": bodacc,
     }
     with open(DATA / "meta.json", "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=1)

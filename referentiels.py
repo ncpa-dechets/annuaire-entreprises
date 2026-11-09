@@ -204,4 +204,6 @@ def appliquer_corrections(df, chemin):
     df.loc[masque, "lat"] = df.loc[masque, "siret"].map(c["lat"]).astype(float)
     df.loc[masque, "lon"] = df.loc[masque, "siret"].map(c["lon"]).astype(float)
     df.loc[masque, "localisation"] = "Corrigée manuellement"
+    if "precision" in df.columns:
+        df.loc[masque, "precision"] = "Vérifiée"
     return df, int(masque.sum())

@@ -5,10 +5,32 @@
  "nb_etablissements": 5004,
  "nb_entrepreneurs_individuels_exclus": 11218,
  "localisation": {
-  "SIRENE": 3869,
-  "Adresse géocodée": 791,
-  "Non localisé": 344
+  "SIRENE": 3145,
+  "Géocodage IGN": 886,
+  "Annuaire des entreprises": 636,
+  "Non localisé": 337
  },
  "duree_secondes": 498,
- "source": "Insee, répertoire SIRENE (API Sirene 3.11)"
+ "source": "Insee, répertoire SIRENE (API Sirene 3.11)",
+ "precision": {
+  "Numéro": 3282,
+  "Rue ou lieu-dit": 778,
+  "Lieu nommé": 607,
+  "Non localisé": 337
+ },
+ "bodacc": {
+  "date_max": "2026-11-05",
+  "nb_annonces": 1169,
+  "par_evenement": {
+   "Création": 490,
+   "Radiation": 394,
+   "Immatriculation": 65,
+   "Clôture de procédure": 56,
+   "Vente de fonds": 46,
+   "Suivi de procédure": 44,
+   "Liquidation judiciaire": 40,
+   "Ouverture de sauvegarde ou de redressement": 25,
+   "Plan de redressement ou de sauvegarde": 9
+  }
+ }
 }

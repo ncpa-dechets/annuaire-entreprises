@@ -37,7 +37,7 @@ button,input,select{font:inherit;color:inherit}
 
 main{min-height:0;position:relative}
 .vue{height:100%;min-height:0}
-.vue[hidden]{display:none}
+.vue[hidden]{display:none !important}  /* sinon #v-annuaire{display:grid} l'emporte et la carte reste affichée */
 
 /* ---- Vue annuaire ---- */
 #v-annuaire{display:grid;grid-template-columns:var(--volet) 1fr}
@@ -121,6 +121,7 @@ td.num{white-space:nowrap}
 .tailles div{text-align:center;color:var(--mut)}
 .tailles span{display:block;margin:0 auto 3px;border-radius:50%;background:#bbb;border:1px solid #fff}
 .leaflet-control-layers{font-size:12.5px}
+.evide{display:inline-block;width:10px;height:10px;border-radius:50%;border:1.6px solid #6f6f6f;background:rgba(111,111,111,.15);vertical-align:-1px;margin-right:6px}
 
 /* ---- Vues Nouveautés et Qualité ---- */
 .page{overflow:auto;padding:20px 24px 40px}
@@ -141,6 +142,19 @@ td.num{white-space:nowrap}
 a.lien{color:var(--rouge);text-decoration:none;font-weight:600;cursor:pointer}
 a.lien:hover{text-decoration:underline}
 ol.etapes{line-height:1.6;max-width:820px}
+.outils input[type=search]{padding:7px 8px;border:1px solid var(--bord);border-radius:6px;min-width:220px;font-weight:400}
+.outils label.case{flex-direction:row;align-items:center;font-weight:400;padding-bottom:8px}
+.evts{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 14px}
+.evts label{display:flex;align-items:center;gap:6px;border:1px solid var(--bord);border-radius:16px;padding:4px 10px;font-size:12.5px;cursor:pointer;background:#fff}
+.evts label.off{opacity:.5}
+.evts input{margin:0}
+.evts .n{color:var(--mut)}
+.pastille{display:inline-block;width:9px;height:9px;border-radius:50%;flex:none}
+td .evt{display:flex;align-items:center;gap:6px;white-space:nowrap}
+td.detail{font-size:12px;color:#444;max-width:420px}
+#b-graphe svg{width:100%;max-width:900px;height:auto;display:block}
+#b-graphe .leg{display:flex;gap:16px;font-size:12.5px;color:var(--mut);margin:4px 0 8px}
+#b-graphe .leg span{display:inline-flex;align-items:center;gap:6px}
 code{background:var(--fond);padding:1px 5px;border-radius:4px;font-size:12.5px}
 
 #chargement{position:fixed;inset:0;background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;z-index:5000;font-size:16px;color:var(--mut);text-align:center;padding:20px}
@@ -173,6 +187,7 @@ code{background:var(--fond);padding:1px 5px;border-radius:4px;font-size:12.5px}
   <nav class="onglets" role="tablist">
     <button role="tab" aria-selected="true" data-vue="v-annuaire">Annuaire</button>
     <button role="tab" aria-selected="false" data-vue="v-nouveautes">Nouveautés</button>
+    <button role="tab" aria-selected="false" data-vue="v-bodacc">Vie des entreprises</button>
     <button role="tab" aria-selected="false" data-vue="v-qualite">Qualité des données</button>
   </nav>
   <div class="maj" id="maj"></div>
@@ -282,6 +297,30 @@ code{background:var(--fond);padding:1px 5px;border-radius:4px;font-size:12.5px}
     </div>
   </section>
 
+  <!-- ===================== VIE DES ENTREPRISES (BODACC) ===================== -->
+  <section id="v-bodacc" class="vue page" hidden>
+    <div class="inner">
+      <h2>Vie des entreprises</h2>
+      <p class="note">Annonces légales publiées au BODACC pour les entreprises du territoire : créations, radiations,
+        procédures collectives et ventes de fonds. Seules les entreprises inscrites au registre du commerce y figurent
+        (pas les associations ni la plupart des artisans). Une procédure collective donne plusieurs annonces successives.</p>
+      <div class="outils">
+        <label>Période<select id="b-periode">
+          <option value="30">30 derniers jours</option><option value="90">90 derniers jours</option>
+          <option value="365" selected>12 derniers mois</option><option value="730">24 derniers mois</option></select></label>
+        <label>Commune<select id="b-commune"><option value="">Toutes les communes</option></select></label>
+        <label>Recherche<input id="b-texte" type="search" placeholder="Nom, activité, SIREN…"></label>
+        <label class="case"><input type="checkbox" id="b-pp"> Masquer les commerçants en nom propre</label>
+        <button class="btn" id="b-export" style="margin-left:auto">Télécharger (Excel)</button>
+      </div>
+      <div class="evts" id="b-evts"></div>
+      <div class="gros" id="b-chiffres"></div>
+      <h3>Mois par mois, sur 12 mois</h3>
+      <div id="b-graphe"></div>
+      <div id="b-contenu"></div>
+    </div>
+  </section>
+
   <!-- ===================== QUALITÉ ===================== -->
   <section id="v-qualite" class="vue page" hidden>
     <div class="inner" id="q-contenu"></div>
@@ -335,6 +374,11 @@ function rayon(e){
   return m < 1 ? 3 : Math.min(30, 3 + 1.5 * Math.sqrt(m));
 }
 const estEmployeur = e => e.emp === "Oui" || (e.emin !== null && e.emin >= 1);
+// Précision de la position (colonne « precision » écrite par localisation.py)
+const APPROX = "Rue ou lieu-dit";
+const estApprox = e => e.prec === APPROX;
+const PRECISIONS = {"Numéro":"au numéro de la rue", "Lieu nommé":"sur le lieu nommé (camping, zone d'activités, lieu-dit…)",
+  "Rue ou lieu-dit":"approximative : quelque part dans la rue ou le lieu-dit", "Vérifiée":"vérifiée à la main"};
 
 /* =========================================================================
    Liste déroulante à cases (communes, activités détaillées)
@@ -385,9 +429,9 @@ async function charger(){
     meta = await rm.json();
     const v = encodeURIComponent(meta.date_maj || Date.now());
     const lire = (u, opt) => fetch(`${u}?v=${v}`).then(r => r.ok ? r.text() : (opt ? "" : Promise.reject(new Error(u))));
-    const [csv, gj, jr, corr] = await Promise.all([
+    const [csv, gj, jr, corr, bod] = await Promise.all([
       lire("data/etablissements.csv"), lire("data/communes.geojson"),
-      lire("data/journal.csv", true), lire("corrections_localisation.csv", true)]);
+      lire("data/journal.csv", true), lire("corrections_localisation.csv", true), lire("data/bodacc.csv", true)]);
     communesGJ = JSON.parse(gj);
     const lignes = Papa.parse(csv, {header:true, skipEmptyLines:true}).data;
     E = lignes.map(r => ({
@@ -395,7 +439,7 @@ async function charger(){
       com:r.commune, naf:r.naf, nafl:r.naf_libelle, sec:r.section || "Z", div:r.division, divl:r.division_libelle,
       trl:r.tranche_libelle, emin:num(r.effectif_min), emax:num(r.effectif_max), aeff:r.annee_effectif,
       emp:r.employeur, siege:r.siege, crea:r.date_creation, tstr:r.type_structure, cj:r.categorie_juridique,
-      catent:r.categorie_entreprise, ess:r.ess, lat:num(r.lat), lon:num(r.lon), loc:r.localisation
+      catent:r.categorie_entreprise, ess:r.ess, lat:num(r.lat), lon:num(r.lon), loc:r.localisation, prec:r.precision || ""
     }));
     // Corrections manuelles : appliquées tout de suite, sans attendre la collecte de la nuit
     if (corr.trim()){
@@ -403,11 +447,12 @@ async function charger(){
         const k = Object.fromEntries(Object.entries(c).map(([a,b]) => [a.trim().toLowerCase(), b]));
         const s = String(k.siret || "").replace(/\D/g, ""), la = num(k.lat), lo = num(k.lon);
         const e = E.find(x => x.siret === s);
-        if (e && la !== null && lo !== null){ e.lat = la; e.lon = lo; e.loc = "Corrigée manuellement"; }
+        if (e && la !== null && lo !== null){ e.lat = la; e.lon = lo; e.loc = "Corrigée manuellement"; e.prec = "Vérifiée"; }
       });
     }
     E.forEach(e => { e.q = norm([e.nom, e.rs, e.siret, e.adr, e.com, e.nafl, e.divl, e.naf].join(" ")); parSiret.set(e.siret, e); });
     journal = jr.trim() ? Papa.parse(jr, {header:true, skipEmptyLines:true}).data : [];
+    chargerBodacc(bod);
     demarrer();
   } catch(err){
     console.error(err);
@@ -481,6 +526,13 @@ function initCarte(){
     return d;
   };
   legTailles.addTo(map);
+  const legPrec = L.control({position:"bottomleft"});
+  legPrec.onAdd = () => {
+    const d = L.DomUtil.create("div", "ctl");
+    d.innerHTML = `<span class="evide"></span>Cercle évidé : position approximative (rue ou lieu-dit)`;
+    return d;
+  };
+  legPrec.addTo(map);
 
   // Clic droit : coordonnées à copier (pour corrections_localisation.csv)
   map.on("contextmenu", ev => {
@@ -499,7 +551,10 @@ function initCarte(){
 function styliser(){
   E.forEach(e => { if (!e.m) return;
     const pale = etat.proportionnel && !(e.emin >= 1);
-    e.m.setStyle({fillColor:COULEURS[e.sec] || "#999", fillOpacity: pale ? .45 : .82});
+    const c = COULEURS[e.sec] || "#999";
+    // Position approximative : cercle évidé, bordé de la couleur du secteur
+    e.m.setStyle(estApprox(e) ? {fillColor:c, fillOpacity:.15, color:c, weight:1.6}
+                              : {fillColor:c, fillOpacity: pale ? .45 : .82, color:"#fff", weight:.8});
     e.m.setRadius(rayon(e));
   });
   if (legTailles) etat.proportionnel ? legTailles.addTo(map) : legTailles.remove();
@@ -515,8 +570,8 @@ function fiche(e){
     <tr><td>Créé le</td><td>${dateFr(e.crea)}</td></tr>
     <tr><td>Établissement</td><td>${e.siege === "Oui" ? "Siège" : "Établissement secondaire"}</td></tr>
     <tr><td>Structure</td><td>${esc(e.tstr)}${e.catent ? " (" + esc(e.catent) + ")" : ""}</td></tr>
-    <tr><td>SIRET</td><td>${sirFmt(e.siret)}</td></tr>
-    <tr><td>Position</td><td>${esc(e.loc)}</td></tr></table>
+    <tr><td>SIRET</td><td>${sirFmt(e.siret)}</td></tr>${ligneBodacc(e)}
+    <tr><td>Position</td><td>${esc(PRECISIONS[e.prec] ? PRECISIONS[e.prec][0].toUpperCase() + PRECISIONS[e.prec].slice(1) : e.loc)}${e.prec ? `<br><span style="color:var(--mut)">Source : ${esc(e.loc)}</span>` : ""}</td></tr></table>
     <a href="https://annuaire-entreprises.data.gouv.fr/etablissement/${esc(e.siret)}" target="_blank" rel="noopener">Fiche complète sur l'Annuaire des entreprises</a></div>`;
 }
 
@@ -631,7 +686,7 @@ function listeSuite(){
 const COLS_EXPORT = [["siret","SIRET"],["nom","Nom"],["rs","Raison sociale"],["adr","Adresse"],["cplt","Complément"],
   ["cp","Code postal"],["com","Commune"],["naf","Code NAF"],["nafl","Activité"],["sec","Section NAF"],["trl","Effectif (tranche)"],
   ["aeff","Année de l'effectif"],["emp","Employeur"],["siege","Siège"],["crea","Date de création"],["tstr","Type de structure"],
-  ["cj","Catégorie juridique"],["catent","Catégorie d'entreprise"],["ess","ESS"],["lat","Latitude"],["lon","Longitude"],["loc","Position"]];
+  ["cj","Catégorie juridique"],["catent","Catégorie d'entreprise"],["ess","ESS"],["lat","Latitude"],["lon","Longitude"],["loc","Source de la position"],["prec","Précision de la position"]];
 const jour = () => new Date().toISOString().slice(0,10);
 function feuille(lignes, cols){
   const ws = XLSX.utils.json_to_sheet(lignes.map(e => Object.fromEntries(cols.map(([k,l]) => [l, e[k] ?? ""]))));
@@ -674,13 +729,126 @@ function nouveautes(){
 }
 
 /* =========================================================================
+   Vie des entreprises (annonces BODACC, écrites par bodacc.py)
+   ========================================================================= */
+// Catégories d'événement (identiques à bodacc.py) : couleur, groupe pour les chiffres et le graphique, cochée par défaut
+const EVTS = [
+  ["Création", "#2b9348", "crea", true], ["Immatriculation", "#74c69d", "crea", true],
+  ["Radiation", "#6c757d", "rad", true], ["Vente de fonds", "#3d84c6", "vente", true],
+  ["Ouverture de sauvegarde ou de redressement", "#e8590c", "proc", true], ["Liquidation judiciaire", "#B91E27", "proc", true],
+  ["Plan de redressement ou de sauvegarde", "#d4a017", "", true], ["Clôture de procédure", "#7b2cbf", "", true],
+  ["Suivi de procédure", "#adb5bd", "", false]];
+const EVT = Object.fromEntries(EVTS.map(([n,c,g]) => [n, {c, g}]));
+let B = [], bodaccParSiren = new Map(), etabParSiren = new Map(), evtsCoches = new Set(EVTS.filter(x => x[3]).map(x => x[0]));
+
+function chargerBodacc(texte){
+  if (!texte.trim()) return;
+  B = Papa.parse(texte, {header:true, skipEmptyLines:true}).data.map(r => ({
+    id:r.id, date:r.date, fam:r.famille, evt:r.evenement, detail:r.detail, nom:r.nom, sirens:(r.siren || "").split(";").filter(Boolean),
+    forme:r.forme_juridique, pp:r.personne_physique === "Oui", act:r.activite, com:r.commune, cp:r.code_postal, type:r.type_avis, url:r.url}));
+  B.forEach(b => { b.q = norm([b.nom, b.act, b.detail, b.sirens.join(" ")].join(" "));
+    b.sirens.forEach(s => { if (!bodaccParSiren.has(s)) bodaccParSiren.set(s, []); bodaccParSiren.get(s).push(b); }); });
+  // Établissement à montrer sur la carte pour un SIREN : le siège s'il est sur le territoire, sinon le premier
+  E.forEach(e => { const s = e.siret.slice(0, 9), d = etabParSiren.get(s);
+    if (!d || (e.siege === "Oui" && d.siege !== "Oui")) etabParSiren.set(s, e); });
+}
+
+function ligneBodacc(e){
+  const l = bodaccParSiren.get(e.siret.slice(0, 9)); if (!l || !l.length) return "";
+  const d = l[0];   // le fichier est trié par date décroissante
+  return `<tr><td>BODACC</td><td><a href="${esc(d.url)}" target="_blank" rel="noopener" style="margin:0;font-weight:400">${dateFr(d.date)} – ${esc(d.evt)}</a>
+    ${l.length > 1 ? `<span style="color:var(--mut)"> (${l.length} annonces)</span>` : ""}</td></tr>`;
+}
+
+function filtresBodacc(){
+  const d = new Date(); d.setDate(d.getDate() - Number($("b-periode").value));
+  return {debut:d.toISOString().slice(0,10), com:$("b-commune").value, mots:norm($("b-texte").value).split(/\s+/).filter(Boolean), sansPP:$("b-pp").checked};
+}
+const passeBodacc = (b, f, avecPeriode = true) => (!avecPeriode || b.date >= f.debut) && (!f.com || b.com === f.com)
+  && (!f.sansPP || !b.pp) && f.mots.every(m => b.q.includes(m));
+
+function vieEntreprises(){
+  if (!B.length){
+    $("b-contenu").innerHTML = `<p class="note">Les annonces du BODACC seront disponibles après la prochaine collecte nocturne.</p>`;
+    return;
+  }
+  const f = filtresBodacc();
+  const periode = B.filter(b => passeBodacc(b, f));
+  const lignes = periode.filter(b => evtsCoches.has(b.evt));
+  vieEntreprises.lignes = lignes;
+
+  // Cases d'événement, avec le nombre d'annonces de la période (tous événements confondus)
+  const cpt = {}; periode.forEach(b => cpt[b.evt] = (cpt[b.evt] || 0) + 1);
+  $("b-evts").innerHTML = EVTS.map(([n,c]) => `<label class="${evtsCoches.has(n) ? "" : "off"}"><input type="checkbox" value="${esc(n)}"${evtsCoches.has(n) ? " checked" : ""}>
+    <span class="pastille" style="background:${c}"></span>${esc(n)} <span class="n">${nb(cpt[n] || 0)}</span></label>`).join("");
+
+  const g = k => periode.filter(b => EVT[b.evt]?.g === k).length;
+  $("b-chiffres").innerHTML = `<div><b>${nb(g("crea"))}</b><span>créations et immatriculations</span></div>
+    <div><b>${nb(g("rad"))}</b><span>radiations</span></div>
+    <div><b>${nb(g("proc"))}</b><span>procédures ouvertes (sauvegarde, redressement, liquidation)</span></div>
+    <div><b>${nb(g("vente"))}</b><span>ventes de fonds</span></div>`;
+
+  grapheBodacc(f);
+
+  const nomLien = b => { const e = b.sirens.map(s => etabParSiren.get(s)).find(Boolean);
+    return e ? `<a class="lien" data-voir="${esc(e.siret)}" title="Voir sur la carte">${esc(b.nom)}</a>` : esc(b.nom); };
+  $("b-contenu").innerHTML = lignes.length ? `<div class="cadre" style="max-height:600px"><table><thead><tr><th>Date</th><th>Événement</th><th>Nom</th>
+    <th>Commune</th><th>Activité</th><th>Détail</th><th></th></tr></thead><tbody>` + lignes.map(b => `<tr>
+      <td class="num">${dateFr(b.date)}</td>
+      <td><span class="evt"><span class="pastille" style="background:${EVT[b.evt]?.c || "#999"}"></span>${esc(b.evt)}</span></td>
+      <td>${nomLien(b)}${b.pp ? ` <span class="sansloc">(en nom propre)</span>` : ""}${b.type && b.type !== "Avis initial" ? ` <span class="sansloc">(${esc(b.type.toLowerCase())})</span>` : ""}</td>
+      <td>${esc(b.com)}</td><td>${esc(b.act)}</td><td class="detail">${esc(b.detail)}</td>
+      <td><a class="lien" href="${esc(b.url)}" target="_blank" rel="noopener">Annonce</a></td></tr>`).join("") + `</tbody></table></div>`
+    : `<p class="note">Aucune annonce ne correspond à ces critères.</p>`;
+}
+
+function grapheBodacc(f){
+  // 12 derniers mois complets + mois en cours ; filtres commune, recherche et nom propre (pas la période)
+  const mois = [], d = new Date(); d.setDate(1);
+  for (let i = 11; i >= 0; i--){ const m = new Date(d.getFullYear(), d.getMonth() - i, 1);
+    mois.push(`${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, "0")}`); }
+  const series = [["crea", "Créations", "#2b9348"], ["rad", "Radiations", "#6c757d"], ["proc", "Procédures ouvertes", "#B91E27"]];
+  const v = Object.fromEntries(series.map(([k]) => [k, Object.fromEntries(mois.map(m => [m, 0]))]));
+  B.forEach(b => { const k = EVT[b.evt]?.g, m = b.date.slice(0, 7);
+    if (v[k] && m in v[k] && passeBodacc(b, f, false)) v[k][m]++; });
+  const max = Math.max(1, ...series.flatMap(([k]) => Object.values(v[k])));
+  const W = 900, H = 170, bas = 22, haut = 12, pas = W / mois.length, lb = Math.min(16, (pas - 10) / 3);
+  const y = n => H - bas - (H - bas - haut) * n / max;
+  const MOISC = ["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Annonces par mois">`;
+  [0, .5, 1].forEach(t => { const n = Math.round(max * t);
+    svg += `<line x1="0" x2="${W}" y1="${y(n)}" y2="${y(n)}" stroke="#e6e6e1"/><text x="2" y="${y(n) - 3}" font-size="10" fill="#888">${n}</text>`; });
+  mois.forEach((m, i) => {
+    const x0 = i * pas + (pas - 3 * lb - 4) / 2;
+    series.forEach(([k, l, c], j) => { const n = v[k][m];
+      svg += `<rect x="${x0 + j * (lb + 2)}" y="${y(n)}" width="${lb}" height="${H - bas - y(n)}" fill="${c}" rx="2"><title>${l} – ${MOISC[+m.slice(5) - 1]} ${m.slice(0,4)} : ${n}</title></rect>`; });
+    svg += `<text x="${i * pas + pas / 2}" y="${H - 6}" font-size="11" fill="#666" text-anchor="middle">${MOISC[+m.slice(5) - 1]}</text>`;
+  });
+  $("b-graphe").innerHTML = `<div class="leg">${series.map(([, l, c]) => `<span><span class="pastille" style="background:${c}"></span>${l}</span>`).join("")}</div>${svg}</svg>`;
+}
+
+function exportBodacc(){
+  const l = vieEntreprises.lignes; if (!l || !l.length){ toast("Aucune annonce à exporter"); return; }
+  const lignes = l.map(b => ({...b, siren:b.sirens.join(", "), ppTxt:b.pp ? "Oui" : "Non"}));
+  const cols = [["date","Date de parution"],["evt","Événement"],["nom","Nom"],["siren","SIREN"],["forme","Forme juridique"],
+    ["ppTxt","Commerçant en nom propre"],["act","Activité"],["com","Commune"],["cp","Code postal"],["detail","Détail"],["type","Type d'avis"],["url","Annonce"]];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, feuille(lignes, cols), "Annonces BODACC");
+  XLSX.writeFile(wb, `bodacc_ncpa_${jour()}.xlsx`);
+}
+
+/* =========================================================================
    Qualité des données
    ========================================================================= */
 function qualite(){
   const loc = {}; E.forEach(e => loc[e.loc] = (loc[e.loc] || 0) + 1);
-  const parCom = {}; E.forEach(e => { const c = parCom[e.com] ||= {n:0, emp:0, nl:0}; c.n++; if (estEmployeur(e)) c.emp++; if (!e.m) c.nl++; });
+  const prec = {}; E.forEach(e => { if (e.m) prec[e.prec] = (prec[e.prec] || 0) + 1; });
+  const parCom = {}; E.forEach(e => { const c = parCom[e.com] ||= {n:0, emp:0, nl:0, ap:0}; c.n++; if (estEmployeur(e)) c.emp++; if (!e.m) c.nl++; else if (estApprox(e)) c.ap++; });
   const annees = {}; E.forEach(e => { const a = e.aeff || "Non renseigné"; annees[a] = (annees[a] || 0) + 1; });
   const nl = E.filter(e => !e.m);
+  const ap = E.filter(e => e.m && estApprox(e)).sort((a,b) => a.com.localeCompare(b.com, "fr") || a.adr.localeCompare(b.adr, "fr"));
+  const pct = n => `${Math.round(100 * (n || 0) / E.length)} %`;
+  const voir = e => `<a class="lien" data-voir="${esc(e.siret)}">${esc(e.nom)}</a>`;
   const t = (tete, rows) => `<div class="cadre"><table><thead><tr>${tete.map(x => `<th>${x}</th>`).join("")}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`;
   $("q-contenu").innerHTML = `
     <h2>Qualité des données</h2>
@@ -688,11 +856,16 @@ function qualite(){
       ${nb(meta.nb_entrepreneurs_individuels_exclus || 0)} entrepreneurs individuels sont exclus de l'annuaire.</p>
     <div class="gros">
       <div><b>${nb(E.length)}</b><span>établissements</span></div>
-      <div><b>${Math.round(100 * (loc["SIRENE"] || 0) / E.length)} %</b><span>localisés par SIRENE</span></div>
-      <div><b>${nb(loc["Adresse géocodée"] || 0)}</b><span>localisés par géocodage</span></div>
-      <div><b>${nb(loc["Corrigée manuellement"] || 0)}</b><span>corrigés à la main</span></div>
-      <div><b>${nb(loc["Non localisé"] || 0)}</b><span>sans position</span></div>
+      <div><b>${pct(prec["Numéro"])}</b><span>placés au numéro</span></div>
+      <div><b>${pct(prec["Lieu nommé"])}</b><span>placés sur un lieu nommé</span></div>
+      <div><b>${pct(prec[APPROX])}</b><span>approximatifs (rue ou lieu-dit)</span></div>
+      <div><b>${nb(prec["Vérifiée"] || 0)}</b><span>corrigés à la main</span></div>
+      <div><b>${nb(nl.length)}</b><span>sans position</span></div>
     </div>
+    <p class="note">Sources des positions : ${Object.entries(loc).filter(([k]) => k !== "Non localisé").sort((a,b) => b[1] - a[1])
+      .map(([k,n]) => `${esc(k)} ${nb(n)}`).join(" · ")}. Les coordonnées SIRENE ne sont retenues telles quelles que pour les
+      adresses avec numéro ; sinon la page cherche un lieu nommé (complément d'adresse), puis la position de l'Annuaire des
+      entreprises si elle tombe bien près de la rue indiquée.</p>
     <h3>Corriger une position</h3>
     <ol class="etapes">
       <li>Sur la carte, faites un clic droit à l'emplacement exact, puis « Copier ».</li>
@@ -700,8 +873,8 @@ function qualite(){
       <li>Ajoutez une ligne <code>SIRET,latitude,longitude,commentaire</code>, puis « Commit changes ». La correction apparaît en une à deux minutes.</li>
     </ol>
     <div class="deux">
-      <div><h3>Établissements par commune</h3>${t(["Commune","Établissements","Employeurs","Sans position"],
-        Object.entries(parCom).sort((a,b) => b[1].n - a[1].n).map(([c,v]) => `<tr><td>${esc(c)}</td><td>${nb(v.n)}</td><td>${nb(v.emp)}</td><td>${nb(v.nl)}</td></tr>`))}</div>
+      <div><h3>Établissements par commune</h3>${t(["Commune","Établissements","Employeurs","Approximatifs","Sans position"],
+        Object.entries(parCom).sort((a,b) => b[1].n - a[1].n).map(([c,v]) => `<tr><td>${esc(c)}</td><td>${nb(v.n)}</td><td>${nb(v.emp)}</td><td>${nb(v.ap)}</td><td>${nb(v.nl)}</td></tr>`))}</div>
       <div><h3>Ancienneté de l'effectif déclaré</h3>
         <p class="note">L'effectif SIRENE est une tranche, mise à jour avec un ou deux ans de retard.</p>
         ${t(["Année","Établissements"], Object.entries(annees).sort().map(([a,n]) => `<tr><td>${esc(a)}</td><td>${nb(n)}</td></tr>`))}</div>
@@ -709,7 +882,12 @@ function qualite(){
     <h3>Établissements sans position (${nb(nl.length)})</h3>
     <p class="note">Adresse absente, incomplète ou introuvable. Ils figurent dans la liste mais pas sur la carte.</p>
     ${t(["Nom","Adresse","Complément","Commune","Activité","SIRET"], nl.map(e =>
-      `<tr><td>${esc(e.nom)}</td><td>${esc(e.adr)}</td><td>${esc(e.cplt)}</td><td>${esc(e.com)}</td><td>${esc(e.nafl)}</td><td class="num">${sirFmt(e.siret)}</td></tr>`))}`;
+      `<tr><td>${esc(e.nom)}</td><td>${esc(e.adr)}</td><td>${esc(e.cplt)}</td><td>${esc(e.com)}</td><td>${esc(e.nafl)}</td><td class="num">${sirFmt(e.siret)}</td></tr>`))}
+    <h3>Positions approximatives (${nb(ap.length)})</h3>
+    <p class="note">Adresse sans numéro : le point est placé dans la rue ou le lieu-dit, sans savoir où exactement.
+      Sur la carte, ce sont les cercles évidés. Cliquez sur un nom pour le voir sur la carte, puis corrigez-le si besoin.</p>
+    ${t(["Nom","Adresse","Complément","Commune","Activité","SIRET"], ap.map(e =>
+      `<tr><td>${voir(e)}</td><td>${esc(e.adr)}</td><td>${esc(e.cplt)}</td><td>${esc(e.com)}</td><td>${esc(e.nafl)}</td><td class="num">${sirFmt(e.siret)}</td></tr>`))}`;
 }
 
 /* =========================================================================
@@ -763,6 +941,23 @@ function construireFiltres(){
     const s = ev.target.closest("[data-voir]")?.dataset.voir; if (!s) return;
     montrerVue("v-annuaire"); const e = parSiret.get(s); setTimeout(() => surligner(e, true), 100);
   });
+  // Vie des entreprises (BODACC)
+  [...new Set([...communes, ...B.map(b => b.com)])].sort((a,b) => a.localeCompare(b, "fr"))
+    .forEach(c => $("b-commune").insertAdjacentHTML("beforeend", `<option>${esc(c)}</option>`));
+  ["b-periode", "b-commune", "b-pp"].forEach(id => $(id).addEventListener("change", vieEntreprises));
+  $("b-texte").addEventListener("input", debounce(vieEntreprises, 200));
+  $("b-evts").addEventListener("change", ev => {
+    ev.target.checked ? evtsCoches.add(ev.target.value) : evtsCoches.delete(ev.target.value); vieEntreprises();
+  });
+  $("b-export").onclick = exportBodacc;
+  $("b-contenu").addEventListener("click", ev => {
+    const s = ev.target.closest("[data-voir]")?.dataset.voir; if (!s) return;
+    montrerVue("v-annuaire"); const e = parSiret.get(s); setTimeout(() => surligner(e, true), 100);
+  });
+  $("q-contenu").addEventListener("click", ev => {
+    const s = ev.target.closest("[data-voir]")?.dataset.voir; if (!s) return;
+    ev.stopPropagation(); montrerVue("v-annuaire"); const e = parSiret.get(s); setTimeout(() => surligner(e, true), 100);
+  });
 }
 
 function montrerVue(id){
@@ -770,6 +965,7 @@ function montrerVue(id){
   document.querySelectorAll(".vue").forEach(v => v.hidden = v.id !== id);
   if (id === "v-annuaire") setTimeout(() => map.invalidateSize(), 50);
   if (id === "v-nouveautes") nouveautes();
+  if (id === "v-bodacc") vieEntreprises();
   if (id === "v-qualite" && !$("q-contenu").innerHTML) qualite();
 }
 
