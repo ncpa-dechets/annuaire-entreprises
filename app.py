@@ -32,8 +32,7 @@ html, body, .stApp, .stApp p, .stApp label, .stApp input, .stApp textarea, .stAp
 /* les icônes de Streamlit gardent leur police (sinon leur nom s'affiche en toutes lettres) */
 [data-testid="stIconMaterial"] {font-family: "Material Symbols Rounded" !important;}
 .block-container {padding-top: 1.2rem; padding-bottom: 2rem; padding-left: 2rem; padding-right: 2rem; max-width: 100%;}
-/* la carte occupe la hauteur de la fenêtre */
-iframe[data-testid="stIFrame"] {height: calc(100vh - 190px) !important; min-height: 480px;}
+
 .entete {border-bottom: 3px solid #B91E27; padding-bottom: .55rem; margin-bottom: .9rem;}
 .entete .sur {font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: #B91E27; font-weight: 700;}
 .entete h1 {font-size: 1.7rem; margin: .1rem 0 .2rem; padding: 0; line-height: 1.15;}
@@ -270,10 +269,10 @@ def vue_annuaire():
         return
     page = html_carte(f, communes_gj, proportionnel, focus, interne=interne)
     if hasattr(st, "iframe"):
-        st.iframe(page, height=625)
+        st.iframe(page, height="content")      # la carte calcule elle-même sa hauteur
     else:                                   # anciennes versions de Streamlit
         import streamlit.components.v1 as components
-        components.html(page, height=625)
+        components.html(page, height=700)
     n_sans = len(f) - n_loc
     if n_sans:
         st.markdown(f"<p class='note'>{nombre(n_sans)} établissement(s) sans localisation précise : "
