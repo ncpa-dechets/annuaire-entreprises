@@ -76,7 +76,11 @@ la clé SIRENE reste protégée dans les secrets du dépôt.
   figurent que les entreprises inscrites au registre du commerce : pas les associations ni la
   plupart des artisans. Les annonces paraissent quelques jours à quelques semaines après l'acte,
   et une même procédure collective en produit plusieurs (ouverture, état des créances, clôture…).
-  Les commerçants en nom propre sont inclus, avec une case pour les masquer. Les rectificatifs
+  Les commerçants en nom propre sont inclus, avec une case pour les masquer ; les SCI sont
+  masquées par défaut. L'effectif (tranche Insee) vient des établissements du territoire si
+  l'entreprise est dans l'annuaire, sinon du dernier effectif connu de l'entreprise, même fermée
+  (API Recherche d'entreprises, gardé en cache dans `data/entreprises_cache.csv`, 90 jours).
+  Un guide en bas de l'onglet explique chaque type d'annonce. Les rectificatifs
   remplacent l'annonce d'origine, les annulations la retirent. Si le BODACC ne répond pas une nuit,
   les annonces de la veille sont conservées et l'annuaire est mis à jour normalement.
 - **Garde-fou** : si une nuit l'API renvoie moins de 80 % des établissements de la veille,

@@ -19,7 +19,10 @@ import time
 import pandas as pd
 import requests
 
-from localisation import mots
+import re
+
+from localisation import API_ANNUAIRE, CADENCE_ANNUAIRE, _get, ecrire_cache, executer, lire_cache, mots
+from referentiels import TRANCHES, type_structure
 
 API_BODACC = ("https://bodacc-datadila.opendatasoft.com/api/explore/v2.1/catalog/datasets/"
               "annonces-commerciales/exports/json")
@@ -29,6 +32,10 @@ RECOUVREMENT = 10            # jours redemandés à chaque passage (annonces pub
 PREMIER_PASSAGE = 730        # jours collectés la première fois
 COLONNES = ["id", "date", "famille", "evenement", "detail", "nom", "siren", "forme_juridique", "personne_physique",
             "activite", "commune", "code_commune", "code_postal", "type_avis", "url"]
+# Colonnes recalculées à chaque passage (l'annuaire et les effectifs évoluent)
+ENRICHIES = ["sci", "effectif", "effectif_min", "effectif_max", "annee_effectif", "source_effectif"]
+VALIDITE_ENTREPRISES = 90    # jours avant de redemander l'effectif d'une entreprise hors annuaire
+SRC_TERRITOIRE, SRC_ENTREPRISE = "Établissements du territoire", "Entreprise (dernier effectif connu)"
 
 CREATION, IMMAT, RADIATION, VENTE = "Création", "Immatriculation", "Radiation", "Vente de fonds"
 OUVERTURE, LIQUIDATION, PLAN = "Ouverture de sauvegarde ou de redressement", "Liquidation judiciaire", "Plan de redressement ou de sauvegarde"
@@ -139,6 +146,77 @@ def lire_annonce(r):
 
 
 # ---------------------------------------------------------------------------
+# SCI et effectifs
+# ---------------------------------------------------------------------------
+SCI_NOM = re.compile(r"^\s*S\.?\s?C\.?\s?I\b", re.I)
+SCI = "Société civile immobilière (SCI)"
+
+
+def fiche_entreprise(s, siren):
+    """Tranche d'effectif et nature juridique d'une entreprise, même fermée (API Recherche d'entreprises)."""
+    d = _get(s, API_ANNUAIRE, {"q": siren, "minimal": "true", "per_page": 1}, CADENCE_ANNUAIRE)
+    if d is None:
+        return None
+    for r in d.get("results") or []:
+        if r.get("siren") == siren:
+            return (str(r.get("tranche_effectif_salarie") or "NN"), str(r.get("annee_tranche_effectif_salarie") or ""),
+                    str(r.get("nature_juridique") or ""))
+    return "", "", ""
+
+
+def enrichir(tout, etablissements, data):
+    """Ajoute SCI et effectif à chaque annonce.
+    Entreprise de l'annuaire : effectif de ses établissements du territoire.
+    Sinon (souvent fermée, liquidée, radiée) : dernier effectif connu de l'entreprise entière."""
+    et = etablissements
+    locaux = {s: g for s, g in et.groupby("siren")}
+    premiers = [next((x for x in s.split(";") if x in locaux), s.split(";")[0]) for s in tout["siren"]]
+
+    fichier = data / "entreprises_cache.csv"
+    cache = lire_cache(fichier, ["tranche", "annee", "nature_juridique", "date"])
+    aujourd_hui = datetime.date.today()
+    taches = {s: (s,) for s in set(premiers) if s and s not in locaux and (
+        s not in cache or (aujourd_hui - datetime.date.fromisoformat(cache[s][3])).days > VALIDITE_ENTREPRISES)}
+    if taches:
+        log(f"   effectifs : {len(taches)} entreprises hors annuaire à interroger")
+    res, _ = executer(taches, fiche_entreprise, "effectifs (Recherche d'entreprises)", paralleles=4)
+    for k, v in res.items():
+        cache[k] = (*v, aujourd_hui.isoformat())
+    ecrire_cache(fichier, cache, ["tranche", "annee", "nature_juridique", "date"])
+
+    def entier(x):
+        try:
+            return int(float(x))
+        except (TypeError, ValueError):
+            return None
+
+    lignes = []
+    for siren, forme, nom in zip(premiers, tout["forme_juridique"], tout["nom"]):
+        sci = "civile immobili" in forme.lower() or bool(SCI_NOM.match(nom))
+        eff, emin, emax, annee, src = "Non renseigné", "", "", "", ""
+        if siren in locaux:
+            g = locaux[siren]
+            sci = sci or (g["categorie_juridique"].map(type_structure) == SCI).any()
+            mins = [m for m in map(entier, g["effectif_min"]) if m is not None]
+            maxs = [m for m in map(entier, g["effectif_max"]) if m is not None]
+            src = SRC_TERRITOIRE
+            if mins:
+                emin, emax = sum(mins), sum(maxs)
+                annee = max((a for a in g["annee_effectif"] if a), default="")
+                eff = g["tranche_libelle"].iloc[0] if len(g) == 1 else \
+                    (f"{emin} à {emax} salariés" if emin != emax else f"{emin} salarié{'s' if emin > 1 else ''}") + \
+                    f" ({len(g)} établissements)"
+        elif siren in cache and cache[siren][0]:
+            tranche, annee, nj, _ = cache[siren]
+            sci = sci or type_structure(nj) == SCI
+            lib, emin, emax = TRANCHES.get(tranche, TRANCHES["NN"])
+            emin, emax = ("" if emin is None else emin), ("" if emax is None else emax)
+            eff, src = lib, SRC_ENTREPRISE
+        lignes.append(("Oui" if sci else "Non", eff, emin, emax, annee, src if emin != "" else ""))
+    return pd.concat([tout.reset_index(drop=True), pd.DataFrame(lignes, columns=ENRICHIES)], axis=1)
+
+
+# ---------------------------------------------------------------------------
 # Collecte
 # ---------------------------------------------------------------------------
 def _cle_commune(nom):
@@ -161,7 +239,8 @@ def _exporter(where):
 def collecter_bodacc(gj, etablissements, data, jours_historique=730):
     """Met à jour data/bodacc.csv. `etablissements` : le tableau de l'annuaire (siren, siret, siege, commune…)."""
     fichier = data / "bodacc.csv"
-    ancien = pd.read_csv(fichier, dtype=str, keep_default_na=False) if fichier.exists() else pd.DataFrame(columns=COLONNES)
+    ancien = pd.read_csv(fichier, dtype=str, keep_default_na=False).reindex(columns=COLONNES, fill_value="") \
+        if fichier.exists() else pd.DataFrame(columns=COLONNES)
     aujourd_hui = datetime.date.today()
     depuis = (datetime.date.fromisoformat(ancien["date"].max()) - datetime.timedelta(days=RECOUVREMENT)) \
         if len(ancien) else aujourd_hui - datetime.timedelta(days=PREMIER_PASSAGE)
@@ -208,8 +287,11 @@ def collecter_bodacc(gj, etablissements, data, jours_historique=730):
     tout = tout[~tout["id"].isin(remplaces - {""})]
     limite = (aujourd_hui - datetime.timedelta(days=jours_historique)).isoformat()
     tout = tout[tout["date"] >= limite].sort_values(["date", "id"], ascending=False)
+    tout = enrichir(tout, etablissements, data)
     tout.to_csv(fichier, index=False, lineterminator="\n")
     log(f"   BODACC : {len(df)} annonces du territoire lues, {avant - len(tout)} retirées "
         f"(rectifiées, annulées ou trop anciennes), {len(tout)} conservées")
+    log(f"   BODACC : {int((tout['sci'] == 'Oui').sum())} annonces de SCI, "
+        f"{int((tout['source_effectif'] != '').sum())} avec un effectif connu")
     return {"date_max": tout["date"].max() if len(tout) else "", "nb_annonces": int(len(tout)),
             "par_evenement": {k: int(v) for k, v in tout["evenement"].value_counts().items()}}

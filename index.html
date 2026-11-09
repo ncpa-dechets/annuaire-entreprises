@@ -152,6 +152,13 @@ ol.etapes{line-height:1.6;max-width:820px}
 .pastille{display:inline-block;width:9px;height:9px;border-radius:50%;flex:none}
 td .evt{display:flex;align-items:center;gap:6px;white-space:nowrap}
 td.detail{font-size:12px;color:#444;max-width:420px}
+.guide{margin-top:34px;padding-top:6px;border-top:1px solid var(--bord)}
+.guide h4{font-size:14px;margin:16px 0 6px}
+.guide dl{margin:0}
+.guide dt{font-weight:700;display:flex;align-items:center;gap:7px;margin-top:10px}
+.guide dd{margin:3px 0 0 16px;line-height:1.45;color:#333;max-width:560px}
+.guide ul{line-height:1.5;max-width:900px;padding-left:20px}
+.guide li{margin-bottom:5px}
 #b-graphe svg{width:100%;max-width:900px;height:auto;display:block}
 #b-graphe .leg{display:flex;gap:16px;font-size:12.5px;color:var(--mut);margin:4px 0 8px}
 #b-graphe .leg span{display:inline-flex;align-items:center;gap:6px}
@@ -310,6 +317,7 @@ code{background:var(--fond);padding:1px 5px;border-radius:4px;font-size:12.5px}
           <option value="365" selected>12 derniers mois</option><option value="730">24 derniers mois</option></select></label>
         <label>Commune<select id="b-commune"><option value="">Toutes les communes</option></select></label>
         <label>Recherche<input id="b-texte" type="search" placeholder="Nom, activité, SIREN…"></label>
+        <label class="case"><input type="checkbox" id="b-sci" checked> Masquer les SCI</label>
         <label class="case"><input type="checkbox" id="b-pp"> Masquer les commerçants en nom propre</label>
         <button class="btn" id="b-export" style="margin-left:auto">Télécharger (Excel)</button>
       </div>
@@ -318,6 +326,78 @@ code{background:var(--fond);padding:1px 5px;border-radius:4px;font-size:12.5px}
       <h3>Mois par mois, sur 12 mois</h3>
       <div id="b-graphe"></div>
       <div id="b-contenu"></div>
+
+      <section class="guide" aria-labelledby="guide-titre">
+        <h3 id="guide-titre">Comprendre les annonces</h3>
+        <p class="note">Le BODACC publie les actes enregistrés par les greffes. Une annonce paraît en général quelques jours
+          à quelques semaines après l'acte ou le jugement. Les procédures confidentielles de prévention (mandat ad hoc,
+          conciliation) n'y figurent pas.</p>
+        <div class="deux">
+          <div>
+            <h4>Naissance, arrivée, reprise, départ</h4>
+            <dl>
+              <dt><span class="pastille" style="background:#2b9348"></span>Création</dt>
+              <dd>Inscription au registre du commerce d'une activité <b>nouvelle</b> : nouvelle société, nouveau
+                commerçant ou nouvel établissement créé de toutes pièces. C'est une naissance d'activité sur le territoire.</dd>
+              <dt><span class="pastille" style="background:#74c69d"></span>Immatriculation</dt>
+              <dd>Inscription d'une entreprise qui <b>existait déjà</b>, le plus souvent parce qu'elle transfère son siège
+                depuis le ressort d'un autre greffe. C'est une arrivée sur le territoire, pas une création.</dd>
+              <dt><span class="pastille" style="background:#3d84c6"></span>Vente de fonds</dt>
+              <dd>Cession d'un fonds de commerce, avec son prix : un commerce change de propriétaire. L'activité continue
+                en général avec un nouvel exploitant, l'acheteur. L'effectif indiqué est celui de la partie présente dans
+                l'annuaire (acheteur ou vendeur), sinon celui de l'acheteur.</dd>
+              <dt><span class="pastille" style="background:#6c757d"></span>Radiation</dt>
+              <dd>Retrait du registre du commerce. Ce n'est pas forcément un échec : souvent une fermeture volontaire
+                (départ en retraite, fin de projet, SCI qui a vendu son bien) après une <b>liquidation amiable</b>, décidée
+                par les associés alors que l'entreprise peut payer ses dettes. Ce peut aussi être un départ, quand le siège
+                est transféré dans le ressort d'un autre greffe, ou la dernière étape d'une liquidation judiciaire. Le motif
+                figure dans la colonne <i>Détail</i>.</dd>
+            </dl>
+          </div>
+          <div>
+            <h4>Entreprises en difficulté (procédures collectives)</h4>
+            <dl>
+              <dt><span class="pastille" style="background:#e8590c"></span>Sauvegarde</dt>
+              <dd>Demandée par le dirigeant <b>avant</b> la cessation des paiements, pour réorganiser l'entreprise sous la
+                protection du tribunal. L'activité continue et les dettes antérieures sont gelées.</dd>
+              <dt><span class="pastille" style="background:#e8590c"></span>Redressement judiciaire</dt>
+              <dd>L'entreprise est en <b>cessation des paiements</b> : elle ne peut plus payer ses dettes exigibles avec ses
+                disponibilités. L'activité continue pendant une période d'observation. Elle débouche sur un plan de
+                redressement, une cession à un repreneur ou une liquidation.</dd>
+              <dt><span class="pastille" style="background:#B91E27"></span>Liquidation judiciaire</dt>
+              <dd>Cessation des paiements, et redressement manifestement impossible. L'activité s'arrête (sauf poursuite
+                provisoire autorisée), les salariés sont licenciés et leurs salaires sont garantis par l'AGS. Les biens sont
+                vendus pour payer les créanciers. La <i>conversion en liquidation</i> signifie qu'un redressement ou une
+                sauvegarde a échoué.</dd>
+              <dt><span class="pastille" style="background:#d4a017"></span>Plan de redressement ou de sauvegarde</dt>
+              <dd>Le tribunal valide un plan qui étale les dettes, sur 10 ans au plus : l'entreprise est maintenue. C'est
+                plutôt une bonne nouvelle.</dd>
+              <dt><span class="pastille" style="background:#7b2cbf"></span>Clôture de procédure</dt>
+              <dd>Fin de la procédure. <i>Pour insuffisance d'actif</i> : la liquidation est terminée sans que toutes les
+                dettes aient été payées, et l'entreprise disparaît. <i>Pour extinction du passif</i> : les dettes ont été
+                réglées.</dd>
+              <dt><span class="pastille" style="background:#adb5bd"></span>Suivi de procédure</dt>
+              <dd>Étapes administratives d'une procédure déjà ouverte : dépôt de l'état des créances, listes de créances,
+                autres décisions. La situation de l'entreprise ne change pas. Ces annonces sont décochées par défaut.</dd>
+            </dl>
+          </div>
+        </div>
+        <h4>Bon à savoir</h4>
+        <ul>
+          <li>Une même procédure collective produit plusieurs annonces successives (ouverture, état des créances, plan ou
+            liquidation, clôture). Les salariés concernés ne sont comptés qu'une fois par entreprise.</li>
+          <li><b>Effectifs</b> : tranche déclarée à l'Insee, souvent avec un ou deux ans de retard. Si l'entreprise figure
+            dans l'annuaire, c'est l'effectif de ses établissements du territoire. Sinon (entreprise fermée, liquidée,
+            radiée…), c'est le dernier effectif connu de toute l'entreprise, qui peut inclure des salariés d'autres
+            sites. Les très petites entreprises et les entreprises récentes n'ont souvent pas d'effectif renseigné.</li>
+          <li><b>SCI</b> : sociétés civiles immobilières, qui détiennent un patrimoine sans activité économique sur place.
+            Elles sont masquées par défaut, comme dans l'annuaire.</li>
+          <li>Le BODACC ne concerne que les entreprises inscrites au registre du commerce : pas les associations, et
+            rarement les artisans et professions libérales. L'onglet <i>Nouveautés</i> (répertoire SIRENE) couvre toutes les
+            structures, mais sans donner la raison d'une apparition ou d'une disparition.</li>
+          <li>Un <i>rectificatif</i> remplace l'annonce qu'il corrige. Une annonce annulée est retirée.</li>
+        </ul>
+      </section>
     </div>
   </section>
 
@@ -745,7 +825,8 @@ function chargerBodacc(texte){
   if (!texte.trim()) return;
   B = Papa.parse(texte, {header:true, skipEmptyLines:true}).data.map(r => ({
     id:r.id, date:r.date, fam:r.famille, evt:r.evenement, detail:r.detail, nom:r.nom, sirens:(r.siren || "").split(";").filter(Boolean),
-    forme:r.forme_juridique, pp:r.personne_physique === "Oui", act:r.activite, com:r.commune, cp:r.code_postal, type:r.type_avis, url:r.url}));
+    forme:r.forme_juridique, pp:r.personne_physique === "Oui", act:r.activite, com:r.commune, cp:r.code_postal, type:r.type_avis, url:r.url,
+    sci:r.sci === "Oui", eff:r.effectif || "", emin:num(r.effectif_min), emax:num(r.effectif_max), aeff:r.annee_effectif || "", srcEff:r.source_effectif || ""}));
   B.forEach(b => { b.q = norm([b.nom, b.act, b.detail, b.sirens.join(" ")].join(" "));
     b.sirens.forEach(s => { if (!bodaccParSiren.has(s)) bodaccParSiren.set(s, []); bodaccParSiren.get(s).push(b); }); });
   // Établissement à montrer sur la carte pour un SIREN : le siège s'il est sur le territoire, sinon le premier
@@ -762,10 +843,14 @@ function ligneBodacc(e){
 
 function filtresBodacc(){
   const d = new Date(); d.setDate(d.getDate() - Number($("b-periode").value));
-  return {debut:d.toISOString().slice(0,10), com:$("b-commune").value, mots:norm($("b-texte").value).split(/\s+/).filter(Boolean), sansPP:$("b-pp").checked};
+  return {debut:d.toISOString().slice(0,10), com:$("b-commune").value, mots:norm($("b-texte").value).split(/\s+/).filter(Boolean),
+    sansPP:$("b-pp").checked, sansSCI:$("b-sci").checked};
 }
 const passeBodacc = (b, f, avecPeriode = true) => (!avecPeriode || b.date >= f.debut) && (!f.com || b.com === f.com)
-  && (!f.sansPP || !b.pp) && f.mots.every(m => b.q.includes(m));
+  && (!f.sansPP || !b.pp) && (!f.sansSCI || !b.sci) && f.mots.every(m => b.q.includes(m));
+// Effectif : « 3 à 5 salariés » + année et origine (établissements locaux, ou entreprise entière si hors annuaire)
+const effBodacc = b => !b.srcEff ? `<span style="color:var(--mut)">${esc(b.eff || "Non renseigné")}</span>`
+  : `${esc(b.eff)}<br><span class="sansloc" style="margin:0">${b.srcEff.startsWith("Entreprise") ? "toute l'entreprise" : "sur le territoire"}${b.aeff ? ", " + esc(b.aeff) : ""}</span>`;
 
 function vieEntreprises(){
   if (!B.length){
@@ -783,9 +868,14 @@ function vieEntreprises(){
     <span class="pastille" style="background:${c}"></span>${esc(n)} <span class="n">${nb(cpt[n] || 0)}</span></label>`).join("");
 
   const g = k => periode.filter(b => EVT[b.evt]?.g === k).length;
+  // Salariés des entreprises en procédure : une seule fois par entreprise (une procédure donne plusieurs annonces)
+  const procs = new Map(); periode.filter(b => EVT[b.evt]?.g === "proc").forEach(b => procs.set(b.sirens[0] || b.id, b));
+  const connus = [...procs.values()].filter(b => b.emin !== null);
+  const sMin = connus.reduce((s, b) => s + b.emin, 0), sMax = connus.reduce((s, b) => s + b.emax, 0);
   $("b-chiffres").innerHTML = `<div><b>${nb(g("crea"))}</b><span>créations et immatriculations</span></div>
     <div><b>${nb(g("rad"))}</b><span>radiations</span></div>
     <div><b>${nb(g("proc"))}</b><span>procédures ouvertes (sauvegarde, redressement, liquidation)</span></div>
+    <div><b>${sMin === sMax ? nb(sMin) : `${nb(sMin)} à ${nb(sMax)}`}</b><span>salariés concernés par ces procédures<br>(effectif connu pour ${nb(connus.length)} entreprises sur ${nb(procs.size)})</span></div>
     <div><b>${nb(g("vente"))}</b><span>ventes de fonds</span></div>`;
 
   grapheBodacc(f);
@@ -793,11 +883,11 @@ function vieEntreprises(){
   const nomLien = b => { const e = b.sirens.map(s => etabParSiren.get(s)).find(Boolean);
     return e ? `<a class="lien" data-voir="${esc(e.siret)}" title="Voir sur la carte">${esc(b.nom)}</a>` : esc(b.nom); };
   $("b-contenu").innerHTML = lignes.length ? `<div class="cadre" style="max-height:600px"><table><thead><tr><th>Date</th><th>Événement</th><th>Nom</th>
-    <th>Commune</th><th>Activité</th><th>Détail</th><th></th></tr></thead><tbody>` + lignes.map(b => `<tr>
+    <th>Commune</th><th>Effectif</th><th>Activité</th><th>Détail</th><th></th></tr></thead><tbody>` + lignes.map(b => `<tr>
       <td class="num">${dateFr(b.date)}</td>
       <td><span class="evt"><span class="pastille" style="background:${EVT[b.evt]?.c || "#999"}"></span>${esc(b.evt)}</span></td>
       <td>${nomLien(b)}${b.pp ? ` <span class="sansloc">(en nom propre)</span>` : ""}${b.type && b.type !== "Avis initial" ? ` <span class="sansloc">(${esc(b.type.toLowerCase())})</span>` : ""}</td>
-      <td>${esc(b.com)}</td><td>${esc(b.act)}</td><td class="detail">${esc(b.detail)}</td>
+      <td>${esc(b.com)}</td><td class="num">${effBodacc(b)}</td><td>${esc(b.act)}</td><td class="detail">${esc(b.detail)}</td>
       <td><a class="lien" href="${esc(b.url)}" target="_blank" rel="noopener">Annonce</a></td></tr>`).join("") + `</tbody></table></div>`
     : `<p class="note">Aucune annonce ne correspond à ces critères.</p>`;
 }
@@ -829,9 +919,11 @@ function grapheBodacc(f){
 
 function exportBodacc(){
   const l = vieEntreprises.lignes; if (!l || !l.length){ toast("Aucune annonce à exporter"); return; }
-  const lignes = l.map(b => ({...b, siren:b.sirens.join(", "), ppTxt:b.pp ? "Oui" : "Non"}));
+  const lignes = l.map(b => ({...b, siren:b.sirens.join(", "), ppTxt:b.pp ? "Oui" : "Non", sciTxt:b.sci ? "Oui" : "Non"}));
   const cols = [["date","Date de parution"],["evt","Événement"],["nom","Nom"],["siren","SIREN"],["forme","Forme juridique"],
-    ["ppTxt","Commerçant en nom propre"],["act","Activité"],["com","Commune"],["cp","Code postal"],["detail","Détail"],["type","Type d'avis"],["url","Annonce"]];
+    ["sciTxt","SCI"],["ppTxt","Commerçant en nom propre"],["act","Activité"],["com","Commune"],["cp","Code postal"],
+    ["eff","Effectif (tranche Insee)"],["aeff","Année de l'effectif"],["srcEff","Origine de l'effectif"],
+    ["detail","Détail"],["type","Type d'avis"],["url","Annonce"]];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, feuille(lignes, cols), "Annonces BODACC");
   XLSX.writeFile(wb, `bodacc_ncpa_${jour()}.xlsx`);
@@ -944,7 +1036,7 @@ function construireFiltres(){
   // Vie des entreprises (BODACC)
   [...new Set([...communes, ...B.map(b => b.com)])].sort((a,b) => a.localeCompare(b, "fr"))
     .forEach(c => $("b-commune").insertAdjacentHTML("beforeend", `<option>${esc(c)}</option>`));
-  ["b-periode", "b-commune", "b-pp"].forEach(id => $(id).addEventListener("change", vieEntreprises));
+  ["b-periode", "b-commune", "b-pp", "b-sci"].forEach(id => $(id).addEventListener("change", vieEntreprises));
   $("b-texte").addEventListener("input", debounce(vieEntreprises, 200));
   $("b-evts").addEventListener("change", ev => {
     ev.target.checked ? evtsCoches.add(ev.target.value) : evtsCoches.delete(ev.target.value); vieEntreprises();
