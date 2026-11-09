@@ -1,5 +1,5 @@
 {
- "date_maj": "2026-11-09T21:50+01:00",
+ "date_maj": "2026-11-09T22:16+01:00",
  "epci": "200065563",
  "nb_communes": 38,
  "nb_etablissements": 5004,
@@ -38,5 +38,18 @@
   "effectifs": 5870,
   "etablissements": 879,
   "source_maj": "2026-05-29"
+ },
+ "tourisme": {
+  "hebergements": 49,
+  "capacite": 15306
+ },
+ "france_travail": {
+  "bmo": {
+   "annee": 2026,
+   "bassins": [
+    "CAEN",
+    "LISIEUX"
+   ]
+  }
  }
 }
