@@ -12,6 +12,8 @@ Contenu de stats.json (tableaux compacts, une ligne par croisement) :
   flux  : [année, code_commune, section, indépendant (0/1), créations, fermetures]   depuis ANNEE_DEBUT
   flux_12m : [code_commune, section, indépendant (0/1), créations, fermetures]       12 derniers mois
   ages  : [code_commune, classe d'âge (indice de CLASSES_AGE), indépendant (0/1), établissements actifs]
+  activites : [code_commune, code NAF, structures actives, entrepreneurs individuels actifs]
+  proximite : catégories de commerces et services de proximité (référentiels.PROXIMITE)
 
 À la main, sans clé SIRENE (version provisoire, d'après l'annuaire déjà collecté : ni entrepreneurs
 individuels ni fermetures) :  python statistiques.py
@@ -21,7 +23,7 @@ import json
 from collections import defaultdict
 from pathlib import Path
 
-from referentiels import TRANCHES, section_de_division, type_structure
+from referentiels import PROXIMITE, TRANCHES, section_de_division, type_structure
 
 FAMILLE_EI = "Entrepreneur individuel"
 FAMILLES = ["Société commerciale", FAMILLE_EI, "Société civile (hors SCI)", "Société civile immobilière (SCI)",
@@ -64,6 +66,7 @@ def resumer(e):
         "siret": _v(e.get("siret")),
         "commune": _v((e.get("adresseEtablissement") or {}).get("codeCommuneEtablissement")),
         "section": section,
+        "naf": naf if nomenc == "NAFRev2" else "",
         "famille": FAMILLE_EI if cj == "1000" else type_structure(cj),
         "creation": _v(e.get("dateCreationEtablissement"))[:10],
         "fermeture": "" if actif else _v(p.get("dateDebut"))[:10],
@@ -97,6 +100,7 @@ def calculer(resumes, communes, jour, complet=True):
     flux = defaultdict(lambda: [0, 0])
     flux12 = defaultdict(lambda: [0, 0])
     ages = defaultdict(int)
+    activites = defaultdict(lambda: [0, 0])
     vus = set()
     for r in resumes:
         if r["commune"] not in codes or (r["siret"] and r["siret"] in vus):
@@ -110,6 +114,8 @@ def calculer(resumes, communes, jour, complet=True):
             if r["emin"] is not None:
                 s[2] += r["emin"]
                 s[3] += r["emax"]
+            if r.get("naf"):
+                activites[(com, r["naf"])][ei] += 1
             k = _classe_age(r["creation"], aujourdhui)
             if k is not None:
                 ages[(com, k, ei)] += 1
@@ -131,6 +137,8 @@ def calculer(resumes, communes, jour, complet=True):
         "flux": [list(k) + v for k, v in sorted(flux.items())],
         "flux_12m": [list(k) + v for k, v in sorted(flux12.items())],
         "ages": [list(k) + [v] for k, v in sorted(ages.items())],
+        "activites": [list(k) + v for k, v in sorted(activites.items())],
+        "proximite": [{"cle": c, "libelle": lib, "famille": f, "codes": codes} for c, lib, f, codes in PROXIMITE],
     }
 
 
@@ -165,7 +173,7 @@ def provisoire(dossier):
     def entier(x):
         return int(float(x)) if x not in ("", None) else None
     resumes = [{
-        "siret": r.siret, "commune": r.code_commune, "section": r.section or "Z", "famille": r.type_structure,
+        "siret": r.siret, "commune": r.code_commune, "section": r.section or "Z", "naf": r.naf if r.nomenclature_naf == "NAFRev2" else "", "famille": r.type_structure,
         "creation": r.date_creation[:10], "fermeture": "", "actif": True,
         "employeur": r.employeur == "Oui" or (entier(r.effectif_min) or 0) >= 1,
         "emin": entier(r.effectif_min), "emax": entier(r.effectif_max),

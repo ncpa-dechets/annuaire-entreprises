@@ -3,6 +3,8 @@ import {$, esc, nb, SECTIONS, COULEURS, stats, feuille, jour} from "./commun.js"
 import {chiffres, listeCommunes, secteurDominant} from "./stats.js";
 import {pct, signe} from "./graphes.js";
 import {aEmploi, emploiDe} from "./emploi.js";
+import {encartProximite} from "./themes/commerces.js";
+import {encartTourisme} from "./themes/tourisme.js";
 import {avertissement, chiffresCles, blocSecteurs, blocFlux, blocFamilles, blocAges, tableEmployeurs, tableAnnonces, pied} from "./blocs.js";
 
 let tri = {col:"n", sens:-1};
@@ -81,6 +83,8 @@ function fiche(code){
     </div>
     <div class="bloc"><h3>Principaux employeurs</h3>${tableEmployeurs(code, 10)}
       <p class="no-print" style="margin:10px 0 0"><a class="lien" data-annuaire-commune="${esc(nom)}">Voir tous les établissements de ${esc(nom)} dans l'annuaire →</a></p></div>
+    ${encartProximite(code)}
+    ${encartTourisme(code)}
     <div class="bloc"><h3>Dernières annonces légales (BODACC)</h3>${tableAnnonces(code, 8)}</div>
     ${pied()}`;
   $("co-choix").onchange = ev => { location.hash = `#/communes/${ev.target.value}`; };

@@ -148,8 +148,17 @@ function surligner(e, centrer){
 /* =========================================================================
    Filtres
    ========================================================================= */
+/* Filtre par codes d'activité, posé par un lien d'un autre onglet (ex. « Pharmacie ») et affiché en tête des filtres. */
+function activites(codes, libelle){
+  etat.nafs = codes;
+  const b = $("f-naf"); b.hidden = !codes;
+  if (codes){ b.innerHTML = `<span>Activité : <b>${esc(libelle || [...codes].join(", "))}</b></span><button type="button" class="btn">Retirer</button>`;
+    b.querySelector("button").onclick = () => { activites(null); appliquer(); }; }
+}
+
 function passe(e, sauf){
   const f = etat.f;
+  if (etat.nafs && !etat.nafs.has(e.naf)) return false;
   if (f.mots.length && !f.mots.every(m => e.q.includes(m))) return false;
   if (f.communes.size && !f.communes.has(e.com)) return false;
   if (sauf !== "sec" && !secteursCoches.has(e.sec)) return false;
@@ -274,6 +283,7 @@ function construireFiltres(){
     styliser(); appliquer();
   }));
   $("reinit").onclick = () => {
+    activites(null);
     $("f-texte").value = ""; msCommunes.vider(); msDivisions.vider(); $("f-effectif").value = "";
     $("f-employeurs").checked = $("f-sieges").checked = false; $("f-creation").value = "";
     typesCoches = new Set(TYPES_DEFAUT);
@@ -313,8 +323,9 @@ export function redimensionner(){ setTimeout(() => map.invalidateSize(), 50); }
 /* Montre un établissement sur la carte (liens des autres onglets). */
 export function voir(siret){ const e = parSiret.get(siret); if (e) setTimeout(() => surligner(e, true), 120); }
 /* Annuaire limité à une commune ou à un secteur (liens des fiches commune et de l'onglet Secteurs). */
-export function filtrer({commune, secteur}){
+export function filtrer({commune, secteur, nafs, libelle}){
   $("reinit").click();
+  if (nafs?.length) activites(new Set(nafs), libelle);
   if (commune) msCommunes.choisir([commune]);
   if (secteur) document.querySelectorAll("#f-secteurs input").forEach(i => {
     i.checked = i.value === secteur; i.checked ? secteursCoches.add(i.value) : secteursCoches.delete(i.value); });

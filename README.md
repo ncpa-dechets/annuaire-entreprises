@@ -15,10 +15,12 @@ collecte.py ─► API SIRENE + IGN + Annuaire         index.html ─► lit dat
 
 | Fichier | Rôle |
 |---|---|
-| `index.html`, `css/`, `js/` | La page. Un fichier par onglet dans `js/` : `synthese.js`, `communes.js`, `annuaire.js`, `vie.js`, `qualite.js` ; `secteurs.js`, `dynamique.js` ; `commun.js` (données et outils), `stats.js`, `emploi.js`, `blocs.js` et `graphes.js` (chiffres et graphiques), `app.js` (navigation) |
+| `index.html`, `css/`, `js/` | La page. Un fichier par onglet dans `js/` : `synthese.js`, `communes.js`, `annuaire.js`, `vie.js`, `qualite.js` ; `secteurs.js`, `dynamique.js`, `themes/` (commerces, tourisme, emploi) ; `commun.js` (données et outils), `stats.js`, `emploi.js`, `blocs.js` et `graphes.js` (chiffres et graphiques), `app.js` (navigation) |
 | `collecte.py`, `referentiels.py` | La collecte quotidienne (API SIRENE, journal) |
 | `statistiques.py` | Les comptages du tableau de bord (`data/stats.json`) |
 | `urssaf.py` | L'emploi salarié privé par commune et par activité (`data/emploi_urssaf.json`) |
+| `tourisme.py` | Les hébergements touristiques classés (`data/tourisme.json`) |
+| `france_travail.py` | Les offres d'emploi en cours (`data/offres.json`) et l'enquête Besoins en main-d'œuvre (`data/bmo.json`) |
 | `localisation.py` | Le choix de la position de chaque établissement (voir plus bas) |
 | `bodacc.py` | Les annonces du BODACC du territoire (onglet *Vie des entreprises*) |
 | `.github/workflows/maj_quotidienne.yml` | La planification nocturne |
@@ -38,6 +40,13 @@ collecte.py ─► API SIRENE + IGN + Annuaire         index.html ─► lit dat
 - **Dynamique** : créations et fermetures par an et par secteur, taux de création, âge des
   établissements ; puis les annonces BODACC et les mouvements de l'annuaire (ancien onglet
   *Vie des entreprises*).
+- **Thèmes** : trois pages.
+  - *Commerces et services* : pour une vingtaine de commerces et services de proximité, les communes
+    qui en ont, celles qui n'en ont pas et la commune la plus proche qui en dispose. La liste des
+    catégories et de leurs codes NAF est dans `referentiels.py` (`PROXIMITE`) : on peut en ajouter.
+  - *Tourisme* : hébergements classés (Atout France), hébergements déclarés (SIRENE) et emploi
+    touristique (Urssaf).
+  - *Emploi et recrutement* : offres en cours (France Travail) et métiers recherchés (enquête BMO).
 - **Annuaire**, **Méthode et qualité** : comme avant.
 
 Le bouton « Imprimer ou enregistrer en PDF » de la Synthèse et des fiches produit un portrait A4.
@@ -52,6 +61,20 @@ L'emploi (`urssaf.py`) vient de l'open data de l'Urssaf, sans clé : effectifs s
 privé au 31 décembre, hors fonction publique, agriculture et non-salariés. Le jeu n'étant mis à
 jour qu'une fois par an, il n'est retéléchargé que tous les 30 jours (`python urssaf.py` à la main,
 après avoir supprimé `data/emploi_urssaf.json` pour forcer).
+
+## Offres d'emploi : identifiants France Travail
+
+Les offres viennent de l'API « Offres d'emploi v2 » de [francetravail.io](https://francetravail.io).
+Une application y a deux valeurs : un **identifiant client** et une **clé secrète**.
+
+1. Sur francetravail.io, vérifier que l'application est abonnée à l'API *Offres d'emploi v2*.
+2. Dans le dépôt : *Settings › Secrets and variables › Actions › New repository secret*, deux fois :
+   `FT_CLIENT_ID` (l'identifiant client) et `FT_CLIENT_SECRET` (la clé secrète).
+3. *Actions › Mise à jour quotidienne › Run workflow*. Le journal indique le nombre d'offres trouvées.
+
+Sans ces secrets, la collecte fonctionne normalement et la page signale que les offres ne sont
+pas disponibles. L'enquête Besoins en main-d'œuvre ne demande aucune clé ; ses bassins d'emploi
+se règlent par la variable `BMO_BASSINS` de `france_travail.py` (par défaut Caen et Lisieux).
 
 ## Passer de la version Streamlit à cette version
 

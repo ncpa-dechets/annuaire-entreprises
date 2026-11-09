@@ -285,3 +285,31 @@ table.compar tr.sel td{background:#fbecec}
 .detail-sec .cadre{background:var(--blanc)}
 @media print{ #v-bodacc .inner > :not(#dy-contenu){display:none} .detail-sec{background:none} }
 #co-contenu table.compar td:first-child{white-space:nowrap}
+
+/* ---- Thèmes ---- */
+.sous-menu{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px;padding-bottom:10px;border-bottom:1px solid var(--bord)}
+.sous-menu a{padding:6px 12px;border:1px solid var(--bord);border-radius:16px;text-decoration:none;color:var(--mut);font-weight:600;font-size:13px}
+.sous-menu a:hover{color:var(--txt);border-color:var(--mut)}
+.sous-menu a[aria-current]{color:var(--rouge);border-color:var(--rouge);background:#fbecec}
+.carte-com{height:380px;background:var(--blanc);border:1px solid var(--bord);border-radius:8px}
+.carte-com .leaflet-interactive{cursor:pointer}
+table th.d,table td.d{text-align:right}
+.grille table{font-size:12.5px}
+.grille th.fam{text-align:center;border-left:2px solid var(--bord);font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut)}
+.grille th.vert{vertical-align:bottom;padding:6px 2px;text-align:center;min-width:30px}
+.grille th.vert span{writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;font-weight:600;max-height:190px;overflow:hidden;text-overflow:ellipsis}
+.grille td.c{text-align:center;padding:5px 2px;font-variant-numeric:tabular-nums}
+.grille td.zero{background:#fbecec;color:#a8a29a}
+.grille .deb{border-left:2px solid var(--bord)}
+.grille tbody tr{cursor:default}
+.grille td:first-child,.grille thead tr:first-child th:first-child{position:sticky;left:0;background:var(--blanc);white-space:nowrap;z-index:2}
+.grille thead tr:first-child th:first-child{background:var(--fond);z-index:3}
+.grille tbody tr:hover td:first-child{background:var(--vert-c)}
+.grille tfoot td{background:var(--fond);border-top:2px solid var(--bord)}
+.puces{display:flex;flex-wrap:wrap;gap:6px}
+.puces span{border:1px solid var(--bord);border-radius:14px;padding:3px 10px;font-size:13px;background:var(--blanc)}
+.puces.abs span{background:#fbecec;border-color:#f0c9cc}
+#f-naf{margin:0 0 10px;font-size:13px;justify-content:space-between}
+@media (max-width:820px){ .carte-com{height:300px} }
+@media print{ .carte-com{height:300px} .grille table{font-size:10px} }
+@media (max-width:1180px){ .maj{display:none} }

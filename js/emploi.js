@@ -61,3 +61,20 @@ export function specificite(local, sec){
   const pr = r && r.eff[i] ? (r.sections[sec]?.[i] || 0) / r.eff[i] : null;
   return pl == null || !pr ? null : pl / pr;
 }
+
+/* Emploi d'un groupe de divisions NAF (ex. le tourisme) pour une commune ou le territoire : {eff, etab} par année. */
+export function emploiDivisions(code, divisions){
+  const r = {eff:zeros(), etab:zeros()};
+  if (!aEmploi()) return r;
+  for (const [com, , div, , , etab, eff] of emploi.lignes){
+    if ((code && com !== code) || !divisions.includes(div)) continue;
+    ajouter(r.eff, eff); ajouter(r.etab, etab);
+  }
+  return r;
+}
+/* Même groupe de divisions dans le département de référence : effectifs par année. */
+export function referenceDivisions(divisions){
+  const eff = zeros();
+  divisions.forEach(d => { const v = emploi?.reference?.divisions[d]; if (v) ajouter(eff, v.eff); });
+  return eff;
+}

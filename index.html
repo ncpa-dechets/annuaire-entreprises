@@ -25,6 +25,7 @@
     <a role="tab" aria-selected="false" href="#/communes" data-vue="v-communes">Communes</a>
     <a role="tab" aria-selected="false" href="#/secteurs" data-vue="v-secteurs">Secteurs</a>
     <a role="tab" aria-selected="false" href="#/dynamique" data-vue="v-bodacc">Dynamique</a>
+    <a role="tab" aria-selected="false" href="#/themes" data-vue="v-themes">Thèmes</a>
     <a role="tab" aria-selected="false" href="#/annuaire" data-vue="v-annuaire">Annuaire</a>
     <a role="tab" aria-selected="false" href="#/methode" data-vue="v-qualite">Méthode et qualité</a>
   </nav>
@@ -42,6 +43,11 @@
     <div class="inner" id="co-contenu"></div>
   </section>
 
+  <!-- ===================== THÈMES ===================== -->
+  <section id="v-themes" class="vue page" hidden>
+    <div class="inner"><nav class="sous-menu no-print" id="th-menu" aria-label="Thèmes"></nav><div id="th-contenu"></div></div>
+  </section>
+
   <!-- ===================== SECTEURS ===================== -->
   <section id="v-secteurs" class="vue page" hidden>
     <div class="inner" id="se-contenu"></div>
@@ -57,6 +63,7 @@
         <div><b id="k-com">–</b><span>communes</span></div>
       </div>
 
+      <div id="f-naf" class="bandeau" hidden></div>
       <h2>Rechercher</h2>
       <input id="f-texte" class="champ" type="search" placeholder="Nom, activité, adresse, SIRET…" aria-label="Rechercher">
 
@@ -250,7 +257,7 @@
   </section>
 </main>
 
-<div id="chargement">Chargement de l'annuaire…</div>
+<div id="chargement">Chargement des données…</div>
 <div id="toast" role="status" hidden></div>
 
 <script type="module" src="js/app.js"></script>

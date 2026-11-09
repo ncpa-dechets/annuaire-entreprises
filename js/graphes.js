@@ -81,7 +81,7 @@ export function activerBulles(){
 }
 
 /* Courbes par année. series : [{nom, c, v:[…]}]. L'axe ne part pas de zéro : ses bornes sont affichées. */
-export function courbes(etiquettes, series, {titre = "", fmt = nb} = {}){
+export function courbes(etiquettes, series, {titre = "", fmt = v => nb(Math.round(v))} = {}){
   const vals = series.flatMap(s => s.v).filter(v => v != null && isFinite(v));
   if (!vals.length) return "";
   let min = Math.min(...vals), max = Math.max(...vals);

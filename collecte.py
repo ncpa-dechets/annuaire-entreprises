@@ -36,6 +36,8 @@ import requests
 from bodacc import collecter_bodacc
 from localisation import localiser
 from urssaf import collecter_urssaf
+from tourisme import collecter_tourisme
+from france_travail import collecter_bmo, collecter_offres
 from statistiques import calculer, communes_du_geojson, ecrire as ecrire_stats, periode_courante, resumer
 from referentiels import appliquer_corrections, DIVISIONS, SECTIONS, TRANCHES, TYPES_VOIE, section_de_division, type_structure
 
@@ -330,13 +332,30 @@ def main():
         log(f"   ⚠ emploi Urssaf non mis à jour aujourd'hui ({type(e).__name__} : {e}), fichier précédent conservé")
         urssaf = ancien_meta.get("urssaf", {})
 
+    log("7. Hébergements touristiques classés (Atout France)")
+    try:
+        tourisme = collecter_tourisme(gj, DATA, log)
+    except Exception as e:
+        log(f"   ⚠ tourisme non mis à jour aujourd'hui ({type(e).__name__} : {e}), fichier précédent conservé")
+        tourisme = ancien_meta.get("tourisme", {})
+
+    log("8. Emploi et recrutement (France Travail)")
+    emploi = dict(ancien_meta.get("france_travail", {}))
+    for cle, action in (("offres", lambda: collecter_offres([c for c, _ in communes], DATA, log)), ("bmo", lambda: collecter_bmo(DATA, log))):
+        try:
+            resultat = action()
+            if resultat:
+                emploi[cle] = resultat
+        except Exception as e:
+            log(f"   ⚠ {cle} non mis à jour aujourd'hui ({type(e).__name__} : {e}), fichier précédent conservé")
+
     meta = {
         "date_maj": maintenant.isoformat(timespec="minutes"), "epci": EPCI, "nb_communes": len(communes),
         "nb_etablissements": int(len(df)), "nb_entrepreneurs_individuels_exclus": int(exclus_ei),
         "localisation": {k: int(v) for k, v in df["localisation"].value_counts().items()},
         "precision": {(k or "Non localisé"): int(v) for k, v in df["precision"].value_counts().items()},
         "duree_secondes": round(time.time() - debut), "source": "Insee, répertoire SIRENE (API Sirene 3.11)",
-        "bodacc": bodacc, "urssaf": urssaf,
+        "bodacc": bodacc, "urssaf": urssaf, "tourisme": tourisme, "france_travail": emploi,
     }
     with open(DATA / "meta.json", "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=1)

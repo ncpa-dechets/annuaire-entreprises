@@ -83,3 +83,23 @@ export function flux12ParSecteur(code = ""){
   }
   return r;
 }
+
+/* Établissements actifs par code d'activité (table « activites » de stats.json), entrepreneurs individuels compris. */
+let idxAct = null;
+function indexActivites(){
+  if (idxAct) return idxAct;
+  idxAct = new Map();
+  for (const [com, naf, s, ei] of stats?.activites || []){
+    let m = idxAct.get(com); if (!m) idxAct.set(com, m = new Map());
+    m.set(naf, [s, ei]);
+  }
+  return idxAct;
+}
+export const aActivites = () => !!stats?.activites?.length;
+/* Nombre d'établissements d'une commune (ou du territoire, code vide) pour une liste de codes NAF : {n, ei}. */
+export function compter(code, codes){
+  let n = 0, ei = 0;
+  const lire = m => codes.forEach(c => { const v = m.get(c); if (v){ n += v[0] + v[1]; ei += v[1]; } });
+  if (code){ const m = indexActivites().get(code); if (m) lire(m); } else indexActivites().forEach(lire);
+  return {n, ei};
+}

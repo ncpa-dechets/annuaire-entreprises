@@ -7,9 +7,10 @@ import {synthese} from "./synthese.js";
 import {communes} from "./communes.js";
 import {secteurs} from "./secteurs.js";
 import {dynamique} from "./dynamique.js";
+import {themes} from "./themes/index.js";
 import {activerBulles} from "./graphes.js";
 
-const ROUTES = {synthese:"v-synthese", communes:"v-communes", secteurs:"v-secteurs", dynamique:"v-bodacc", vie:"v-bodacc", annuaire:"v-annuaire", methode:"v-qualite"};
+const ROUTES = {synthese:"v-synthese", communes:"v-communes", secteurs:"v-secteurs", dynamique:"v-bodacc", vie:"v-bodacc", themes:"v-themes", annuaire:"v-annuaire", methode:"v-qualite"};
 let courante = "", annuairePret = false;
 
 function montrer(){
@@ -25,6 +26,7 @@ function montrer(){
   if (route === "communes") communes(param);
   if (route === "annuaire"){ if (annuairePret) redimensionner(); else { initAnnuaire(); annuairePret = true; } }
   if (route === "secteurs") secteurs();
+  if (route === "themes") themes(param);
   if (route === "dynamique" || route === "vie"){ dynamique(); vieEntreprises(); }
   if (route === "methode" && !$("q-contenu").innerHTML) qualite();
 }
@@ -40,10 +42,11 @@ function demarrer(){
   activerBulles();
   window.addEventListener("hashchange", montrer);
   document.addEventListener("click", ev => {
-    const el = ev.target.closest?.("[data-voir], [data-annuaire-commune], [data-annuaire-secteur], [data-imprimer]");
+    const el = ev.target.closest?.("[data-voir], [data-annuaire-commune], [data-annuaire-secteur], [data-annuaire-nafs], [data-imprimer]");
     if (!el) return;
     if (el.dataset.voir){ aller("annuaire"); voir(el.dataset.voir); }
-    else if (el.dataset.annuaireCommune || el.dataset.annuaireSecteur){ aller("annuaire"); filtrer({commune:el.dataset.annuaireCommune, secteur:el.dataset.annuaireSecteur}); }
+    else if (el.dataset.annuaireCommune || el.dataset.annuaireSecteur || el.dataset.annuaireNafs){ aller("annuaire");
+      filtrer({commune:el.dataset.annuaireCommune, secteur:el.dataset.annuaireSecteur, nafs:el.dataset.annuaireNafs?.split(","), libelle:el.dataset.annuaireLibelle}); }
     else window.print();
   });
   montrer();

@@ -30,6 +30,14 @@ export function qualite(){
         en retard d'un à deux ans.</li>
       <li><b>Procédures collectives</b> : sauvegardes, redressements et liquidations publiés au BODACC, qui ne couvre que les entreprises
         inscrites au registre du commerce.</li>
+      <li><b>Commerces et services de proximité</b> : établissements actifs comptés d'après leur code d'activité SIRENE, entrepreneurs
+        individuels compris. Une absence est à vérifier sur le terrain : le répertoire recense des établissements déclarés, pas des
+        boutiques ouvertes, et un code d'activité peut être mal renseigné. Les distances sont mesurées entre centres de communes.</li>
+      <li><b>Tourisme</b> : hébergements classés en étoiles du registre d'Atout France (les hébergements non classés et les locations
+        entre particuliers n'y figurent pas) ; l'emploi touristique regroupe l'hébergement, la restauration, les agences de voyage et
+        les loisirs, au 31 décembre, donc hors pic de l'été.</li>
+      <li><b>Offres d'emploi</b> : offres diffusées par France Travail dont le lieu de travail est une commune du territoire.
+        <b>Besoins en main-d'œuvre</b> : enquête annuelle de France Travail auprès des employeurs, publiée par bassin d'emploi.</li>
       <li><b>Habitants</b> : population municipale de l'Insee.</li>
     </ul>
     <h3>Position des établissements sur la carte</h3>

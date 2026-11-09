@@ -157,6 +157,35 @@ def type_structure(cj):
 
 
 # ---------------------------------------------------------------------------
+# Commerces et services de proximité : (clé, libellé, famille, codes NAF)
+# Sert au module « Commerces et services » : présence ou absence dans chaque commune.
+# ---------------------------------------------------------------------------
+PROXIMITE = [
+    ("boulangerie", "Boulangerie, pâtisserie", "Alimentation", ["10.71C", "10.71D"]),
+    ("alimentation", "Alimentation générale, supérette, supermarché", "Alimentation", ["47.11B", "47.11C", "47.11D", "47.11F"]),
+    ("boucherie", "Boucherie, charcuterie", "Alimentation", ["47.22Z", "10.13B"]),
+    ("poissonnerie", "Poissonnerie", "Alimentation", ["47.23Z"]),
+    ("primeur", "Fruits et légumes", "Alimentation", ["47.21Z"]),
+    ("medecin", "Médecin généraliste", "Santé", ["86.21Z"]),
+    ("pharmacie", "Pharmacie", "Santé", ["47.73Z"]),
+    ("dentiste", "Dentiste", "Santé", ["86.23Z"]),
+    ("infirmier", "Infirmier, sage-femme", "Santé", ["86.90D"]),
+    ("kine", "Kinésithérapeute et autres rééducateurs", "Santé", ["86.90E"]),
+    ("veterinaire", "Vétérinaire", "Santé", ["75.00Z"]),
+    ("cafe", "Café, bar", "Vie quotidienne", ["56.30Z"]),
+    ("restaurant", "Restaurant", "Vie quotidienne", ["56.10A"]),
+    ("tabac", "Tabac", "Vie quotidienne", ["47.26Z"]),
+    ("presse", "Presse, papeterie", "Vie quotidienne", ["47.62Z"]),
+    ("coiffure", "Coiffure", "Vie quotidienne", ["96.02A"]),
+    ("fleuriste", "Fleuriste, jardinerie", "Vie quotidienne", ["47.76Z"]),
+    ("garage", "Garage automobile", "Services", ["45.20A"]),
+    ("carburant", "Station-service", "Services", ["47.30Z"]),
+    ("banque", "Banque", "Services", ["64.19Z"]),
+    ("poste", "Poste", "Services", ["53.10Z"]),
+    ("taxi", "Taxi", "Services", ["49.32Z"]),
+]
+
+# ---------------------------------------------------------------------------
 # Couleurs par section (carte et légende)
 # ---------------------------------------------------------------------------
 COULEURS = {
