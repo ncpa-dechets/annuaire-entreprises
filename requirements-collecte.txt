@@ -1,0 +1,5 @@
+# Collecte quotidienne (installé par GitHub Actions)
+requests>=2.31
+pandas>=2.1
+pyproj>=3.6
+xlrd>=2.0
