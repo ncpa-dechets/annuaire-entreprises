@@ -270,3 +270,18 @@ table.compar tfoot td{background:var(--fond);border-top:2px solid var(--bord);po
   #sy-carte{height:300px}
   a.lien{color:var(--txt)}
 }
+
+/* ---- Secteurs et Dynamique ---- */
+.courbes .guide{stroke:#bbb;stroke-width:1;stroke-dasharray:3 3;opacity:0}
+.courbes .pt{opacity:0}
+.courbes .an:hover .guide,.courbes .an:focus-visible .guide,.courbes .an:hover .pt,.courbes .an:focus-visible .pt{opacity:1}
+.courbes .an:hover .zone,.courbes .an:focus-visible .zone{fill:transparent}
+table.compar td .mini{display:inline-block;vertical-align:middle;width:90px;height:10px;position:relative;margin-left:8px;background:#f1f1ec;border-radius:2px}
+table.compar td .mini i{position:absolute;left:0;top:0;bottom:0;background:var(--rouge);border-radius:0 3px 3px 0}
+table.compar td .mini u{position:absolute;top:-3px;bottom:-3px;width:2px;background:#333}
+table.compar tr.sel td{background:#fbecec}
+.plus-val{color:#1f7a3a}.moins-val{color:var(--rouge-f)}
+.detail-sec{border:1px solid var(--bord);border-radius:8px;padding:4px 16px 16px;margin-top:14px;background:var(--fond)}
+.detail-sec .cadre{background:var(--blanc)}
+@media print{ #v-bodacc .inner > :not(#dy-contenu){display:none} .detail-sec{background:none} }
+#co-contenu table.compar td:first-child{white-space:nowrap}

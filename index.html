@@ -23,8 +23,9 @@
   <nav class="onglets" role="tablist">
     <a role="tab" aria-selected="true" href="#/synthese" data-vue="v-synthese">Synthèse</a>
     <a role="tab" aria-selected="false" href="#/communes" data-vue="v-communes">Communes</a>
+    <a role="tab" aria-selected="false" href="#/secteurs" data-vue="v-secteurs">Secteurs</a>
+    <a role="tab" aria-selected="false" href="#/dynamique" data-vue="v-bodacc">Dynamique</a>
     <a role="tab" aria-selected="false" href="#/annuaire" data-vue="v-annuaire">Annuaire</a>
-    <a role="tab" aria-selected="false" href="#/vie" data-vue="v-bodacc">Vie des entreprises</a>
     <a role="tab" aria-selected="false" href="#/methode" data-vue="v-qualite">Méthode et qualité</a>
   </nav>
   <div class="maj" id="maj"></div>
@@ -39,6 +40,11 @@
   <!-- ===================== COMMUNES ===================== -->
   <section id="v-communes" class="vue page" hidden>
     <div class="inner" id="co-contenu"></div>
+  </section>
+
+  <!-- ===================== SECTEURS ===================== -->
+  <section id="v-secteurs" class="vue page" hidden>
+    <div class="inner" id="se-contenu"></div>
   </section>
 
   <!-- ===================== ANNUAIRE ===================== -->
@@ -127,7 +133,8 @@
   <!-- ===================== VIE DES ENTREPRISES (BODACC) ===================== -->
   <section id="v-bodacc" class="vue page" hidden>
     <div class="inner">
-      <h2>Vie des entreprises</h2>
+      <div id="dy-contenu"></div>
+      <h3 class="partie no-print" id="p-vie">Annonces et mouvements récents</h3>
       <p class="note">Deux sources complémentaires. Les <b>annonces légales du BODACC</b> disent ce qui arrive aux
         entreprises inscrites au registre du commerce : création, radiation, difficultés, reprise. Les <b>mouvements de
         l'annuaire</b> comparent chaque nuit le répertoire SIRENE à celui de la veille : ils couvrent toutes les structures

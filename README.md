@@ -15,9 +15,10 @@ collecte.py ─► API SIRENE + IGN + Annuaire         index.html ─► lit dat
 
 | Fichier | Rôle |
 |---|---|
-| `index.html`, `css/`, `js/` | La page. Un fichier par onglet dans `js/` : `synthese.js`, `communes.js`, `annuaire.js`, `vie.js`, `qualite.js` ; `commun.js` (données et outils), `stats.js`, `blocs.js` et `graphes.js` (chiffres et graphiques), `app.js` (navigation) |
+| `index.html`, `css/`, `js/` | La page. Un fichier par onglet dans `js/` : `synthese.js`, `communes.js`, `annuaire.js`, `vie.js`, `qualite.js` ; `secteurs.js`, `dynamique.js` ; `commun.js` (données et outils), `stats.js`, `emploi.js`, `blocs.js` et `graphes.js` (chiffres et graphiques), `app.js` (navigation) |
 | `collecte.py`, `referentiels.py` | La collecte quotidienne (API SIRENE, journal) |
 | `statistiques.py` | Les comptages du tableau de bord (`data/stats.json`) |
+| `urssaf.py` | L'emploi salarié privé par commune et par activité (`data/emploi_urssaf.json`) |
 | `localisation.py` | Le choix de la position de chaque établissement (voir plus bas) |
 | `bodacc.py` | Les annonces du BODACC du territoire (onglet *Vie des entreprises*) |
 | `.github/workflows/maj_quotidienne.yml` | La planification nocturne |
@@ -31,7 +32,13 @@ collecte.py ─► API SIRENE + IGN + Annuaire         index.html ─► lit dat
   créations et fermetures par an, principaux employeurs.
 - **Communes** : tableau comparatif triable (export Excel) ; un clic ouvre la fiche d'une commune,
   dont l'adresse peut être envoyée telle quelle (`…/#/communes/14117`).
-- **Annuaire**, **Vie des entreprises**, **Méthode et qualité** : comme avant.
+- **Secteurs** : emploi salarié privé depuis 2006 (Urssaf), évolution comparée au Calvados, poids et
+  spécificité de chaque secteur ; un clic sur un secteur détaille ses activités (codes APE).
+  Le périmètre peut être réduit à une commune.
+- **Dynamique** : créations et fermetures par an et par secteur, taux de création, âge des
+  établissements ; puis les annonces BODACC et les mouvements de l'annuaire (ancien onglet
+  *Vie des entreprises*).
+- **Annuaire**, **Méthode et qualité** : comme avant.
 
 Le bouton « Imprimer ou enregistrer en PDF » de la Synthèse et des fiches produit un portrait A4.
 
@@ -40,6 +47,11 @@ individuels compris** : ceux-ci n'apparaissent que dans les comptages, jamais no
 Les créations et fermetures par année viennent des dates SIRENE, fermés compris, depuis 2010.
 `python statistiques.py` recalcule une version provisoire à partir de l'annuaire déjà collecté,
 sans clé SIRENE (sans entrepreneurs individuels ni fermetures) ; la collecte nocturne la remplace.
+
+L'emploi (`urssaf.py`) vient de l'open data de l'Urssaf, sans clé : effectifs salariés du secteur
+privé au 31 décembre, hors fonction publique, agriculture et non-salariés. Le jeu n'étant mis à
+jour qu'une fois par an, il n'est retéléchargé que tous les 30 jours (`python urssaf.py` à la main,
+après avoir supprimé `data/emploi_urssaf.json` pour forcer).
 
 ## Passer de la version Streamlit à cette version
 

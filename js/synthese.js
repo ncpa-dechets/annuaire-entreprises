@@ -2,6 +2,7 @@
 import {$, esc, nb, communesGJ, stats, meta} from "./commun.js";
 import {chiffres, listeCommunes} from "./stats.js";
 import {classes, classeDe, couleurClasse} from "./graphes.js";
+import {aEmploi, emploiDe} from "./emploi.js";
 import {avertissement, chiffresCles, blocSecteurs, blocFlux, blocFamilles, blocAges, tableEmployeurs, pied} from "./blocs.js";
 
 // Indicateurs proposés sur la carte des communes : [clé, libellé, calcul, format, réservé aux données complètes]
@@ -9,7 +10,7 @@ const INDICATEURS = [
   ["etab", "Établissements actifs", c => c.n, nb],
   ["dens", "Établissements pour 1 000 habitants", c => c.pop ? 1000 * c.n / c.pop : null, v => nb(Math.round(v))],
   ["emp", "Établissements employeurs", c => c.emp, nb],
-  ["sal", "Salariés, au moins (tranches Insee)", c => c.emin, nb],
+  ["salp", "Salariés du privé (Urssaf)", (c, code) => aEmploi() ? emploiDe(code).eff.at(-1) : null, nb],
   ["crea", "Créations sur 12 mois", c => c.crea12, nb],
   ["ei", "Part d'entrepreneurs individuels", c => c.n ? 100 * c.ei / c.n : null, v => `${Math.round(v)} %`, true],
 ];
@@ -63,7 +64,7 @@ function initCarte(){
 
 function colorier(){
   const [, lib, calcul, fmt] = INDICATEURS.find(i => i[0] === $("sy-ind").value);
-  const val = Object.fromEntries(listeCommunes().map(k => [k.code, calcul(chiffres(k.code))]));
+  const val = Object.fromEntries(listeCommunes().map(k => [k.code, calcul(chiffres(k.code), k.code)]));
   const seuils = classes(Object.values(val));
   couche.eachLayer(l => {
     const p = l.feature.properties, v = val[p.code];

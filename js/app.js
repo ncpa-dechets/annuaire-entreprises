@@ -1,13 +1,15 @@
 /* Démarrage et navigation entre les onglets (adresse de la forme #/communes/14117). */
 import {charger, $, meta, dateLongue} from "./commun.js";
-import {initAnnuaire, redimensionner, voir, filtrerCommune} from "./annuaire.js";
+import {initAnnuaire, redimensionner, voir, filtrer} from "./annuaire.js";
 import {initVie, vieEntreprises} from "./vie.js";
 import {qualite} from "./qualite.js";
 import {synthese} from "./synthese.js";
 import {communes} from "./communes.js";
+import {secteurs} from "./secteurs.js";
+import {dynamique} from "./dynamique.js";
 import {activerBulles} from "./graphes.js";
 
-const ROUTES = {synthese:"v-synthese", communes:"v-communes", annuaire:"v-annuaire", vie:"v-bodacc", methode:"v-qualite"};
+const ROUTES = {synthese:"v-synthese", communes:"v-communes", secteurs:"v-secteurs", dynamique:"v-bodacc", vie:"v-bodacc", annuaire:"v-annuaire", methode:"v-qualite"};
 let courante = "", annuairePret = false;
 
 function montrer(){
@@ -22,7 +24,8 @@ function montrer(){
   if (route === "synthese") synthese();
   if (route === "communes") communes(param);
   if (route === "annuaire"){ if (annuairePret) redimensionner(); else { initAnnuaire(); annuairePret = true; } }
-  if (route === "vie") vieEntreprises();
+  if (route === "secteurs") secteurs();
+  if (route === "dynamique" || route === "vie"){ dynamique(); vieEntreprises(); }
   if (route === "methode" && !$("q-contenu").innerHTML) qualite();
 }
 
@@ -37,10 +40,10 @@ function demarrer(){
   activerBulles();
   window.addEventListener("hashchange", montrer);
   document.addEventListener("click", ev => {
-    const el = ev.target.closest?.("[data-voir], [data-annuaire-commune], [data-imprimer]");
+    const el = ev.target.closest?.("[data-voir], [data-annuaire-commune], [data-annuaire-secteur], [data-imprimer]");
     if (!el) return;
     if (el.dataset.voir){ aller("annuaire"); voir(el.dataset.voir); }
-    else if (el.dataset.annuaireCommune){ aller("annuaire"); filtrerCommune(el.dataset.annuaireCommune); }
+    else if (el.dataset.annuaireCommune || el.dataset.annuaireSecteur){ aller("annuaire"); filtrer({commune:el.dataset.annuaireCommune, secteur:el.dataset.annuaireSecteur}); }
     else window.print();
   });
   montrer();

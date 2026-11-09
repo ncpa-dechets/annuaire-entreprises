@@ -79,3 +79,31 @@ export function activerBulles(){
   document.addEventListener("focusout", () => b.hidden = true);
   document.addEventListener("scroll", () => b.hidden = true, true);
 }
+
+/* Courbes par année. series : [{nom, c, v:[…]}]. L'axe ne part pas de zéro : ses bornes sont affichées. */
+export function courbes(etiquettes, series, {titre = "", fmt = nb} = {}){
+  const vals = series.flatMap(s => s.v).filter(v => v != null && isFinite(v));
+  if (!vals.length) return "";
+  let min = Math.min(...vals), max = Math.max(...vals);
+  const marge = (max - min || Math.abs(max) || 1) * .12; min -= marge; max += marge;
+  const W = 560, H = 200, g = 8, d = 8, bas = 22, haut = 12, n = etiquettes.length;
+  const x = i => g + (n > 1 ? i * (W - g - d) / (n - 1) : 0), y = v => H - bas - (H - bas - haut) * (v - min) / (max - min);
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(titre)}">`;
+  [0, .5, 1].forEach(t => { const v = min + marge + (max - min - 2 * marge) * t;
+    svg += `<line x1="0" x2="${W}" y1="${y(v)}" y2="${y(v)}" stroke="#e6e6e1"/><text x="2" y="${y(v) - 3}" font-size="10" fill="#777">${fmt(v)}</text>`; });
+  series.forEach(s => {
+    const pts = s.v.map((v, i) => v == null ? null : `${x(i).toFixed(1)},${y(v).toFixed(1)}`).filter(Boolean);
+    svg += `<polyline points="${pts.join(" ")}" fill="none" stroke="${s.c}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    const k = s.v.length - 1;
+    if (s.v[k] != null) svg += `<circle cx="${x(k)}" cy="${y(s.v[k])}" r="4" fill="${s.c}" stroke="#fff" stroke-width="2"/>`;
+  });
+  const pas = n > 1 ? (W - g - d) / (n - 1) : W, tous = Math.ceil(n / 7);
+  etiquettes.forEach((e, i) => {
+    const detail = `<b>${esc(e)}</b>` + series.map(s => `<div class="l"><span class="pastille" style="background:${s.c}"></span>${esc(s.nom)}<b>${s.v[i] == null ? "–" : fmt(s.v[i])}</b></div>`).join("");
+    svg += `<g class="an"${bulle(detail)}><rect class="zone" x="${x(i) - pas / 2}" y="0" width="${pas}" height="${H - bas}"/>
+      <line class="guide" x1="${x(i)}" x2="${x(i)}" y1="${haut}" y2="${H - bas}"/>
+      ${series.map(s => s.v[i] == null ? "" : `<circle class="pt" cx="${x(i)}" cy="${y(s.v[i])}" r="4" fill="${s.c}" stroke="#fff" stroke-width="2"/>`).join("")}
+      ${(n - 1 - i) % tous === 0 ? `<text x="${x(i)}" y="${H - 6}" font-size="10.5" text-anchor="${i === n - 1 ? "end" : i === 0 ? "start" : "middle"}" fill="#666">${esc(e)}</text>` : ""}</g>`;
+  });
+  return `<div class="colonnes courbes">${svg}</svg></div>`;
+}

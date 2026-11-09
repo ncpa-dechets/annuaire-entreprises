@@ -23,7 +23,10 @@ export function qualite(){
         que dans les comptages : ils sont ${nb(meta.nb_entrepreneurs_individuels_exclus || 0)} et restent absents de l'annuaire nominatif.</li>
       <li><b>Créations et fermetures</b> : dates de création et de fermeture des établissements dans SIRENE. Un déménagement, même dans la
         même commune, compte pour une fermeture et une création.</li>
-      <li><b>Salariés</b> : somme des tranches d'effectif déclarées à l'Insee, d'où une fourchette. C'est un ordre de grandeur, souvent
+      <li><b>Salariés du privé</b> (Urssaf) : effectifs au 31 décembre des établissements employeurs du secteur privé, par commune et
+        par activité, depuis 2006. N'y figurent ni la fonction publique, ni l'agriculture (MSA), ni les particuliers employeurs, ni les
+        non-salariés. La <b>spécificité</b> d'un secteur est sa part dans l'emploi local divisée par sa part dans le département.</li>
+      <li><b>Salariés, toutes structures</b> : somme des tranches d'effectif déclarées à l'Insee, d'où une fourchette. C'est un ordre de grandeur, souvent
         en retard d'un à deux ans.</li>
       <li><b>Procédures collectives</b> : sauvegardes, redressements et liquidations publiés au BODACC, qui ne couvre que les entreprises
         inscrites au registre du commerce.</li>

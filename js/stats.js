@@ -59,3 +59,27 @@ export function procedures(code){
 export function annonces(code, combien){
   return B.filter(b => (!code || b.cc === code) && b.evt !== "Suivi de procédure").slice(0, combien);
 }
+
+/* Créations et fermetures par année, pour une commune (ou tout le territoire) et un secteur (ou tous). */
+export function fluxDe(code = "", sec = ""){
+  if (!stats) return [];
+  const fin = +stats.date.slice(0, 4), parAn = {};
+  for (let a = stats.annee_debut; a <= fin; a++) parAn[a] = {an:a, crea:0, ferm:0, creaEi:0};
+  for (const [an, com, s, ei, cr, fe] of stats.flux){
+    if ((code && com !== code) || (sec && s !== sec) || !parAn[an]) continue;
+    parAn[an].crea += cr; parAn[an].ferm += fe; if (ei) parAn[an].creaEi += cr;
+  }
+  return Object.values(parAn);
+}
+
+/* Créations et fermetures des 12 derniers mois par secteur : {S:{crea, ferm, creaEi}} */
+export function flux12ParSecteur(code = ""){
+  const r = {};
+  if (!stats) return r;
+  for (const [com, s, ei, cr, fe] of stats.flux_12m){
+    if (code && com !== code) continue;
+    const x = r[s] ||= {crea:0, ferm:0, creaEi:0};
+    x.crea += cr; x.ferm += fe; if (ei) x.creaEi += cr;
+  }
+  return r;
+}

@@ -80,7 +80,7 @@ export function multiSelect(hote, {vide, pluriel, recherche = true, onChange}){
 /* =========================================================================
    Données
    ========================================================================= */
-export let E = [], meta = {}, journal = [], communesGJ = null, stats = null, B = [];
+export let E = [], meta = {}, journal = [], communesGJ = null, stats = null, emploi = null, B = [];
 export const parSiret = new Map(), bodaccParSiren = new Map(), etabParSiren = new Map();
 export const aPosition = e => e.lat !== null && e.lon !== null;
 
@@ -90,10 +90,11 @@ export async function charger(){
   meta = await rm.json();
   const v = encodeURIComponent(meta.date_maj || Date.now());
   const lire = (u, opt) => fetch(`${u}?v=${v}`).then(r => r.ok ? r.text() : (opt ? "" : Promise.reject(new Error(u))));
-  const [csv, gj, jr, corr, bod, st] = await Promise.all([
+  const [csv, gj, jr, corr, bod, st, em] = await Promise.all([
     lire("data/etablissements.csv"), lire("data/communes.geojson"),
     lire("data/journal.csv", true), lire("corrections_localisation.csv", true), lire("data/bodacc.csv", true),
-    lire("data/stats.json", true)]);
+    lire("data/stats.json", true), lire("data/emploi_urssaf.json", true)]);
+  try { emploi = em.trim() ? JSON.parse(em) : null; } catch(e){ emploi = null; }
   try { stats = st.trim() ? JSON.parse(st) : null; } catch(e){ stats = null; }
   communesGJ = JSON.parse(gj);
   const lignes = Papa.parse(csv, {header:true, skipEmptyLines:true}).data;

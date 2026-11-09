@@ -14,7 +14,8 @@ ou à la main :  INSEE_API_KEY=xxxx python collecte.py
   5. Comparaison avec la veille : nouveaux établissements / établissements sortis.
   6. Statistiques du tableau de bord (voir statistiques.py) : comptages par commune et par secteur,
      entrepreneurs individuels compris, créations et fermetures par année.
-  7. Écriture des fichiers dans data/ (le robot GitHub les enregistre ensuite dans le dépôt).
+  7. Emploi salarié privé par commune et par activité (open data de l'Urssaf, voir urssaf.py).
+  8. Écriture des fichiers dans data/ (le robot GitHub les enregistre ensuite dans le dépôt).
 
 Sécurité : si la collecte renvoie beaucoup moins d'établissements que la veille
 (panne partielle de l'API), le script s'arrête sans rien écraser.
@@ -34,6 +35,7 @@ import requests
 
 from bodacc import collecter_bodacc
 from localisation import localiser
+from urssaf import collecter_urssaf
 from statistiques import calculer, communes_du_geojson, ecrire as ecrire_stats, periode_courante, resumer
 from referentiels import appliquer_corrections, DIVISIONS, SECTIONS, TRANCHES, TYPES_VOIE, section_de_division, type_structure
 
@@ -320,13 +322,21 @@ def main():
         ancien_meta = json.loads((DATA / "meta.json").read_text(encoding="utf-8")) if (DATA / "meta.json").exists() else {}
         bodacc = ancien_meta.get("bodacc", {})
 
+    log("6. Emploi salarié privé (Urssaf)")
+    ancien_meta = json.loads((DATA / "meta.json").read_text(encoding="utf-8")) if (DATA / "meta.json").exists() else {}
+    try:
+        urssaf = collecter_urssaf(EPCI, communes[0][0][:2], DATA, log)
+    except Exception as e:
+        log(f"   ⚠ emploi Urssaf non mis à jour aujourd'hui ({type(e).__name__} : {e}), fichier précédent conservé")
+        urssaf = ancien_meta.get("urssaf", {})
+
     meta = {
         "date_maj": maintenant.isoformat(timespec="minutes"), "epci": EPCI, "nb_communes": len(communes),
         "nb_etablissements": int(len(df)), "nb_entrepreneurs_individuels_exclus": int(exclus_ei),
         "localisation": {k: int(v) for k, v in df["localisation"].value_counts().items()},
         "precision": {(k or "Non localisé"): int(v) for k, v in df["precision"].value_counts().items()},
         "duree_secondes": round(time.time() - debut), "source": "Insee, répertoire SIRENE (API Sirene 3.11)",
-        "bodacc": bodacc,
+        "bodacc": bodacc, "urssaf": urssaf,
     }
     with open(DATA / "meta.json", "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=1)

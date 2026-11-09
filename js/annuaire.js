@@ -312,7 +312,11 @@ export function initAnnuaire(){
 export function redimensionner(){ setTimeout(() => map.invalidateSize(), 50); }
 /* Montre un établissement sur la carte (liens des autres onglets). */
 export function voir(siret){ const e = parSiret.get(siret); if (e) setTimeout(() => surligner(e, true), 120); }
-/* Annuaire limité à une commune (lien des fiches commune). */
-export function filtrerCommune(nom){
-  $("reinit").click(); msCommunes.choisir([nom]); appliquer(); setTimeout(vueEnsemble, 120);
+/* Annuaire limité à une commune ou à un secteur (liens des fiches commune et de l'onglet Secteurs). */
+export function filtrer({commune, secteur}){
+  $("reinit").click();
+  if (commune) msCommunes.choisir([commune]);
+  if (secteur) document.querySelectorAll("#f-secteurs input").forEach(i => {
+    i.checked = i.value === secteur; i.checked ? secteursCoches.add(i.value) : secteursCoches.delete(i.value); });
+  appliquer(); setTimeout(vueEnsemble, 120);
 }

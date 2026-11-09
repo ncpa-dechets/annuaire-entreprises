@@ -1,6 +1,7 @@
 /* Blocs réutilisés par la Synthèse et les fiches commune : chiffres clés, secteurs, dynamique, employeurs. */
 import {esc, nb, dateFr, dateLongue, SECTIONS, COULEURS, stats, meta, EVT} from "./commun.js";
 import {chiffres, employeurs, procedures, annonces, FAM_EI} from "./stats.js";
+import {aEmploi, emploiDe, derniereAnnee, evolution, fmtEvol} from "./emploi.js";
 import {barres, colonnes, legende, pct, signe, C_STRUCT, C_EI, C_CREA, C_FERM} from "./graphes.js";
 
 const complet = () => !!stats?.complet;
@@ -18,7 +19,10 @@ export function chiffresCles(code){
     ${k(nb(c.n), "établissements actifs" + (complet() ? `<br>dont ${nb(c.ei)} entrepreneurs individuels` : "<br>hors entrepreneurs individuels"),
       "Tous les établissements actifs du répertoire SIRENE : sociétés, associations, structures publiques, SCI" + (complet() ? " et entrepreneurs individuels." : "."))}
     ${k(nb(c.emp), "établissements employeurs", "Établissements déclarés employeurs ou ayant au moins un salarié d'après l'Insee.")}
-    ${k(`${nb(c.emin)} à ${nb(c.emax)}`, "salariés (tranches Insee)", "Somme des tranches d'effectif du répertoire SIRENE : un ordre de grandeur, souvent en retard d'un à deux ans.")}
+    ${aEmploi() ? (() => { const e = emploiDe(code), ev = evolution(e.eff, 5);
+      return k(nb(e.eff.at(-1)), `salariés du privé fin ${derniereAnnee()}<br>${ev ? `${fmtEvol(ev)} en cinq ans (Urssaf)` : "(Urssaf)"}`,
+        "Effectifs salariés des établissements du secteur privé au 31 décembre, d'après l'Urssaf : hors fonction publique, agriculture et non-salariés."); })() : ""}
+    ${k(`${nb(c.emin)} à ${nb(c.emax)}`, "salariés, toutes structures<br>(tranches Insee)", "Somme des tranches d'effectif du répertoire SIRENE : un ordre de grandeur, souvent en retard d'un à deux ans.")}
     ${k(nb(c.crea12), "créations sur 12 mois" + (complet() ? "" : "<br>encore actives"), "Établissements créés depuis un an (date de création SIRENE). Un transfert d'adresse compte comme une création.")}
     ${complet() ? k(nb(c.ferm12), "fermetures sur 12 mois", "Établissements fermés depuis un an. Un transfert d'adresse compte comme une fermeture.")
       + k(signe(c.crea12 - c.ferm12), "solde sur 12 mois") : ""}
@@ -90,6 +94,6 @@ export function tableAnnonces(code, combien){
 
 export function pied(){
   return `<p class="source pied">Sources : Insee, répertoire SIRENE (établissements actifs${complet() ? ", entrepreneurs individuels compris dans les comptages" : ""}) ;
-    BODACC (annonces légales) ; populations municipales Insee. Données du ${dateLongue(meta.date_maj)}.
+    BODACC (annonces légales) ; Urssaf (emploi salarié privé) ; populations municipales Insee. Données du ${dateLongue(meta.date_maj)}.
     Les effectifs sont des tranches déclarées à l'Insee : des ordres de grandeur.</p>`;
 }
