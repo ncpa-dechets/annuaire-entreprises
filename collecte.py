@@ -12,7 +12,9 @@ ou à la main :  INSEE_API_KEY=xxxx python collecte.py
   4. Coordonnées (voir localisation.py) : SIRENE quand l'adresse a un numéro, sinon lieu nommé
      ou adresse géocodés par l'IGN, ou position vérifiée de l'Annuaire des entreprises.
   5. Comparaison avec la veille : nouveaux établissements / établissements sortis.
-  6. Écriture des fichiers dans data/ (le robot GitHub les enregistre ensuite dans le dépôt).
+  6. Statistiques du tableau de bord (voir statistiques.py) : comptages par commune et par secteur,
+     entrepreneurs individuels compris, créations et fermetures par année.
+  7. Écriture des fichiers dans data/ (le robot GitHub les enregistre ensuite dans le dépôt).
 
 Sécurité : si la collecte renvoie beaucoup moins d'établissements que la veille
 (panne partielle de l'API), le script s'arrête sans rien écraser.
@@ -32,6 +34,7 @@ import requests
 
 from bodacc import collecter_bodacc
 from localisation import localiser
+from statistiques import calculer, communes_du_geojson, ecrire as ecrire_stats, periode_courante, resumer
 from referentiels import appliquer_corrections, DIVISIONS, SECTIONS, TRANCHES, TYPES_VOIE, section_de_division, type_structure
 
 EPCI = os.environ.get("EPCI_SIREN", "200065563")  # Normandie-Cabourg-Pays d'Auge
@@ -108,7 +111,7 @@ class Sirene:
 
 def communes_epci(epci):
     r = requests.get(API_GEO, params={"codeEpci": epci, "format": "geojson", "geometry": "contour",
-                                      "fields": "nom,code,codesPostaux"}, timeout=60)
+                                      "fields": "nom,code,codesPostaux,population"}, timeout=60)
     r.raise_for_status()
     gj = r.json()
     if not gj.get("features"):
@@ -179,8 +182,7 @@ def adresse_lisible(a):
 def transformer(e, naf_lib, noms_communes=None):
     """Renvoie un dict prêt pour le CSV, ou None si l'établissement est à exclure."""
     ul = e.get("uniteLegale") or {}
-    periodes = e.get("periodesEtablissement") or [{}]
-    p = next((x for x in periodes if not x.get("dateFin")), periodes[0])
+    p = periode_courante(e)
     if p.get("etatAdministratifEtablissement") != "A":
         return None                                   # fermé aujourd'hui
     cj = _v(ul.get("categorieJuridiqueUniteLegale"))
@@ -269,12 +271,13 @@ def main():
     log("2. Établissements actifs (API SIRENE)")
     naf_lib = libelles_naf()
     api = Sirene(cle)
-    brut, exclus_ei = [], 0
+    brut, exclus_ei, resumes = [], 0, []
     for code, nom in communes:
         lot = api.etablissements_actifs(code)
         retenus = [t for t in (transformer(e, naf_lib, dict(communes)) for e in lot) if t]
         exclus_ei += sum(1 for e in lot if _v((e.get("uniteLegale") or {}).get("categorieJuridiqueUniteLegale")) == "1000")
         brut += retenus
+        resumes += [resumer(e) for e in lot]       # actifs, fermés et entrepreneurs individuels : comptages seulement
         log(f"   {nom:<35} {len(retenus):>6} établissements retenus")
     df = pd.DataFrame(brut).drop_duplicates("siret")
     if df.empty:
@@ -303,6 +306,9 @@ def main():
 
     maintenant = datetime.datetime.now(PARIS)
     jour = maintenant.date().isoformat()
+    stats = calculer(resumes, communes_du_geojson(gj), jour)
+    ecrire_stats(stats, DATA)
+    log(f"   statistiques : {sum(r[3] for r in stats['stock'])} établissements actifs, entrepreneurs individuels compris")
     mettre_a_jour_journal(ancien, df.astype(str), jour)
 
     log("5. Annonces du BODACC")

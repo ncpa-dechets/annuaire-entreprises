@@ -1,7 +1,8 @@
-# Annuaire des entreprises – NCPA
+# Entreprises du territoire – NCPA
 
-Carte et liste des établissements actifs des 38 communes de NCPA (hors entrepreneurs
-individuels), d'après le répertoire SIRENE de l'Insee, mises à jour chaque nuit.
+Tableau de bord économique des 38 communes de NCPA, d'après le répertoire SIRENE de l'Insee et le
+BODACC, mis à jour chaque nuit : synthèse du territoire, comparaison et fiche de chaque commune
+(imprimables), annuaire cartographique, vie des entreprises.
 Page HTML publiée par GitHub Pages ; données collectées par GitHub Actions.
 
 ## Comment ça marche
@@ -9,19 +10,36 @@ Page HTML publiée par GitHub Pages ; données collectées par GitHub Actions.
 ```
 Chaque nuit (GitHub Actions)                     À chaque visite (GitHub Pages)
 collecte.py ─► API SIRENE + IGN + Annuaire         index.html ─► lit data/ et corrections_localisation.csv
-           └─► écrit data/ ─► commit ──────────────────────► carte, filtres, liste, exports
+           └─► écrit data/ ─► commit ──────────────────────► synthèse, communes, carte, listes, exports
 ```
 
 | Fichier | Rôle |
 |---|---|
-| `index.html` | La page : annuaire (carte + liste), vie des entreprises (BODACC et mouvements SIRENE), qualité des données |
+| `index.html`, `css/`, `js/` | La page. Un fichier par onglet dans `js/` : `synthese.js`, `communes.js`, `annuaire.js`, `vie.js`, `qualite.js` ; `commun.js` (données et outils), `stats.js`, `blocs.js` et `graphes.js` (chiffres et graphiques), `app.js` (navigation) |
 | `collecte.py`, `referentiels.py` | La collecte quotidienne (API SIRENE, journal) |
+| `statistiques.py` | Les comptages du tableau de bord (`data/stats.json`) |
 | `localisation.py` | Le choix de la position de chaque établissement (voir plus bas) |
 | `bodacc.py` | Les annonces du BODACC du territoire (onglet *Vie des entreprises*) |
 | `.github/workflows/maj_quotidienne.yml` | La planification nocturne |
 | `corrections_localisation.csv` | Vos corrections de position, à remplir à la main |
 | `data/` | Données produites par le robot (ne pas modifier) |
 | `.nojekyll` | Indique à GitHub Pages de publier les fichiers tels quels |
+
+## Les onglets
+
+- **Synthèse** : chiffres clés du territoire, secteurs, carte des communes selon un indicateur au choix,
+  créations et fermetures par an, principaux employeurs.
+- **Communes** : tableau comparatif triable (export Excel) ; un clic ouvre la fiche d'une commune,
+  dont l'adresse peut être envoyée telle quelle (`…/#/communes/14117`).
+- **Annuaire**, **Vie des entreprises**, **Méthode et qualité** : comme avant.
+
+Le bouton « Imprimer ou enregistrer en PDF » de la Synthèse et des fiches produit un portrait A4.
+
+Les statistiques (`statistiques.py`) comptent tous les établissements actifs, **entrepreneurs
+individuels compris** : ceux-ci n'apparaissent que dans les comptages, jamais nominativement.
+Les créations et fermetures par année viennent des dates SIRENE, fermés compris, depuis 2010.
+`python statistiques.py` recalcule une version provisoire à partir de l'annuaire déjà collecté,
+sans clé SIRENE (sans entrepreneurs individuels ni fermetures) ; la collecte nocturne la remplace.
 
 ## Passer de la version Streamlit à cette version
 
