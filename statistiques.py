@@ -14,6 +14,8 @@ Contenu de stats.json (tableaux compacts, une ligne par croisement) :
   ages  : [code_commune, classe d'âge (indice de CLASSES_AGE), indépendant (0/1), établissements actifs]
   activites : [code_commune, code NAF, structures actives, entrepreneurs individuels actifs]
   proximite : catégories de commerces et services de proximité (référentiels.PROXIMITE)
+  proximite_comptes : [code_commune, catégorie, établissements déclarés, commerces sans doublons]
+                      (même adresse ou même entreprise = un seul commerce ; en santé, un par professionnel)
 
 À la main, sans clé SIRENE (version provisoire, d'après l'annuaire déjà collecté : ni entrepreneurs
 individuels ni fermetures) :  python statistiques.py
@@ -62,9 +64,15 @@ def resumer(e):
     tranche = _v(e.get("trancheEffectifsEtablissement")) or "NN"
     _, emin, emax = TRANCHES.get(tranche, TRANCHES["NN"])
     employeur = _v(p.get("caractereEmployeurEtablissement")) == "O" or (emin is not None and emin >= 1)
+    a = e.get("adresseEtablissement") or {}
+    voie = _v(a.get("libelleVoieEtablissement"))
+    adresse = " ".join(filter(None, [_v(a.get("numeroVoieEtablissement")), _v(a.get("indiceRepetitionEtablissement")),
+                                     _v(a.get("typeVoieEtablissement")), voie])).upper() if voie else ""
     return {
         "siret": _v(e.get("siret")),
-        "commune": _v((e.get("adresseEtablissement") or {}).get("codeCommuneEtablissement")),
+        "siren": _v(e.get("siren")) or _v(e.get("siret"))[:9],
+        "adresse": adresse,              # sert seulement à repérer les doublons, n'est pas écrite dans stats.json
+        "commune": _v(a.get("codeCommuneEtablissement")),
         "section": section,
         "naf": naf if nomenc == "NAFRev2" else "",
         "famille": FAMILLE_EI if cj == "1000" else type_structure(cj),
@@ -90,6 +98,29 @@ def _classe_age(creation, jour):
     return None
 
 
+def _sans_doublons(etablissements):
+    """Nombre de commerces réels parmi des établissements d'une même commune et d'une même catégorie.
+    Sont regroupés ceux qui partagent une adresse (société d'exploitation et holding au même endroit)
+    ou une même entreprise (plusieurs locaux d'un même commerce). etablissements : [(siren, adresse)]."""
+    parent = list(range(len(etablissements)))
+
+    def racine(i):
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+    premier = {}
+    for i, (siren, adresse) in enumerate(etablissements):
+        for cle in (("s", siren), ("a", adresse)):
+            if not cle[1]:
+                continue
+            if cle in premier:
+                parent[racine(i)] = racine(premier[cle])
+            else:
+                premier[cle] = i
+    return len({racine(i) for i in range(len(etablissements))})
+
+
 def calculer(resumes, communes, jour, complet=True):
     """resumes : liste de dicts produits par resumer() ; communes : [(code, nom, population ou None)] ;
     jour : date ISO de la collecte. Renvoie le contenu de stats.json."""
@@ -101,6 +132,11 @@ def calculer(resumes, communes, jour, complet=True):
     flux12 = defaultdict(lambda: [0, 0])
     ages = defaultdict(int)
     activites = defaultdict(lambda: [0, 0])
+    categories = defaultdict(list)       # NAF -> catégories de proximité
+    for cle_cat, _, _, codes_naf in PROXIMITE:
+        for n in codes_naf:
+            categories[n].append(cle_cat)
+    proches = defaultdict(list)          # (commune, catégorie) -> [(siren, adresse)]
     vus = set()
     for r in resumes:
         if r["commune"] not in codes or (r["siret"] and r["siret"] in vus):
@@ -116,6 +152,8 @@ def calculer(resumes, communes, jour, complet=True):
                 s[3] += r["emax"]
             if r.get("naf"):
                 activites[(com, r["naf"])][ei] += 1
+                for cle_cat in categories.get(r["naf"], ()):
+                    proches[(com, cle_cat)].append((r.get("siren", ""), r.get("adresse", "")))
             k = _classe_age(r["creation"], aujourdhui)
             if k is not None:
                 ages[(com, k, ei)] += 1
@@ -126,6 +164,9 @@ def calculer(resumes, communes, jour, complet=True):
                 flux[(int(date[:4]), com, sec, ei)][i] += 1
             if date > il_y_a_un_an:
                 flux12[(com, sec, ei)][i] += 1
+    # Santé : on compte les professionnels (plusieurs médecins partagent un cabinet) ; ailleurs, les commerces sans doublons
+    sante = {c for c, _, f, _ in PROXIMITE if f == "Santé"}
+    comptes = [[com, cat, len(l), len(l) if cat in sante else _sans_doublons(l)] for (com, cat), l in sorted(proches.items())]
     return {
         "date": jour,
         "complet": bool(complet),
@@ -139,6 +180,7 @@ def calculer(resumes, communes, jour, complet=True):
         "ages": [list(k) + [v] for k, v in sorted(ages.items())],
         "activites": [list(k) + v for k, v in sorted(activites.items())],
         "proximite": [{"cle": c, "libelle": lib, "famille": f, "codes": codes} for c, lib, f, codes in PROXIMITE],
+        "proximite_comptes": comptes,
     }
 
 
@@ -173,7 +215,7 @@ def provisoire(dossier):
     def entier(x):
         return int(float(x)) if x not in ("", None) else None
     resumes = [{
-        "siret": r.siret, "commune": r.code_commune, "section": r.section or "Z", "naf": r.naf if r.nomenclature_naf == "NAFRev2" else "", "famille": r.type_structure,
+        "siret": r.siret, "siren": r.siren, "adresse": r.adresse.upper(), "commune": r.code_commune, "section": r.section or "Z", "naf": r.naf if r.nomenclature_naf == "NAFRev2" else "", "famille": r.type_structure,
         "creation": r.date_creation[:10], "fermeture": "", "actif": True,
         "employeur": r.employeur == "Oui" or (entier(r.effectif_min) or 0) >= 1,
         "emin": entier(r.effectif_min), "emax": entier(r.effectif_max),

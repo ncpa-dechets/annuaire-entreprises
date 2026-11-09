@@ -103,3 +103,15 @@ export function compter(code, codes){
   if (code){ const m = indexActivites().get(code); if (m) lire(m); } else indexActivites().forEach(lire);
   return {n, ei};
 }
+
+/* Commerces d'une catégorie de proximité : {n, decl}. n est le nombre sans doublons calculé par le robot
+   (table « proximite_comptes »), decl le nombre d'établissements déclarés. Sans cette table, n = decl. */
+let idxProx = null;
+export function compterCategorie(code, cat){
+  if (!stats?.proximite_comptes){ const c = compter(code, cat.codes); return {n:c.n, decl:c.n}; }
+  if (!idxProx){ idxProx = new Map(); for (const [com, cle, decl, n] of stats.proximite_comptes) idxProx.set(`${com}|${cle}`, {n, decl}); }
+  if (code) return idxProx.get(`${code}|${cat.cle}`) || {n:0, decl:0};
+  let n = 0, decl = 0;
+  for (const com of Object.keys(stats.communes)){ const v = idxProx.get(`${com}|${cat.cle}`); if (v){ n += v.n; decl += v.decl; } }
+  return {n, decl};
+}

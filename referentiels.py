@@ -159,9 +159,12 @@ def type_structure(cj):
 # ---------------------------------------------------------------------------
 # Commerces et services de proximité : (clé, libellé, famille, codes NAF)
 # Sert au module « Commerces et services » : présence ou absence dans chaque commune.
+# N'y mettre que des activités que le code NAF identifie bien. Les bureaux de tabac et les points presse n'y sont pas :
+# ce sont souvent des bars-tabacs ou des tabacs-presse, classés en débit de boissons (56.30Z), et SIRENE ne dit pas
+# qu'un bar vend du tabac ou des journaux (exemple : les deux tabacs de Dives-sur-Mer sont codés 56.30Z).
 # ---------------------------------------------------------------------------
 PROXIMITE = [
-    ("boulangerie", "Boulangerie, pâtisserie", "Alimentation", ["10.71C", "10.71D"]),
+    ("boulangerie", "Boulangerie, pâtisserie", "Alimentation", ["10.71C", "10.71D", "47.24Z"]),
     ("alimentation", "Alimentation générale, supérette, supermarché", "Alimentation", ["47.11B", "47.11C", "47.11D", "47.11F"]),
     ("boucherie", "Boucherie, charcuterie", "Alimentation", ["47.22Z", "10.13B"]),
     ("poissonnerie", "Poissonnerie", "Alimentation", ["47.23Z"]),
@@ -174,8 +177,6 @@ PROXIMITE = [
     ("veterinaire", "Vétérinaire", "Santé", ["75.00Z"]),
     ("cafe", "Café, bar", "Vie quotidienne", ["56.30Z"]),
     ("restaurant", "Restaurant", "Vie quotidienne", ["56.10A"]),
-    ("tabac", "Tabac", "Vie quotidienne", ["47.26Z"]),
-    ("presse", "Presse, papeterie", "Vie quotidienne", ["47.62Z"]),
     ("coiffure", "Coiffure", "Vie quotidienne", ["96.02A"]),
     ("fleuriste", "Fleuriste, jardinerie", "Vie quotidienne", ["47.76Z"]),
     ("garage", "Garage automobile", "Services", ["45.20A"]),

@@ -43,7 +43,10 @@ collecte.py ─► API SIRENE + IGN + Annuaire         index.html ─► lit dat
 - **Thèmes** : trois pages.
   - *Commerces et services* : pour une vingtaine de commerces et services de proximité, les communes
     qui en ont, celles qui n'en ont pas et la commune la plus proche qui en dispose. La liste des
-    catégories et de leurs codes NAF est dans `referentiels.py` (`PROXIMITE`) : on peut en ajouter.
+    catégories et de leurs codes NAF est dans `referentiels.py` (`PROXIMITE`) : on peut en ajouter,
+    à condition que le code NAF identifie bien l'activité (ce n'est pas le cas des tabacs ni des
+    points presse, souvent classés comme bars). Les nombres sont des établissements déclarés :
+    un même commerce peut en compter plusieurs (société d'exploitation, holding, ancien local).
   - *Tourisme* : hébergements classés (Atout France), hébergements déclarés (SIRENE) et emploi
     touristique (Urssaf).
   - *Emploi et recrutement* : offres en cours (France Travail) et métiers recherchés (enquête BMO).
