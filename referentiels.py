@@ -179,3 +179,29 @@ TYPES_VOIE = {
     "RTE": "Route", "RUE": "Rue", "SEN": "Sente", "SQ": "Square", "TPL": "Terre-plein",
     "TRA": "Traverse", "VLA": "Villa", "VLGE": "Village", "ZA": "ZA", "ZAC": "ZAC", "ZI": "ZI",
 }
+
+
+# ---------------------------------------------------------------------------
+# Corrections manuelles de localisation (fichier corrections_localisation.csv)
+# ---------------------------------------------------------------------------
+def appliquer_corrections(df, chemin):
+    """Remplace les coordonnées des SIRET listés dans le fichier de corrections.
+    Colonnes attendues : siret, lat, lon (commentaire facultatif). Séparateur , ou ;"""
+    import pandas as pd
+    from pathlib import Path
+    if not Path(chemin).exists():
+        return df, 0
+    c = pd.read_csv(chemin, dtype=str, sep=None, engine="python", keep_default_na=False)
+    c.columns = [x.strip().lower() for x in c.columns]
+    c["siret"] = c["siret"].str.replace(r"\D", "", regex=True)
+    c["lat"] = pd.to_numeric(c["lat"].str.replace(",", "."), errors="coerce")
+    c["lon"] = pd.to_numeric(c["lon"].str.replace(",", "."), errors="coerce")
+    c = c.dropna(subset=["lat", "lon"]).drop_duplicates("siret", keep="last").set_index("siret")
+    masque = df["siret"].isin(c.index)
+    df = df.copy()
+    df["lat"] = pd.to_numeric(df["lat"], errors="coerce")
+    df["lon"] = pd.to_numeric(df["lon"], errors="coerce")
+    df.loc[masque, "lat"] = df.loc[masque, "siret"].map(c["lat"]).astype(float)
+    df.loc[masque, "lon"] = df.loc[masque, "siret"].map(c["lon"]).astype(float)
+    df.loc[masque, "localisation"] = "Corrigée manuellement"
+    return df, int(masque.sum())

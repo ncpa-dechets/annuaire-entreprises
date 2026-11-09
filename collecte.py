@@ -30,7 +30,7 @@ from zoneinfo import ZoneInfo
 import pandas as pd
 import requests
 
-from referentiels import DIVISIONS, SECTIONS, TRANCHES, TYPES_VOIE, section_de_division, type_structure
+from referentiels import appliquer_corrections, DIVISIONS, SECTIONS, TRANCHES, TYPES_VOIE, section_de_division, type_structure
 
 EPCI = os.environ.get("EPCI_SIREN", "200065563")  # Normandie-Cabourg-Pays d'Auge
 DATA = Path(__file__).resolve().parent / "data"
@@ -245,6 +245,60 @@ def emprise(gj, marge=0.02):
     return min(xs) - marge, min(ys) - marge, max(xs) + marge, max(ys) + marge
 
 
+def geocoder(requetes, cache, paralleles=6, lot=150):
+    """Géocode {cle: (texte, code_commune)} en parallèle et complète le cache.
+    6 requêtes simultanées restent sous la limite de 50 par seconde de la Géoplateforme.
+    Si plus de la moitié d'un lot échoue, le service est jugé indisponible et on s'arrête."""
+    from concurrent.futures import ThreadPoolExecutor
+    import threading
+    local = threading.local()
+
+    def une(item):
+        cle, (texte, code) = item
+        if not hasattr(local, "s"):
+            local.s = requests.Session()
+        for essai in range(2):
+            try:
+                rep = local.s.get(API_GEOCODAGE, params={"q": texte, "citycode": code, "index": "address",
+                                                         "limit": 1}, timeout=10)
+            except requests.RequestException:
+                continue                                  # délai dépassé : un second essai
+            if rep.status_code == 429:
+                time.sleep(2)
+                continue
+            if 400 <= rep.status_code < 500:
+                return cle, ("", "")                      # requête refusée : adresse jugée introuvable
+            if rep.status_code != 200:
+                continue
+            feats = rep.json().get("features", [])
+            if feats:
+                pr = feats[0]["properties"]
+                if pr.get("score", 0) >= SCORE_GEOCODAGE_MIN and str(pr.get("citycode")) == code:
+                    lo, la = feats[0]["geometry"]["coordinates"]
+                    return cle, (str(la), str(lo))
+            return cle, ("", "")
+        return cle, None                                  # échec : rien n'est mis en cache
+
+    items, erreurs, faits = list(requetes.items()), 0, 0
+    debut = time.time()
+    with ThreadPoolExecutor(paralleles) as pool:
+        for k in range(0, len(items), lot):
+            echecs = 0
+            for cle, res in pool.map(une, items[k:k + lot]):
+                if res is None:
+                    echecs += 1
+                else:
+                    cache[cle] = res
+            faits += len(items[k:k + lot])
+            erreurs += echecs
+            log(f"   géocodage : {faits}/{len(items)} ({round(time.time() - debut)} s)")
+            if echecs > lot / 2:
+                erreurs += len(items) - faits
+                log("   ⚠ géocodeur IGN indisponible, arrêt du géocodage pour aujourd'hui")
+                break
+    return erreurs
+
+
 def localiser(df, gj):
     from pyproj import Transformer
     tr = Transformer.from_crs(2154, 4326, always_xy=True)
@@ -264,38 +318,27 @@ def localiser(df, gj):
         else pd.DataFrame(columns=["cle", "lat", "lon"])
     cache = dict(zip(cache["cle"], zip(cache["lat"], cache["lon"])))
     a_faire = df.index[~ok & (df["adresse"] != "")]
-    log(f"   {int(ok.sum())} établissements localisés par SIRENE, {len(a_faire)} adresses à géocoder")
-    s = requests.Session()
-    nouveaux, erreurs = 0, 0
+    df["_cle"] = df["adresse"] + "|" + df["code_commune"]
+    requetes = {}                                        # une seule requête par adresse distincte
     for i in a_faire:
         r = df.loc[i]
-        cle = f"{r['adresse']}|{r['code_commune']}"
-        if cle not in cache and erreurs < 20:          # au-delà de 20 erreurs, le service est jugé indisponible
-            try:
-                rep = s.get(API_GEOCODAGE, params={"q": f"{r['adresse']} {r['code_postal']} {r['commune']}",
-                                                   "citycode": r["code_commune"], "index": "address", "limit": 1},
-                            timeout=30)
-                rep.raise_for_status()
-                feats = rep.json().get("features", [])
-                cache[cle] = ("", "")                       # adresse introuvable
-                if feats:
-                    pr = feats[0]["properties"]
-                    if pr.get("score", 0) >= SCORE_GEOCODAGE_MIN and str(pr.get("citycode")) == r["code_commune"]:
-                        lo, la = feats[0]["geometry"]["coordinates"]
-                        cache[cle] = (str(la), str(lo))
-                nouveaux += 1
-                time.sleep(0.05)
-            except Exception as e:
-                erreurs += 1
-                if erreurs <= 3:
-                    log(f"   géocodage impossible ({e.__class__.__name__}) pour « {cle} »")
-        la, lo = cache.get(cle, ("", ""))
+        if r["_cle"] not in cache:
+            requetes[r["_cle"]] = (f"{r['adresse']} {r['code_postal']} {r['commune']}", r["code_commune"])
+    log(f"   {int(ok.sum())} établissements localisés par SIRENE, {len(a_faire)} sans coordonnées "
+        f"dont {len(requetes)} adresses nouvelles à géocoder")
+
+    erreurs = geocoder(requetes, cache)
+
+    for i in a_faire:
+        la, lo = cache.get(df.at[i, "_cle"], ("", ""))
         if la:
             df.loc[i, ["lat", "lon"]] = [float(la), float(lo)]
             df.loc[i, "localisation"] = "Adresse géocodée"
     pd.DataFrame([(k, v[0], v[1]) for k, v in cache.items()], columns=["cle", "lat", "lon"]) \
         .sort_values("cle").to_csv(fcache, index=False, lineterminator="\n")
-    log(f"   {nouveaux} adresses interrogées aujourd'hui" + (f", {erreurs} erreurs de géocodage" if erreurs else ""))
+    if erreurs:
+        log(f"   {erreurs} adresses non traitées (service lent ou indisponible) : nouvel essai la nuit prochaine")
+    df = df.drop(columns=["_cle"])
     return df.drop(columns=["_x", "_y"])
 
 
@@ -359,6 +402,10 @@ def main():
 
     log("3. Localisation")
     df = localiser(df, gj)
+
+    df, n_corr = appliquer_corrections(df, DATA.parent / "corrections_localisation.csv")
+    if n_corr:
+        log(f"   {n_corr} localisation(s) corrigée(s) manuellement")
 
     log("4. Écriture des fichiers")
     df = df[COLONNES].sort_values("siret")

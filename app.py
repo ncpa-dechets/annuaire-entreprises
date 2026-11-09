@@ -15,9 +15,11 @@ import pandas as pd
 import streamlit as st
 
 from carte import html_carte
-from referentiels import DIVISIONS, SECTIONS, SEUILS_EFFECTIF, TYPES_PAR_DEFAUT, TYPES_STRUCTURE
+from referentiels import appliquer_corrections, DIVISIONS, SECTIONS, SEUILS_EFFECTIF, TYPES_PAR_DEFAUT, TYPES_STRUCTURE
 
-DATA = Path(__file__).resolve().parent / "data"
+RACINE = Path(__file__).resolve().parent
+DATA = RACINE / "data"
+CORRECTIONS = RACINE / "corrections_localisation.csv"
 MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre",
         "octobre", "novembre", "décembre"]
 
@@ -25,15 +27,20 @@ st.set_page_config(page_title="Annuaire des entreprises – NCPA", page_icon="�
 
 st.markdown("""
 <style>
-html, body, [class*="st-"], .stMarkdown, button, input, textarea {font-family: Calibri, "Segoe UI", system-ui, sans-serif;}
-.block-container {padding-top: 1.6rem; padding-bottom: 2rem;}
+html, body, .stApp, .stApp p, .stApp label, .stApp input, .stApp textarea, .stApp h1, .stApp h2, .stApp h3,
+.stApp h4, .stApp h5, .stApp li, .stApp summary {font-family: Calibri, "Segoe UI", system-ui, sans-serif;}
+/* les icônes de Streamlit gardent leur police (sinon leur nom s'affiche en toutes lettres) */
+[data-testid="stIconMaterial"] {font-family: "Material Symbols Rounded" !important;}
+.block-container {padding-top: 1.2rem; padding-bottom: 2rem; padding-left: 2rem; padding-right: 2rem; max-width: 100%;}
+/* la carte occupe la hauteur de la fenêtre */
+iframe[data-testid="stIFrame"] {height: calc(100vh - 190px) !important; min-height: 480px;}
 .entete {border-bottom: 3px solid #B91E27; padding-bottom: .55rem; margin-bottom: .9rem;}
 .entete .sur {font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: #B91E27; font-weight: 700;}
-.entete h1 {font-size: 1.9rem; margin: .1rem 0 .2rem; padding: 0; line-height: 1.15;}
+.entete h1 {font-size: 1.7rem; margin: .1rem 0 .2rem; padding: 0; line-height: 1.15;}
 .entete p {margin: 0; color: #5f6368; font-size: .95rem;}
 .chiffres {display: flex; flex-wrap: wrap; gap: 0; margin: .2rem 0 1rem;}
 .chiffres > div {padding: .1rem 1.4rem .1rem .9rem; border-left: 3px solid #B1B993; margin-bottom: .4rem;}
-.chiffres .v {font-size: 1.55rem; font-weight: 700; line-height: 1.1;}
+.chiffres .v {font-size: 1.35rem; font-weight: 700; line-height: 1.1;}
 .chiffres .l {font-size: .85rem; color: #5f6368;}
 .note {font-size: .85rem; color: #5f6368;}
 </style>""", unsafe_allow_html=True)
@@ -53,10 +60,12 @@ def lire_meta():
 
 
 @st.cache_data(show_spinner="Chargement de l'annuaire…")
-def charger(version):
+def charger(version, version_corrections):
     df = pd.read_csv(DATA / "etablissements.csv", dtype=str, keep_default_na=False)
     for c in ["lat", "lon", "effectif_min", "effectif_max"]:
         df[c] = pd.to_numeric(df[c], errors="coerce")
+    # Corrections appliquées dès leur dépôt, sans attendre la collecte de la nuit
+    df, _ = appliquer_corrections(df, CORRECTIONS)
     df["annee_creation"] = pd.to_numeric(df["date_creation"].str[:4], errors="coerce")
     df["_recherche"] = (df["nom"] + " " + df["raison_sociale"] + " " + df["enseigne"] + " " + df["siret"] + " "
                         + df["adresse"] + " " + df["commune"] + " " + df["naf_libelle"] + " "
@@ -83,7 +92,7 @@ if meta is None or not (DATA / "etablissements.csv").exists():
                "« Mise à jour quotidienne de l'annuaire » puis « Run workflow ».")
     st.stop()
 
-df, communes_gj, journal = charger(meta["date_maj"])
+df, communes_gj, journal = charger(meta["date_maj"], CORRECTIONS.stat().st_mtime if CORRECTIONS.exists() else 0)
 
 
 # ---------------------------------------------------------------------------
@@ -259,7 +268,7 @@ def vue_annuaire():
     if f.empty:
         st.info("Aucun établissement ne correspond à ces critères. Élargissez la recherche ou retirez un filtre.")
         return
-    page = html_carte(f, communes_gj, proportionnel, focus)
+    page = html_carte(f, communes_gj, proportionnel, focus, interne=interne)
     if hasattr(st, "iframe"):
         st.iframe(page, height=625)
     else:                                   # anciennes versions de Streamlit
@@ -345,8 +354,12 @@ def vue_qualite():
     <div><div class="v">{nombre(meta.get('nb_entrepreneurs_individuels_exclus', 0))}</div><div class="l">entrepreneurs individuels exclus</div></div>
     <div><div class="v">{loc.get('SIRENE', 0) / len(df):.0%}</div><div class="l">localisés par SIRENE</div></div>
     <div><div class="v">{nombre(loc.get('Adresse géocodée', 0))}</div><div class="l">localisés par géocodage</div></div>
-    <div><div class="v">{nombre(loc.get('Non localisé', 0))}</div><div class="l">non localisés</div></div></div>""",
+    <div><div class="v">{nombre(loc.get('Non localisé', 0))}</div><div class="l">non localisés</div></div>
+    <div><div class="v">{nombre(loc.get('Corrigée manuellement', 0))}</div><div class="l">corrigés à la main</div></div></div>""",
                 unsafe_allow_html=True)
+    st.caption("Position erronée ? Faites un clic droit au bon endroit sur la carte pour obtenir ses coordonnées, "
+               "puis ajoutez une ligne au fichier corrections_localisation.csv du dépôt GitHub. "
+               "La correction s'applique aussitôt et à chaque collecte.")
     st.caption(f"Dernière collecte : {date_fr(meta['date_maj'])}, en {meta.get('duree_secondes', '?')} secondes.")
 
     c1, c2 = st.columns(2)
