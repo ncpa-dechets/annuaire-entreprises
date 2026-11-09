@@ -7,7 +7,7 @@ import {encartProximite} from "./themes/commerces.js";
 import {encartTourisme} from "./themes/tourisme.js";
 import {avertissement, chiffresCles, blocSecteurs, blocFlux, blocFamilles, blocAges, tableEmployeurs, tableAnnonces, pied} from "./blocs.js";
 
-let tri = {col:"n", sens:-1};
+let tri = {col:"n", sens:-1}, sansImmobilier = false;
 
 // Colonnes du tableau : [clé, intitulé, numérique, réservé aux données complètes]
 const COLS = [["nom", "Commune"], ["pop", "Habitants", true], ["n", "Établissements", true], ["pei", "dont entrepreneurs individuels", true, true],
@@ -15,7 +15,7 @@ const COLS = [["nom", "Commune"], ["pop", "Habitants", true], ["n", "Établissem
   ["crea", "Créations 12 mois", true], ["ferm", "Fermetures 12 mois", true, true], ["solde", "Solde", true, true], ["dom", "Secteur dominant"]];
 
 function lignes(){
-  return listeCommunes().map(k => { const c = chiffres(k.code), d = secteurDominant(c);
+  return listeCommunes().map(k => { const c = chiffres(k.code), d = secteurDominant(c, sansImmobilier);
     return {code:k.code, nom:k.nom, pop:k.pop, n:c.n, pei:c.n ? 100 * c.ei / c.n : null, emp:c.emp, sal:aEmploi() ? emploiDe(k.code).eff.at(-1) : null,
       dens:k.pop ? 1000 * c.n / k.pop : null, crea:c.crea12, ferm:c.ferm12, solde:c.crea12 - c.ferm12, dom:SECTIONS[d] || "", sec:d}; });
 }
@@ -41,13 +41,16 @@ function tableau(){
       <p class="note">Cliquez sur un intitulé de colonne pour trier, sur une commune pour ouvrir sa fiche.</p></div>
       <div class="no-print"><button class="btn" id="co-xlsx">Télécharger (Excel)</button> <button class="btn" data-imprimer>Imprimer ou enregistrer en PDF</button></div></div>
     ${avertissement()}
+    <div class="outils no-print" style="margin:6px 0 10px"><label class="case" style="padding:0"><input type="checkbox" id="co-immo"${sansImmobilier ? " checked" : ""}>
+      Secteur dominant hors activités immobilières</label></div>
     <div class="cadre libre"><table class="compar"><thead><tr>${cols.map(([k, lib, n]) =>
-      `<th data-co="${k}"${n ? ' class="d"' : ""} tabindex="0">${esc(lib)}${tri.col === k ? `<span class="fl">${tri.sens > 0 ? "▲" : "▼"}</span>` : ""}</th>`).join("")}</tr></thead>
+      `<th data-co="${k}"${n ? ' class="d"' : ""} tabindex="0">${esc(k === "dom" && sansImmobilier ? "Secteur dominant, hors immobilier" : lib)}${tri.col === k ? `<span class="fl">${tri.sens > 0 ? "▲" : "▼"}</span>` : ""}</th>`).join("")}</tr></thead>
       <tbody>${L.map(l => `<tr data-code="${l.code}">${cols.map(([k]) => cel(l, k)).join("")}</tr>`).join("")}</tbody>
       <tfoot><tr>${cols.map(([k]) => k === "nom" ? "<td><b>Territoire</b></td>" : k === "dom" ? "<td></td>" : `<td class="num d"><b>${
         ({pop:t.pop == null ? "–" : nb(t.pop), n:nb(t.n), pei:pct(t.ei, t.n), emp:nb(t.emp), sal:aEmploi() ? nb(emploiDe("").eff.at(-1)) : "–", dens:t.pop ? nb(Math.round(1000 * t.n / t.pop)) : "–",
           crea:nb(t.crea12), ferm:nb(t.ferm12), solde:signe(t.crea12 - t.ferm12)})[k]}</b></td>`).join("")}</tr></tfoot></table></div>
     ${pied()}`;
+  $("co-immo").onchange = ev => { sansImmobilier = ev.target.checked; tableau(); };
   const trier = k => { tri = {col:k, sens: tri.col === k ? -tri.sens : (k === "nom" || k === "dom" ? 1 : -1)}; tableau(); };
   document.querySelectorAll("#co-contenu th[data-co]").forEach(th => {
     th.onclick = () => trier(th.dataset.co);
@@ -57,7 +60,7 @@ function tableau(){
   $("co-xlsx").onclick = () => {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, feuille(L.map(l => ({...l, pei:l.pei == null ? "" : Math.round(l.pei * 10) / 10, dens:l.dens == null ? "" : Math.round(l.dens)})),
-      cols.map(([k, lib]) => [k, k === "pei" ? "Entrepreneurs individuels (%)" : lib])), "Communes");
+      cols.map(([k, lib]) => [k, k === "pei" ? "Entrepreneurs individuels (%)" : k === "dom" && sansImmobilier ? "Secteur dominant, hors immobilier" : lib])), "Communes");
     XLSX.writeFile(wb, `communes_ncpa_${jour()}.xlsx`);
   };
 }

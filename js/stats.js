@@ -36,8 +36,8 @@ export const listeCommunes = () => !stats ? [] : Object.entries(stats.communes)
   .map(([code, v]) => ({code, nom:v.nom, pop:v.population})).sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
 
 /* Secteur qui compte le plus d'établissements. */
-export function secteurDominant(c){
-  return Object.entries(c.sections).filter(([s]) => s !== "Z").sort((a, b) => b[1].n - a[1].n)[0]?.[0] || "";
+export function secteurDominant(c, sansImmobilier = false){
+  return Object.entries(c.sections).filter(([s]) => s !== "Z" && !(sansImmobilier && s === "L")).sort((a, b) => b[1].n - a[1].n)[0]?.[0] || "";
 }
 
 /* Principaux employeurs, d'après les tranches d'effectif de l'annuaire (hors entrepreneurs individuels). */
