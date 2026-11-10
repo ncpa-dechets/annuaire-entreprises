@@ -133,6 +133,7 @@ function vueEnsemble(){
 
 function surligner(e, centrer){
   etat.selection = e.siret;
+  if (!centrer) montrerDansListe(e);
   document.querySelectorAll("#tb-liste tr.sel").forEach(t => t.classList.remove("sel"));
   document.querySelector(`#tb-liste tr[data-s="${e.siret}"]`)?.classList.add("sel");
   if (anneau){ map.removeLayer(anneau); anneau = null; }
@@ -237,6 +238,29 @@ function listeSuite(){
   const lot = filtres.slice(etat.rendus, etat.rendus + 200);
   $("tb-liste").insertAdjacentHTML("beforeend", lot.map(ligne).join(""));
   etat.rendus += lot.length;
+}
+
+function montrerDansListe(e){
+  const index = filtres.findIndex(x => x.siret === e.siret);
+  if (index < 0) return;
+  // La ligne peut se trouver au-delà des lots déjà chargés dans le tableau.
+  while (etat.rendus <= index) listeSuite();
+  const ouvrir = !$("tiroir").classList.contains("ouvert");
+  $("tiroir").classList.add("ouvert");
+  $("tog-liste").setAttribute("aria-expanded", "true");
+  const defiler = () => {
+    if (ouvrir) map.invalidateSize();
+    if (etat.selection !== e.siret) return;
+    const ligne = document.querySelector(`#tb-liste tr[data-s="${e.siret}"]`);
+    if (!ligne) return;
+    const corps = $("corps-liste"), hauteurEntete = corps.querySelector("thead").getBoundingClientRect().height;
+    const rect = ligne.getBoundingClientRect();
+    // Faire défiler uniquement le tableau, en gardant la ligne sous l'en-tête fixe.
+    corps.scrollTo({top:corps.scrollTop + rect.top - corps.getBoundingClientRect().top
+      - hauteurEntete - Math.max(0, (corps.clientHeight - hauteurEntete - rect.height) / 2)});
+  };
+  if (ouvrir) setTimeout(defiler, 220); // attendre la fin de l'ouverture du tiroir
+  else defiler();
 }
 
 /* =========================================================================
