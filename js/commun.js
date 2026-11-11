@@ -80,8 +80,9 @@ export function multiSelect(hote, {vide, pluriel, recherche = true, onChange}){
 /* =========================================================================
    Données
    ========================================================================= */
-export let E = [], meta = {}, journal = [], communesGJ = null, stats = null, emploi = null, tourisme = null, offres = null, bmo = null, B = [];
+export let E = [], meta = {}, journal = [], communesGJ = null, stats = null, emploi = null, tourisme = null, offres = null, bmo = null, bonneBoite = null, B = [];
 export const parSiret = new Map(), bodaccParSiren = new Map(), etabParSiren = new Map();
+export const potentielParSiret = new Map();
 export const aPosition = e => e.lat !== null && e.lon !== null;
 
 export async function charger(){
@@ -90,13 +91,17 @@ export async function charger(){
   meta = await rm.json();
   const v = encodeURIComponent(meta.date_maj || Date.now());
   const lire = (u, opt) => fetch(`${u}?v=${v}`).then(r => r.ok ? r.text() : (opt ? "" : Promise.reject(new Error(u))));
-  const [csv, gj, jr, corr, bod, st, em, to, of, bm] = await Promise.all([
+  const [csv, gj, jr, corr, bod, st, em, to, of, bm, bb] = await Promise.all([
     lire("data/etablissements.csv"), lire("data/communes.geojson"),
     lire("data/journal.csv", true), lire("corrections_localisation.csv", true), lire("data/bodacc.csv", true),
     lire("data/stats.json", true), lire("data/emploi_urssaf.json", true),
-    lire("data/tourisme.json", true), lire("data/offres.json", true), lire("data/bmo.json", true)]);
+    lire("data/tourisme.json", true), lire("data/offres.json", true), lire("data/bmo.json", true), lire("data/la_bonne_boite.json", true)]);
   const json = t => { try { return t.trim() ? JSON.parse(t) : null; } catch(e){ return null; } };
   tourisme = json(to); offres = json(of); bmo = json(bm);
+  bonneBoite = json(bb);
+  if (!Array.isArray(bonneBoite?.etablissements)) bonneBoite = null;
+  potentielParSiret.clear();
+  bonneBoite?.etablissements.forEach(e => potentielParSiret.set(e.siret, e));
   try { emploi = em.trim() ? JSON.parse(em) : null; } catch(e){ emploi = null; }
   try { stats = st.trim() ? JSON.parse(st) : null; } catch(e){ stats = null; }
   communesGJ = JSON.parse(gj);

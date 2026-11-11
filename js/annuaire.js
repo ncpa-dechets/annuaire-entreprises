@@ -1,6 +1,7 @@
 /* Onglet Annuaire : carte, filtres, liste, exports. */
 import {$, esc, norm, nb, dateFr, num, sirFmt, toast, debounce, telecharger, estEmployeur, estApprox, PRECISIONS,
-  multiSelect, SECTIONS, COULEURS, TYPES, TYPES_DEFAUT, E, parSiret, communesGJ, feuille, jour, ligneBodacc} from "./commun.js";
+  multiSelect, SECTIONS, COULEURS, TYPES, TYPES_DEFAUT, E, parSiret, communesGJ, feuille, jour, ligneBodacc,
+  bonneBoite, potentielParSiret} from "./commun.js";
 
 const etat = {proportionnel:true, tri:{col:"emin", sens:-1}, rendus:0, selection:null};
 let filtres = [];
@@ -113,6 +114,10 @@ function styliser(){
 function fiche(e){
   const rs = e.rs && e.rs !== e.nom ? `<div class="rs">${esc(e.rs)}</div>` : "";
   const eff = esc(e.trl) + (e.aeff ? ` <span style="color:var(--mut)">(${esc(e.aeff)})</span>` : "");
+  const potentiel = potentielParSiret.get(e.siret);
+  const embauche = potentiel ? `<tr><td>Embauche</td><td>${potentiel.fort_potentiel === true ? "Fort potentiel estimé" : "Potentiel estimé"}
+    ${Number.isFinite(potentiel.indice) ? ` · indice ${nb(potentiel.indice)}/100` : ""}<br>
+    <span style="color:var(--mut)">Estimation à 6 mois, pas une offre.<br>La Bonne Boîte · consulté le ${dateFr(bonneBoite.date)}</span></td></tr>` : "";
   return `<div class="fiche"><div class="n">${esc(e.nom)}</div>${rs}
     <div class="act" style="border-color:${COULEURS[e.sec]}">${esc(e.nafl || "Activité non renseignée")}${e.naf ? ` <span style="color:var(--mut)">(${esc(e.naf)})</span>` : ""}</div>
     <table><tr><td>Adresse</td><td>${esc(e.adr)}${e.cplt ? "<br>" + esc(e.cplt) : ""}<br>${esc(e.cp)} ${esc(e.com)}</td></tr>
@@ -120,7 +125,7 @@ function fiche(e){
     <tr><td>Créé le</td><td>${dateFr(e.crea)}</td></tr>
     <tr><td>Établissement</td><td>${e.siege === "Oui" ? "Siège" : "Établissement secondaire"}</td></tr>
     <tr><td>Structure</td><td>${esc(e.tstr)}${e.catent ? " (" + esc(e.catent) + ")" : ""}</td></tr>
-    <tr><td>SIRET</td><td>${sirFmt(e.siret)}</td></tr>${ligneBodacc(e)}
+    <tr><td>SIRET</td><td>${sirFmt(e.siret)}</td></tr>${ligneBodacc(e)}${embauche}
     <tr><td>Position</td><td>${esc(PRECISIONS[e.prec] ? PRECISIONS[e.prec][0].toUpperCase() + PRECISIONS[e.prec].slice(1) : e.loc)}${e.prec ? `<br><span style="color:var(--mut)">Source : ${esc(e.loc)}</span>` : ""}</td></tr></table>
     <a href="https://annuaire-entreprises.data.gouv.fr/etablissement/${esc(e.siret)}" target="_blank" rel="noopener">Fiche complète sur l'Annuaire des entreprises</a></div>`;
 }

@@ -2,6 +2,7 @@
 import {$, esc, nb, norm, dateFr, dateLongue, debounce, stats, offres, bmo, feuille, jour} from "../commun.js";
 import {barres, courbes, legende, pct, C_STRUCT, C_EI} from "../graphes.js";
 import {pied} from "../blocs.js";
+import {blocRecrutement} from "./recrutement.js";
 
 let bassin = "", fCom = "", fContrat = "", fTexte = "";
 const nomCommune = code => stats?.communes[code]?.nom || code;
@@ -12,18 +13,17 @@ const compte = (liste, cle) => { const m = new Map(); liste.forEach(o => { const
 export function emploiVue(h){
   h.innerHTML = `
     <div class="tete-page"><div><h2>Emploi et recrutement</h2>
-      <p class="note">Offres d'emploi diffusées par France Travail pour un lieu de travail sur le territoire, et intentions d'embauche
-        des employeurs d'après l'enquête annuelle Besoins en main-d'œuvre.</p></div>
+      <p class="note">Potentiels d'embauche des entreprises, offres d'emploi diffusées par France Travail sur le territoire,
+        et intentions d'embauche d'après l'enquête annuelle Besoins en main-d'œuvre.</p></div>
       <div class="no-print">${offres?.offres?.length ? '<button class="btn" id="em-xlsx">Télécharger (Excel)</button> ' : ""}<button class="btn" data-imprimer>Imprimer ou enregistrer en PDF</button></div></div>
-    <div id="em-offres"></div><div id="em-bmo"></div>${pied()}`;
-  blocOffres(); blocBmo();
+    <div id="em-recrutement"></div><div id="em-offres"></div><div id="em-bmo"></div>${pied()}`;
+  blocRecrutement($("em-recrutement")); blocOffres(); blocBmo();
 }
 
 function blocOffres(){
   const h = $("em-offres"), O = offres?.offres || [];
   if (!offres){ h.innerHTML = `<h3 class="partie">Offres d'emploi en cours</h3>
-    <p class="note">Les offres apparaîtront ici après la première collecte nocturne faite avec les identifiants France Travail
-      (secrets <code>FT_CLIENT_ID</code> et <code>FT_CLIENT_SECRET</code> du dépôt).</p>`; return; }
+    <p class="note">Les offres d'emploi publiées ne sont pas disponibles pour le moment.</p>`; return; }
   const cdi = O.filter(o => o.contrat === "CDI").length, postes = O.reduce((s, o) => s + (o.postes || 1), 0);
   const hist = offres.historique || [];
   const parMetier = compte(O, o => o.metier).slice(0, 12), parContrat = compte(O, o => o.contrat_libelle.split(" - ")[0]), parCom = compte(O, o => nomCommune(o.code_commune)).slice(0, 12);

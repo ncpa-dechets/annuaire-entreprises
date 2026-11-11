@@ -36,7 +36,7 @@ jobs:
       - name: Collecter les établissements
         env:
           INSEE_API_KEY: ${{ secrets.INSEE_API_KEY }}
-          FT_CLIENT_ID: ${{ secrets.FT_CLIENT_ID }}            # France Travail (offres d'emploi) : facultatifs
+          FT_CLIENT_ID: ${{ secrets.FT_CLIENT_ID }}            # France Travail (offres et La Bonne Boîte) : facultatifs
           FT_CLIENT_SECRET: ${{ secrets.FT_CLIENT_SECRET }}
           FORCER: ${{ github.event.inputs.forcer || '0' }}
         run: python collecte.py

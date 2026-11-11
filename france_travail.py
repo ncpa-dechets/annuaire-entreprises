@@ -22,7 +22,8 @@ from pathlib import Path
 
 import requests
 
-URLS_JETON = ["https://francetravail.io/connexion/oauth2/access_token?realm=%2Fpartenaire",
+URLS_JETON = ["https://authentification-partenaire.francetravail.io/connexion/oauth2/access_token?realm=%2Fpartenaire",
+              "https://francetravail.io/connexion/oauth2/access_token?realm=%2Fpartenaire",
               "https://entreprise.francetravail.fr/connexion/oauth2/access_token?realm=%2Fpartenaire"]
 API_OFFRES = "https://api.francetravail.io/partenaire/offresdemploi/v2/offres/search"
 PORTEE = "api_offresdemploiv2 o2dsoffre"
@@ -37,12 +38,12 @@ BMO_DELAI_JOURS = 30
 # ---------------------------------------------------------------------------
 # Offres d'emploi
 # ---------------------------------------------------------------------------
-def _jeton(identifiant, secret):
+def _jeton(identifiant, secret, portee=PORTEE, nom_api="Offres d'emploi v2"):
     erreur = None
     for url in URLS_JETON:
         try:
             r = requests.post(url, data={"grant_type": "client_credentials", "client_id": identifiant,
-                                         "client_secret": secret, "scope": PORTEE},
+                                         "client_secret": secret, "scope": portee},
                               headers={"Content-Type": "application/x-www-form-urlencoded"}, timeout=60)
             if r.status_code == 200:
                 return r.json()["access_token"]
@@ -50,7 +51,7 @@ def _jeton(identifiant, secret):
         except requests.RequestException as e:
             erreur = str(e)
     raise RuntimeError(f"identification France Travail refusée ({erreur}) : vérifier FT_CLIENT_ID, FT_CLIENT_SECRET "
-                       "et l'abonnement de l'application à l'API Offres d'emploi v2")
+                       f"et l'abonnement de l'application à l'API {nom_api} (autorisations : {portee})")
 
 
 def _offres_commune(session, code):

@@ -21,6 +21,7 @@ collecte.py ─► API SIRENE + IGN + Annuaire         index.html ─► lit dat
 | `urssaf.py` | L'emploi salarié privé par commune et par activité (`data/emploi_urssaf.json`) |
 | `tourisme.py` | Les hébergements touristiques classés (`data/tourisme.json`) |
 | `france_travail.py` | Les offres d'emploi en cours (`data/offres.json`) et l'enquête Besoins en main-d'œuvre (`data/bmo.json`) |
+| `la_bonne_boite.py` | Les indices de potentiel d'embauche par SIRET (`data/la_bonne_boite.json`) |
 | `localisation.py` | Le choix de la position de chaque établissement (voir plus bas) |
 | `bodacc.py` | Les annonces du BODACC du territoire (onglet *Vie des entreprises*) |
 | `.github/workflows/maj_quotidienne.yml` | La planification nocturne |
@@ -49,7 +50,7 @@ collecte.py ─► API SIRENE + IGN + Annuaire         index.html ─► lit dat
     un même commerce peut en compter plusieurs (société d'exploitation, holding, ancien local).
   - *Tourisme* : hébergements classés (Atout France), hébergements déclarés (SIRENE) et emploi
     touristique (Urssaf).
-  - *Emploi et recrutement* : offres en cours (France Travail) et métiers recherchés (enquête BMO).
+  - *Emploi et recrutement* : potentiels d'embauche (La Bonne Boîte), offres en cours (France Travail) et métiers recherchés (enquête BMO).
 - **Annuaire**, **Méthode et qualité** : comme avant.
 
 Le bouton « Imprimer ou enregistrer en PDF » de la Synthèse et des fiches produit un portrait A4.
@@ -65,15 +66,37 @@ privé au 31 décembre, hors fonction publique, agriculture et non-salariés. Le
 jour qu'une fois par an, il n'est retéléchargé que tous les 30 jours (`python urssaf.py` à la main,
 après avoir supprimé `data/emploi_urssaf.json` pour forcer).
 
-## Offres d'emploi : identifiants France Travail
+## Emploi : identifiants France Travail
 
 Les offres viennent de l'API « Offres d'emploi v2 » de [francetravail.io](https://francetravail.io).
 Une application y a deux valeurs : un **identifiant client** et une **clé secrète**.
 
-1. Sur francetravail.io, vérifier que l'application est abonnée à l'API *Offres d'emploi v2*.
+1. Sur francetravail.io, abonner l'application à *La Bonne Boîte v2* pour les potentiels d'embauche,
+   et à *Offres d'emploi v2* pour les annonces, si cet accès vous est accordé.
 2. Dans le dépôt : *Settings › Secrets and variables › Actions › New repository secret*, deux fois :
    `FT_CLIENT_ID` (l'identifiant client) et `FT_CLIENT_SECRET` (la clé secrète).
-3. *Actions › Mise à jour quotidienne › Run workflow*. Le journal indique le nombre d'offres trouvées.
+3. *Actions › Mise à jour quotidienne › Run workflow*. Le journal indique les résultats de chaque source.
+
+**La Bonne Boîte** interroge les SIRET du listing existant, par lots, à moins de 2 appels par seconde.
+Elle utilise les autorisations `search office api_labonneboitev2`, indépendamment des Offres d'emploi
+(`api_offresdemploiv2 o2dsoffre`). Un refus d'accès à l'une n'empêche pas la collecte de l'autre.
+Le jeton est demandé à `authentification-partenaire.francetravail.io`, avec repli sur les anciens services.
+Les secrets ne sont utilisés que par la collecte ; ils ne sont jamais transmis au navigateur.
+
+Les potentiels sont consultés tous les 7 jours, ou lorsque la liste des SIRET change. Un échec conserve
+le dernier fichier complet. Pour forcer une nouvelle consultation en local, avec les deux variables
+d'environnement configurées : `python la_bonne_boite.py --forcer`.
+Le tableau Emploi permet de filtrer par commune et activité, de télécharger la sélection et de voir
+les entreprises sur la carte. La fiche cartographique affiche aussi l'indice et sa date de consultation.
+L'indice sur 100 est une valeur transformée, **pas une probabilité ni un nombre de postes** ; le signal
+« fort potentiel » est repris tel quel de France Travail. L'absence d'un SIRET dans les résultats
+n'est pas assimilée à une absence de recrutement. La consultation couvre les établissements de
+l'annuaire nominatif, donc pas les entrepreneurs individuels exclus de celui-ci.
+
+Un message `invalid_scope` indique que les autorisations demandées ne sont pas acceptées pour
+l'application : vérifier l'API souscrite et ses droits. L'accès à l'API Offres d'emploi est actuellement
+restreint et se demande auprès de France Travail ([fiche officielle](https://www.data.gouv.fr/dataservices/api-offres-demploi)).
+Documentation La Bonne Boîte : [fiche officielle](https://www.data.gouv.fr/dataservices/api-la-bonne-boite).
 
 Sans ces secrets, la collecte fonctionne normalement et la page signale que les offres ne sont
 pas disponibles. L'enquête Besoins en main-d'œuvre ne demande aucune clé ; ses bassins d'emploi

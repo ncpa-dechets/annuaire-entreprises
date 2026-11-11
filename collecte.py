@@ -38,6 +38,7 @@ from localisation import localiser
 from urssaf import collecter_urssaf
 from tourisme import collecter_tourisme
 from france_travail import collecter_bmo, collecter_offres
+from la_bonne_boite import collecter_bonne_boite
 from statistiques import calculer, communes_du_geojson, ecrire as ecrire_stats, periode_courante, resumer
 from referentiels import appliquer_corrections, DIVISIONS, SECTIONS, TRANCHES, TYPES_VOIE, section_de_division, type_structure
 
@@ -341,7 +342,9 @@ def main():
 
     log("8. Emploi et recrutement (France Travail)")
     emploi = dict(ancien_meta.get("france_travail", {}))
-    for cle, action in (("offres", lambda: collecter_offres([c for c, _ in communes], DATA, log)), ("bmo", lambda: collecter_bmo(DATA, log))):
+    for cle, action in (("offres", lambda: collecter_offres([c for c, _ in communes], DATA, log)),
+                        ("bonne_boite", lambda: collecter_bonne_boite(df["siret"].tolist(), DATA, log)),
+                        ("bmo", lambda: collecter_bmo(DATA, log))):
         try:
             resultat = action()
             if resultat:
