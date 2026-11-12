@@ -1,5 +1,5 @@
 {
- "date_maj": "2026-11-11T12:53+01:00",
+ "date_maj": "2026-11-12T13:41+01:00",
  "epci": "200065563",
  "nb_communes": 38,
  "nb_etablissements": 5006,
@@ -16,7 +16,7 @@
   "Lieu nommé": 607,
   "Non localisé": 337
  },
- "duree_secondes": 188,
+ "duree_secondes": 194,
  "source": "Insee, répertoire SIRENE (API Sirene 3.11)",
  "bodacc": {
   "date_max": "2026-11-10",
