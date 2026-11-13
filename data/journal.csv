@@ -1,3 +1,10 @@
 date,evenement,siret,nom,commune,code_commune,naf_libelle,section,tranche_libelle,type_structure
 2026-11-11,Nouvel établissement,13244448000017,TL PAYSAGE,Dozulé,14229,Services d'aménagement paysager,N,Non renseigné,Société commerciale
 2026-11-11,Nouvel établissement,13271211800018,COMPAGNIE OTROMUNDO,Cabourg,14117,Arts du spectacle vivant,R,Non renseigné,Association
+2026-11-13,Nouvel établissement,42009342900033,SCI DU BORD DE MER,Gonneville-sur-Mer,14305,Location de terrains et d'autres biens immobiliers,L,Non renseigné,Société civile immobilière (SCI)
+2026-11-13,Nouvel établissement,43251937900023,SCI JUDEL,Merville-Franceville-Plage,14409,Location de terrains et d'autres biens immobiliers,L,Non renseigné,Société civile (hors SCI)
+2026-11-13,Nouvel établissement,44169285200029,F.H. PODO,Dives-sur-Mer,14225,Supports juridiques de gestion de patrimoine mobilier,K,Non renseigné,Société civile (hors SCI)
+2026-11-13,Nouvel établissement,45118340400024,SOCAPHI,Cabourg,14117,Location de courte durée de voitures et de véhicules automobiles légers,N,Non renseigné,Société commerciale
+2026-11-13,Établissement sorti,34947745500035,SCI COERBRUMA,Merville-Franceville-Plage,14409,Location de terrains et d'autres biens immobiliers,L,Non renseigné,Société civile immobilière (SCI)
+2026-11-13,Établissement sorti,45118340400016,SOCAPHI,Cabourg,14117,Activités des sociétés holding,K,Non renseigné,Société commerciale
+2026-11-13,Établissement sorti,91143930500028,ADVISTING,Cabourg,14117,Programmation informatique,J,1 ou 2 salariés,Société commerciale
