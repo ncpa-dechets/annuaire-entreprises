@@ -1,4 +1,5 @@
 /* Démarrage et navigation entre les onglets (adresse de la forme #/communes/14117). */
+import "./theme.js";
 import {charger, $, meta, dateLongue} from "./commun.js";
 import {initAnnuaire, redimensionner, voir, filtrer} from "./annuaire.js";
 import {initVie, vieEntreprises} from "./vie.js";

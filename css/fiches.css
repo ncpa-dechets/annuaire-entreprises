@@ -1,14 +1,14 @@
 /* ---- Atelier Fiches PDF : choix du document, réglages et aperçu A4 ----
    La largeur du document est celle de la zone imprimable d'une page A4 (210 mm moins deux marges de 13 mm) :
    les cartes et tableaux ont ainsi la même taille dans l'aperçu et sur le papier. */
-#v-fiches{background:#ecebe6}
+#v-fiches{background:var(--fond-fiches)}
 .fi-choix{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-top:14px}
 .fi-carton{background:var(--blanc);border:1px solid var(--bord);border-radius:8px;padding:14px 16px}
 .fi-carton h3{margin-top:0}
 .fi-communes{columns:2;font-size:13px;margin:6px 0 10px}
 .fi-communes label{display:flex;gap:6px;align-items:center;padding:2px 0;break-inside:avoid;cursor:pointer}
 .fi-dossier{list-style:none;padding:0;margin:6px 0 12px}
-.fi-dossier li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #eeeee9;font-size:13px}
+.fi-dossier li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--ligne);font-size:13px}
 
 .fi-atelier{display:grid;grid-template-columns:250px auto;gap:24px;justify-content:center;align-items:start}
 .fi-reglages{position:sticky;top:0;background:var(--blanc);border:1px solid var(--bord);border-radius:8px;padding:14px 16px;font-size:13px}

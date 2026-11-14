@@ -160,7 +160,7 @@ function initCarte(h, etabs){
   L.geoJSON(communesGJ, {style:{color:"#6f6f6f", weight:1, opacity:.7, dashArray:"4 3", fill:false}, interactive:false}).addTo(c);
   pts.forEach(e => { const col = COULEURS[e.sec] || "#999";
     L.circleMarker([e.lat, e.lon], estApprox(e) ? {radius:8, color:col, weight:2, fillColor:col, fillOpacity:.15} : {radius:8, color:"#fff", weight:1.5, fillColor:col, fillOpacity:.9})
-      .bindTooltip(`<b>${esc(e.com)}</b><br>${esc(e.adr)}<br><span style="color:#666">Position ${esc(PRECISIONS[e.prec] || e.loc)}</span>`).addTo(c); });
+      .bindTooltip(`<b>${esc(e.com)}</b><br>${esc(e.adr)}<br><span style="color:var(--mut)">Position ${esc(PRECISIONS[e.prec] || e.loc)}</span>`).addTo(c); });
   return {carte:c, pret};
 }
 

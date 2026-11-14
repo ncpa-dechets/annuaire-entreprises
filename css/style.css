@@ -2,7 +2,30 @@
   --rouge:#B91E27; --rouge-f:#8f161e; --vert:#B1B993; --vert-c:#eef0e6;
   --txt:#1e1e1e; --mut:#5f6368; --bord:#dcdcd6; --fond:#f6f6f3; --blanc:#fff;
   --volet:330px;
+  /* Teintes secondaires : fonds rosés, lignes, survols, axes des graphiques */
+  --rouge-c:#fbecec; --rouge-b:#f0c9cc; --focus:#f3d2d4; --ligne:#eeeee9; --survol:#f1f1ec; --grille:#e6e6e1;
+  --carte:#f2f2ef; --txt2:#444; --axe:#666; --voile:rgba(255,255,255,.92); --ombre:rgba(0,0,0,.15);
+  --bleu:#1f5f8b; --bleu-c:#e6eef5; --plus:#1f7a3a; --fond-fiches:#ecebe6;
+  color-scheme:light;
 }
+/* Thème sombre : choisi avec le bouton de l'en-tête (ou, à défaut, selon le réglage du système).
+   Uniquement à l'écran : l'impression et l'aperçu des fiches PDF restent toujours en clair. */
+@media screen{
+  :root[data-theme="dark"]{
+    --rouge:#e5555d; --rouge-f:#c9363f; --vert:#8f9a6c; --vert-c:#2a2e22;
+    --txt:#e4e4e0; --mut:#a2a6aa; --bord:#3b3d40; --fond:#1d1f21; --blanc:#141517;
+    --rouge-c:#3a1c1f; --rouge-b:#5a2a2e; --focus:#5a2a2e; --ligne:#2a2c2f; --survol:#25272a; --grille:#34363a;
+    --carte:#1f2123; --txt2:#c6c6c1; --axe:#9a9ea2; --voile:rgba(20,21,23,.92); --ombre:rgba(0,0,0,.5);
+    --bleu:#8dbbe0; --bleu-c:#1b2b3a; --plus:#5cc27a; --fond-fiches:#0e0f10;
+    color-scheme:dark;
+  }
+}
+/* L'aperçu A4 des fiches PDF imite le papier : il garde les couleurs claires */
+.fi-doc{--rouge:#B91E27; --rouge-f:#8f161e; --vert:#B1B993; --vert-c:#eef0e6;
+  --txt:#1e1e1e; --mut:#5f6368; --bord:#dcdcd6; --fond:#f6f6f3; --blanc:#fff;
+  --rouge-c:#fbecec; --rouge-b:#f0c9cc; --ligne:#eeeee9; --survol:#f1f1ec; --grille:#e6e6e1;
+  --carte:#f2f2ef; --txt2:#444; --axe:#666; --bleu:#1f5f8b; --bleu-c:#e6eef5; --plus:#1f7a3a;
+  color:var(--txt); color-scheme:light}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
 body{font-family:Calibri,"Segoe UI",system-ui,sans-serif;color:var(--txt);background:var(--blanc);
@@ -10,13 +33,19 @@ body{font-family:Calibri,"Segoe UI",system-ui,sans-serif;color:var(--txt);backgr
 button,input,select{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--rouge);outline-offset:2px}
 
+/* Graphiques SVG : leurs couleurs neutres (grilles, axes, contours blancs) suivent le thème */
+svg line[stroke="#e6e6e1"]{stroke:var(--grille)}
+svg text[fill="#666"],svg text[fill="#777"],svg text[fill="#888"]{fill:var(--axe)}
+svg circle[stroke="#fff"]{stroke:var(--blanc)}
+#b-graphe .mois text{fill:var(--axe)}
+
 /* ---- Bandeau ---- */
 .barre{display:flex;align-items:center;gap:22px;padding:8px 18px;border-bottom:3px solid var(--rouge);background:var(--blanc);flex-wrap:wrap}
 .barre .sur{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--rouge);font-weight:700}
 .barre h1{font-size:21px;margin:0;line-height:1.1}
 .onglets{display:flex;gap:4px;margin-left:auto}
 .onglets a{padding:8px 12px;border-radius:6px;cursor:pointer;color:var(--mut);font-weight:600;text-decoration:none;white-space:nowrap}
-.onglets a[aria-selected="true"]{color:var(--rouge);background:#fbecec}
+.onglets a[aria-selected="true"]{color:var(--rouge);background:var(--rouge-c)}
 .onglets a:hover{color:var(--txt)}
 .maj{font-size:12px;color:var(--mut);text-align:right;line-height:1.3}
 #btn-filtres{display:none;border:1px solid var(--bord);background:var(--blanc);border-radius:6px;padding:6px 10px;cursor:pointer}
@@ -34,7 +63,7 @@ main{min-height:0;position:relative}
 .chiffres b{display:block;font-size:20px;line-height:1.1}
 .chiffres span{font-size:12px;color:var(--mut)}
 .champ{width:100%;padding:8px 10px;border:1px solid var(--bord);border-radius:6px;background:var(--blanc)}
-.champ:focus{border-color:var(--rouge);outline:none;box-shadow:0 0 0 2px #f3d2d4}
+.champ:focus{border-color:var(--rouge);outline:none;box-shadow:0 0 0 2px var(--focus)}
 label.lib{display:block;font-size:13px;font-weight:600;margin:12px 0 4px}
 .liens{font-size:12px;float:right;font-weight:400}
 .liens button{border:0;background:none;color:var(--rouge);cursor:pointer;padding:0 0 0 8px;text-decoration:underline}
@@ -49,7 +78,7 @@ details.plus summary{cursor:pointer;font-weight:600;font-size:13px}
 .radios{display:flex;gap:14px;font-size:13px}
 .radios label{display:flex;gap:6px;align-items:center;cursor:pointer}
 .reinit{margin-top:18px;width:100%;padding:8px;border:1px solid var(--rouge);background:var(--blanc);color:var(--rouge);border-radius:6px;cursor:pointer;font-weight:600}
-.reinit:hover{background:#fbecec}
+.reinit:hover{background:var(--rouge-c)}
 .source{font-size:12px;color:var(--mut);margin-top:16px;line-height:1.4}
 .source a{color:var(--rouge)}
 
@@ -57,7 +86,7 @@ details.plus summary{cursor:pointer;font-weight:600;font-size:13px}
 .ms{position:relative}
 .ms>button{width:100%;text-align:left;padding:8px 28px 8px 10px;border:1px solid var(--bord);border-radius:6px;background:var(--blanc);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}
 .ms>button::after{content:"";position:absolute;right:11px;top:50%;width:7px;height:7px;border-right:2px solid var(--mut);border-bottom:2px solid var(--mut);transform:translateY(-70%) rotate(45deg)}
-.ms .panneau{position:absolute;z-index:1500;left:0;right:0;top:calc(100% + 3px);background:var(--blanc);border:1px solid var(--bord);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.15);padding:8px}
+.ms .panneau{position:absolute;z-index:1500;left:0;right:0;top:calc(100% + 3px);background:var(--blanc);border:1px solid var(--bord);border-radius:6px;box-shadow:0 6px 18px var(--ombre);padding:8px}
 .ms .panneau[hidden]{display:none}
 .ms .liste{max-height:260px;overflow:auto;margin-top:6px}
 .ms .liste label{display:flex;gap:7px;align-items:flex-start;padding:4px 3px;font-size:13px;cursor:pointer;border-radius:4px}
@@ -67,7 +96,7 @@ details.plus summary{cursor:pointer;font-weight:600;font-size:13px}
 
 /* Carte et liste */
 #zone{display:flex;flex-direction:column;min-width:0;min-height:0}
-#map{flex:1;min-height:200px;background:#f2f2ef}
+#map{flex:1;min-height:200px;background:var(--carte)}
 #tiroir{border-top:1px solid var(--bord);background:var(--blanc);display:flex;flex-direction:column;height:44px;transition:height .2s}
 #tiroir.ouvert{height:42%}
 .tete{display:flex;align-items:center;gap:10px;padding:6px 12px;min-height:43px}
@@ -83,10 +112,10 @@ th{position:sticky;top:0;background:var(--fond);text-align:left;padding:7px 10px
 th[data-tri]{cursor:pointer}
 th[data-tri]:hover{color:var(--rouge)}
 th .fl{color:var(--rouge);margin-left:3px}
-td{padding:6px 10px;border-bottom:1px solid #eeeee9;vertical-align:top}
+td{padding:6px 10px;border-bottom:1px solid var(--ligne);vertical-align:top}
 tbody tr{cursor:pointer}
 tbody tr:hover{background:var(--vert-c)}
-tbody tr.sel{background:#fbecec}
+tbody tr.sel{background:var(--rouge-c)}
 td.num{white-space:nowrap}
 .sansloc{color:var(--mut);font-size:11px;margin-left:4px}
 .vide-msg{padding:18px;color:var(--mut)}
@@ -101,7 +130,7 @@ td.num{white-space:nowrap}
 .fiche a{color:var(--rouge);font-weight:600;text-decoration:none;display:inline-block;margin-top:8px}
 .fiche a:hover{text-decoration:underline}
 .coord input{width:100%;padding:4px 6px;margin:6px 0;border:1px solid var(--bord);border-radius:4px}
-.ctl{background:#fff;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.25);padding:6px 9px;font-size:12px}
+.ctl{background:var(--blanc);border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.25);padding:6px 9px;font-size:12px}
 .ctl button{border:0;background:none;cursor:pointer;padding:0;font-size:12px}
 .tailles{display:flex;align-items:flex-end;gap:12px}
 .tailles div{text-align:center;color:var(--mut)}
@@ -117,7 +146,7 @@ td.num{white-space:nowrap}
 .page p.note{color:var(--mut);margin:4px 0 12px;max-width:820px;line-height:1.45}
 .outils{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin:12px 0}
 .outils label{font-size:13px;font-weight:600;display:flex;flex-direction:column;gap:4px}
-.outils select{padding:7px 8px;border:1px solid var(--bord);border-radius:6px;min-width:190px;background:#fff}
+.outils select{padding:7px 8px;border:1px solid var(--bord);border-radius:6px;min-width:190px;background:var(--blanc)}
 .gros{display:flex;flex-wrap:wrap;gap:6px 0;margin:10px 0 6px}
 .gros div{border-left:3px solid var(--vert);padding:0 22px 0 10px}
 .gros b{display:block;font-size:24px;line-height:1.1}
@@ -133,38 +162,38 @@ ul.etapes li{margin-bottom:5px}
 .outils input[type=search]{padding:7px 8px;border:1px solid var(--bord);border-radius:6px;min-width:220px;font-weight:400}
 .outils label.case{flex-direction:row;align-items:center;font-weight:400;padding-bottom:8px}
 .evts{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 14px}
-.evts label{display:flex;align-items:center;gap:6px;border:1px solid var(--bord);border-radius:16px;padding:4px 10px;font-size:12.5px;cursor:pointer;background:#fff}
+.evts label{display:flex;align-items:center;gap:6px;border:1px solid var(--bord);border-radius:16px;padding:4px 10px;font-size:12.5px;cursor:pointer;background:var(--blanc)}
 .evts label.off{opacity:.5}
 .evts input{margin:0}
 .evts .n{color:var(--mut)}
 .pastille{display:inline-block;width:9px;height:9px;border-radius:50%;flex:none}
 td .evt{display:flex;align-items:center;gap:6px;white-space:nowrap}
-td.detail{font-size:12px;color:#444;max-width:420px}
+td.detail{font-size:12px;color:var(--txt2);max-width:420px}
 .guide{margin-top:34px;padding-top:6px;border-top:1px solid var(--bord)}
 .guide h4{font-size:14px;margin:16px 0 6px}
 .guide dl{margin:0}
 .guide dt{font-weight:700;display:flex;align-items:center;gap:7px;margin-top:10px}
-.guide dd{margin:3px 0 0 16px;line-height:1.45;color:#333;max-width:560px}
+.guide dd{margin:3px 0 0 16px;line-height:1.45;color:var(--txt2);max-width:560px}
 .guide ul{line-height:1.5;max-width:900px;padding-left:20px}
 .guide li{margin-bottom:5px}
 #b-graphe .graphe{position:relative;max-width:900px}
 #b-graphe svg{width:100%;height:auto;display:block;overflow:visible}
 #b-graphe .mois{cursor:pointer;outline:none}
 #b-graphe .mois .zone{fill:transparent}
-#b-graphe .mois text{fill:#666}
-#b-graphe .mois.survol .zone,#b-graphe .mois:focus-visible .zone{fill:#f1f1ec}
+#b-graphe .mois text{fill:var(--axe)}
+#b-graphe .mois.survol .zone,#b-graphe .mois:focus-visible .zone{fill:var(--survol)}
 #b-graphe .mois:focus-visible .zone{stroke:var(--rouge);stroke-width:1.5}
-#b-graphe .mois.sel .zone{fill:#fbecec}
+#b-graphe .mois.sel .zone{fill:var(--rouge-c)}
 #b-graphe .mois.sel text{fill:var(--rouge);font-weight:700}
 #b-graphe svg:has(.mois.survol) .mois:not(.survol) .barre{opacity:.45}
-#b-graphe .infobulle{position:absolute;z-index:10;pointer-events:none;background:#fff;border:1px solid var(--bord);border-radius:6px;
-  box-shadow:0 4px 14px rgba(0,0,0,.15);padding:7px 10px;font-size:12.5px;min-width:190px;transform:translateY(-100%)}
+#b-graphe .infobulle{position:absolute;z-index:10;pointer-events:none;background:var(--blanc);border:1px solid var(--bord);border-radius:6px;
+  box-shadow:0 4px 14px var(--ombre);padding:7px 10px;font-size:12.5px;min-width:190px;transform:translateY(-100%)}
 #b-graphe .infobulle[hidden]{display:none}
 #b-graphe .infobulle .t{font-weight:700;margin-bottom:4px;text-transform:capitalize}
 #b-graphe .infobulle .l{display:flex;align-items:center;gap:7px;line-height:1.6}
 #b-graphe .infobulle .l b{margin-left:auto;padding-left:12px;font-variant-numeric:tabular-nums}
 #b-graphe .infobulle .aide{color:var(--mut);font-size:11.5px;margin-top:4px}
-.bandeau{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:#fbecec;border:1px solid #f0c9cc;border-radius:6px;padding:8px 12px;margin:4px 0 12px}
+.bandeau{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--rouge-c);border:1px solid var(--rouge-b);border-radius:6px;padding:8px 12px;margin:4px 0 12px}
 .sommaire{display:flex;flex-wrap:wrap;gap:6px 18px;margin:2px 0 10px;font-size:13px}
 .sommaire a{color:var(--rouge);text-decoration:none;font-weight:600}
 .sommaire a:hover{text-decoration:underline}
@@ -174,7 +203,7 @@ td.detail{font-size:12px;color:#444;max-width:420px}
 #b-graphe .leg span{display:inline-flex;align-items:center;gap:6px}
 code{background:var(--fond);padding:1px 5px;border-radius:4px;font-size:12.5px}
 
-#chargement{position:fixed;inset:0;background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;z-index:5000;font-size:16px;color:var(--mut);text-align:center;padding:20px}
+#chargement{position:fixed;inset:0;background:var(--voile);display:flex;align-items:center;justify-content:center;z-index:5000;font-size:16px;color:var(--mut);text-align:center;padding:20px}
 #chargement[hidden]{display:none}
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:8px 14px;border-radius:6px;font-size:13px;z-index:6000}
 #toast[hidden]{display:none}
@@ -217,13 +246,13 @@ body:not([data-vue="annuaire"]) #btn-filtres{display:none}
 .barres .piste{position:relative;height:14px;display:flex;gap:2px}
 .barres .piste i{display:block;height:100%;border-radius:0 4px 4px 0;min-width:2px}
 .barres .piste i:not(:last-of-type){border-radius:0}
-.barres .piste u{position:absolute;top:-3px;bottom:-3px;width:3px;margin-left:-1px;background:#333;border-radius:1px;box-shadow:0 0 0 1.5px #fff}
+.barres .piste u{position:absolute;top:-3px;bottom:-3px;width:3px;margin-left:-1px;background:var(--txt);border-radius:1px;box-shadow:0 0 0 1.5px var(--blanc)}
 .barres .val{font-size:13px;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;min-width:84px}
 
 .colonnes svg{width:100%;height:auto;display:block;overflow:visible}
 .colonnes .an{outline:none}
 .colonnes .an .zone{fill:transparent}
-.colonnes .an:hover .zone,.colonnes .an:focus-visible .zone{fill:#f1f1ec}
+.colonnes .an:hover .zone,.colonnes .an:focus-visible .zone{fill:var(--survol)}
 
 #sy-carte{height:380px;background:var(--blanc);border:1px solid var(--bord);border-radius:8px}
 #sy-carte .leaflet-interactive{cursor:pointer}
@@ -233,8 +262,8 @@ table.compar th{cursor:pointer;white-space:normal;vertical-align:bottom;line-hei
 table.compar th:hover{color:var(--rouge)}
 table.compar tfoot td{background:var(--fond);border-top:2px solid var(--bord);position:sticky;bottom:0}
 
-.bulle{position:fixed;z-index:7000;pointer-events:none;background:#fff;border:1px solid var(--bord);border-radius:6px;
-  box-shadow:0 4px 14px rgba(0,0,0,.15);padding:7px 10px;font-size:12.5px;max-width:300px;line-height:1.4}
+.bulle{position:fixed;z-index:7000;pointer-events:none;background:var(--blanc);border:1px solid var(--bord);border-radius:6px;
+  box-shadow:0 4px 14px var(--ombre);padding:7px 10px;font-size:12.5px;max-width:300px;line-height:1.4}
 .bulle[hidden]{display:none}
 .bulle .l{display:flex;align-items:center;gap:7px}
 .bulle .l b{margin-left:auto;padding-left:14px;font-variant-numeric:tabular-nums}
@@ -276,11 +305,11 @@ table.compar tfoot td{background:var(--fond);border-top:2px solid var(--bord);po
 .courbes .pt{opacity:0}
 .courbes .an:hover .guide,.courbes .an:focus-visible .guide,.courbes .an:hover .pt,.courbes .an:focus-visible .pt{opacity:1}
 .courbes .an:hover .zone,.courbes .an:focus-visible .zone{fill:transparent}
-table.compar td .mini{display:inline-block;vertical-align:middle;width:90px;height:10px;position:relative;margin-left:8px;background:#f1f1ec;border-radius:2px}
+table.compar td .mini{display:inline-block;vertical-align:middle;width:90px;height:10px;position:relative;margin-left:8px;background:var(--survol);border-radius:2px}
 table.compar td .mini i{position:absolute;left:0;top:0;bottom:0;background:var(--rouge);border-radius:0 3px 3px 0}
-table.compar td .mini u{position:absolute;top:-3px;bottom:-3px;width:2px;background:#333}
-table.compar tr.sel td{background:#fbecec}
-.plus-val{color:#1f7a3a}.moins-val{color:var(--rouge-f)}
+table.compar td .mini u{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--txt)}
+table.compar tr.sel td{background:var(--rouge-c)}
+.plus-val{color:var(--plus)}.moins-val{color:var(--rouge-f)}
 .detail-sec{border:1px solid var(--bord);border-radius:8px;padding:4px 16px 16px;margin-top:14px;background:var(--fond)}
 .detail-sec .cadre{background:var(--blanc)}
 @media print{ #v-bodacc .inner > :not(#dy-contenu){display:none} .detail-sec{background:none} }
@@ -290,7 +319,7 @@ table.compar tr.sel td{background:#fbecec}
 .sous-menu{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px;padding-bottom:10px;border-bottom:1px solid var(--bord)}
 .sous-menu a{padding:6px 12px;border:1px solid var(--bord);border-radius:16px;text-decoration:none;color:var(--mut);font-weight:600;font-size:13px}
 .sous-menu a:hover{color:var(--txt);border-color:var(--mut)}
-.sous-menu a[aria-current]{color:var(--rouge);border-color:var(--rouge);background:#fbecec}
+.sous-menu a[aria-current]{color:var(--rouge);border-color:var(--rouge);background:var(--rouge-c)}
 .carte-com{height:380px;background:var(--blanc);border:1px solid var(--bord);border-radius:8px}
 .carte-com .leaflet-interactive{cursor:pointer}
 table th.d,table td.d{text-align:right}
@@ -299,7 +328,7 @@ table th.d,table td.d{text-align:right}
 .grille th.vert{vertical-align:bottom;padding:6px 2px;text-align:center;min-width:30px}
 .grille th.vert span{writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;font-weight:600;max-height:190px;overflow:hidden;text-overflow:ellipsis}
 .grille td.c{text-align:center;padding:5px 2px;font-variant-numeric:tabular-nums}
-.grille td.zero{background:#fbecec;color:#a8a29a}
+.grille td.zero{background:var(--rouge-c);color:#a8a29a}
 .grille .deb{border-left:2px solid var(--bord)}
 .grille tbody tr{cursor:default}
 .grille td:first-child,.grille thead tr:first-child th:first-child{position:sticky;left:0;background:var(--blanc);white-space:nowrap;z-index:2}
@@ -308,7 +337,7 @@ table th.d,table td.d{text-align:right}
 .grille tfoot td{background:var(--fond);border-top:2px solid var(--bord)}
 .puces{display:flex;flex-wrap:wrap;gap:6px}
 .puces span{border:1px solid var(--bord);border-radius:14px;padding:3px 10px;font-size:13px;background:var(--blanc)}
-.puces.abs span{background:#fbecec;border-color:#f0c9cc}
+.puces.abs span{background:var(--rouge-c);border-color:var(--rouge-b)}
 #f-naf{margin:0 0 10px;font-size:13px;justify-content:space-between}
 @media (max-width:820px){ .carte-com{height:300px} }
 @media print{ .carte-com{height:300px} .grille table{font-size:10px} }
@@ -318,7 +347,7 @@ table th.d,table td.d{text-align:right}
 /* ---- Recherche d'entreprise (en-tête) ---- */
 .recherche{position:relative;flex:0 1 270px;min-width:180px}
 .recherche input{width:100%;padding:7px 10px;border:1px solid var(--bord);border-radius:6px;background:var(--fond)}
-.recherche input:focus{border-color:var(--rouge);outline:none;box-shadow:0 0 0 2px #f3d2d4;background:var(--blanc)}
+.recherche input:focus{border-color:var(--rouge);outline:none;box-shadow:0 0 0 2px var(--focus);background:var(--blanc)}
 #r-liste{position:absolute;z-index:4000;left:0;top:calc(100% + 4px);width:max(100%,380px);max-height:420px;overflow:auto;margin:0;padding:4px;list-style:none;
   background:var(--blanc);border:1px solid var(--bord);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
 #r-liste[hidden]{display:none}
@@ -328,9 +357,9 @@ table th.d,table td.d{text-align:right}
 #r-liste li.plus{cursor:default;color:var(--mut);font-size:12.5px}
 
 /* ---- Quoi de neuf et fiche entreprise ---- */
-.badge{display:inline-block;font-size:11px;font-weight:600;color:#1f5f8b;background:#e6eef5;border-radius:10px;padding:0 7px;margin-left:4px;vertical-align:1px}
+.badge{display:inline-block;font-size:11px;font-weight:600;color:var(--bleu);background:var(--bleu-c);border-radius:10px;padding:0 7px;margin-left:4px;vertical-align:1px}
 .page h3 .compte{display:inline-block;min-width:22px;text-align:center;font-size:12px;color:var(--mut);background:var(--fond);border:1px solid var(--bord);border-radius:10px;padding:0 6px;margin-left:6px;vertical-align:2px}
-table.nv td .detail,table.nv td.detail{font-size:12px;color:#444;font-weight:400;margin-top:2px}
+table.nv td .detail,table.nv td.detail{font-size:12px;color:var(--txt2);font-weight:400;margin-top:2px}
 .trois{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:24px}
 .trois table{font-size:13px}
 .en-carte{height:320px;background:var(--fond);border:1px solid var(--bord);border-radius:8px}
@@ -351,4 +380,29 @@ table.nv td .detail,table.nv td.detail{font-size:12px;color:#444;font-weight:400
   .notes-visite{display:block;break-inside:avoid;margin-top:18px}
   .notes-visite .lignes{height:150px;background:repeating-linear-gradient(to bottom,transparent 0 29px,#bbb 29px 30px);border-top:1px solid #bbb}
   .badge{border:1px solid #9bb7cf}
+}
+
+/* ---- Bascule thème clair / sombre ---- */
+#btn-theme{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;flex:none;padding:0;
+  border:1px solid var(--bord);border-radius:50%;background:var(--blanc);color:var(--mut);cursor:pointer}
+#btn-theme:hover{color:var(--rouge);border-color:var(--rouge)}
+#btn-theme svg{width:18px;height:18px}
+#btn-theme .lune{display:none}
+:root[data-theme="dark"] #btn-theme .soleil{display:none}
+:root[data-theme="dark"] #btn-theme .lune{display:block}
+@media (max-width:820px){ #btn-theme{margin-left:auto} }
+@media print{ #btn-theme{display:none !important} }
+
+/* Leaflet en thème sombre : bulles, infobulles et panneau des couches. Le fond de carte reste tel quel. */
+@media screen{
+  :root[data-theme="dark"] .leaflet-popup-content-wrapper,:root[data-theme="dark"] .leaflet-popup-tip,
+  :root[data-theme="dark"] .leaflet-tooltip,:root[data-theme="dark"] .leaflet-control-layers{background:var(--blanc);color:var(--txt);border-color:var(--bord)}
+  :root[data-theme="dark"] .leaflet-tooltip-top::before{border-top-color:var(--blanc)}
+  :root[data-theme="dark"] .leaflet-tooltip-bottom::before{border-bottom-color:var(--blanc)}
+  :root[data-theme="dark"] .leaflet-tooltip-left::before{border-left-color:var(--blanc)}
+  :root[data-theme="dark"] .leaflet-tooltip-right::before{border-right-color:var(--blanc)}
+  :root[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{color:var(--mut)}
+  :root[data-theme="dark"] .leaflet-control-attribution{color:#333}
+  :root[data-theme="dark"] .leaflet-control-layers-separator{border-top-color:var(--bord)}
+  :root[data-theme="dark"] .fi-doc .leaflet-tooltip,:root[data-theme="dark"] .fi-doc .leaflet-popup-content-wrapper{background:#fff;color:#1e1e1e}
 }
