@@ -1,4 +1,5 @@
 /* Outils, référentiels et données partagés par tous les onglets. */
+import {MAX_ENTREPRISES} from "./fiches-outils.js";
 /* =========================================================================
    Référentiels (identiques à referentiels.py)
    ========================================================================= */
@@ -35,6 +36,21 @@ export function telecharger(nom, contenu, type){
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url), 1000);
 }
 export const estEmployeur = e => e.emp === "Oui" || (e.emin !== null && e.emin >= 1);
+// Rayon d'un point selon l'effectif (carte de l'annuaire et cartes des fiches)
+export function rayonEffectif(e){
+  if (e.emin === null) return 3;
+  const m = (e.emin + e.emax) / 2;
+  return m < 1 ? 3 : Math.min(30, 3 + 1.5 * Math.sqrt(m));
+}
+
+/* Dossier d'entreprises à imprimer ensemble (atelier Fiches), gardé dans ce navigateur. */
+const CLE_DOSSIER = "ncpa-dossier-fiches";
+export const dossier = new Set((() => { try { const l = JSON.parse(localStorage.getItem(CLE_DOSSIER) || "[]"); return Array.isArray(l) ? l : []; } catch(e){ return []; } })());
+export function basculerDossier(siren){
+  if (dossier.has(siren)) dossier.delete(siren); else if (dossier.size < MAX_ENTREPRISES) dossier.add(siren);
+  try { localStorage.setItem(CLE_DOSSIER, JSON.stringify([...dossier])); } catch(e){}
+  return dossier.has(siren);
+}
 // Précision de la position (colonne « precision » écrite par localisation.py)
 export const APPROX = "Rue ou lieu-dit";
 export const estApprox = e => e.prec === APPROX;

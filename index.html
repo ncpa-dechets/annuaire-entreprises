@@ -12,6 +12,7 @@
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/fiches.css">
 </head>
 <body>
 <header class="barre">
@@ -33,6 +34,7 @@
     <a role="tab" aria-selected="false" href="#/dynamique" data-vue="v-bodacc">Dynamique</a>
     <a role="tab" aria-selected="false" href="#/themes" data-vue="v-themes">Thèmes</a>
     <a role="tab" aria-selected="false" href="#/annuaire" data-vue="v-annuaire">Annuaire</a>
+    <a role="tab" aria-selected="false" href="#/fiches" data-vue="v-fiches">Fiches PDF</a>
     <a role="tab" aria-selected="false" href="#/methode" data-vue="v-qualite">Méthode et qualité</a>
   </nav>
   <div class="maj" id="maj"></div>
@@ -155,6 +157,7 @@
           <div class="exp">
             <button class="btn" id="exp-xlsx">Excel</button>
             <button class="btn" id="exp-geojson">GeoJSON</button>
+            <button class="btn" id="exp-pdf" title="Composer une fiche PDF de cette sélection : chiffres, carte et liste">Fiche PDF</button>
           </div>
         </div>
         <div class="corps" id="corps-liste">
@@ -282,6 +285,11 @@
         </ul>
       </section>
     </div>
+  </section>
+
+  <!-- ===================== FICHES PDF ===================== -->
+  <section id="v-fiches" class="vue page" hidden>
+    <div id="fi-contenu"></div>
   </section>
 
   <!-- ===================== QUALITÉ ===================== -->

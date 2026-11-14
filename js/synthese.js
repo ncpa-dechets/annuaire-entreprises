@@ -1,12 +1,12 @@
 /* Onglet Synthèse : portrait chiffré de tout le territoire. */
 import {$, esc, nb, communesGJ, stats, meta} from "./commun.js";
 import {chiffres, listeCommunes} from "./stats.js";
-import {classes, classeDe, couleurClasse} from "./graphes.js";
+import {classes, classeDe, couleurClasse, legendeClasses} from "./graphes.js";
 import {aEmploi, emploiDe} from "./emploi.js";
 import {avertissement, chiffresCles, blocSecteurs, blocFlux, blocFamilles, blocAges, tableEmployeurs, pied} from "./blocs.js";
 
 // Indicateurs proposés sur la carte des communes : [clé, libellé, calcul, format, réservé aux données complètes]
-const INDICATEURS = [
+export const INDICATEURS = [
   ["etab", "Établissements actifs", c => c.n, nb],
   ["dens", "Établissements pour 1 000 habitants", c => c.pop ? 1000 * c.n / c.pop : null, v => nb(Math.round(v))],
   ["emp", "Établissements employeurs", c => c.emp, nb],
@@ -24,7 +24,8 @@ export function synthese(){
   $("sy-contenu").innerHTML = `
     <div class="tete-page"><div><h2>Synthèse du territoire</h2>
       <p class="note">Normandie-Cabourg-Pays d'Auge, ${nb(meta.nb_communes)} communes${c.pop ? `, ${nb(c.pop)} habitants` : ""}.</p></div>
-      <button class="btn no-print" data-imprimer>Imprimer ou enregistrer en PDF</button></div>
+      <div class="no-print"><a class="btn" href="#/fiches/territoire">Dossier PDF du territoire</a>
+        <button class="btn" data-imprimer>Imprimer cette page</button></div></div>
     ${avertissement()}
     ${chiffresCles("")}
     <div class="deux">
@@ -72,7 +73,5 @@ function colorier(){
     l.unbindTooltip();
     l.bindTooltip(`<b>${esc(p.nom)}</b><br>${esc(lib)} : ${v == null ? "non disponible" : fmt(v)}`, {sticky:true});
   });
-  const bornes = [null, ...seuils];
-  $("sy-leg").innerHTML = `<div class="leg carte"><b>${esc(lib)}</b>${bornes.map((b, k) => `<span><span class="carre" style="background:${couleurClasse(k, seuils)}"></span>${
-    k === 0 ? (seuils.length ? `moins de ${fmt(seuils[0])}` : "toutes les communes") : k === bornes.length - 1 ? `${fmt(b)} et plus` : `${fmt(b)} à ${fmt(seuils[k])}`}</span>`).join("")}</div>`;
+  $("sy-leg").innerHTML = legendeClasses(lib, seuils, fmt);
 }

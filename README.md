@@ -15,7 +15,7 @@ collecte.py ─► API SIRENE + IGN + Annuaire         index.html ─► lit dat
 
 | Fichier | Rôle |
 |---|---|
-| `index.html`, `css/`, `js/` | La page. Un fichier par onglet dans `js/` : `nouveautes.js` (Quoi de neuf), `synthese.js`, `communes.js`, `annuaire.js`, `vie.js`, `qualite.js` ; `secteurs.js`, `dynamique.js`, `themes/` (commerces, tourisme, emploi) ; `entreprise.js` (fiche entreprise et recherche de l'en-tête) ; `commun.js` (données et outils), `stats.js`, `emploi.js`, `blocs.js` et `graphes.js` (chiffres et graphiques), `app.js` (navigation) |
+| `index.html`, `css/`, `js/` | La page. Un fichier par onglet dans `js/` : `nouveautes.js` (Quoi de neuf), `synthese.js`, `communes.js`, `annuaire.js`, `vie.js`, `qualite.js` ; `secteurs.js`, `dynamique.js`, `themes/` (commerces, tourisme, emploi) ; `entreprise.js` (fiche entreprise et recherche de l'en-tête) ; `fiches.js`, `fiches-outils.js` et `cartes.js` (onglet Fiches PDF, avec `css/fiches.css`) ; `commun.js` (données et outils), `stats.js`, `emploi.js`, `blocs.js` et `graphes.js` (chiffres et graphiques), `app.js` (navigation) |
 | `collecte.py`, `referentiels.py` | La collecte quotidienne (API SIRENE, journal) |
 | `statistiques.py` | Les comptages du tableau de bord (`data/stats.json`) |
 | `urssaf.py` | L'emploi salarié privé par commune et par activité (`data/emploi_urssaf.json`) |
@@ -62,7 +62,32 @@ collecte.py ─► API SIRENE + IGN + Annuaire         index.html ─► lit dat
   - *Emploi et recrutement* : potentiels d'embauche (La Bonne Boîte), offres en cours (France Travail) et métiers recherchés (enquête BMO).
 - **Annuaire**, **Méthode et qualité** : comme avant.
 
-Le bouton « Imprimer ou enregistrer en PDF » de la Synthèse et des fiches produit un portrait A4.
+- **Fiches PDF** : compose un document A4 à enregistrer en PDF (voir plus bas).
+
+Les boutons « Imprimer cette page » donnent la page telle qu'elle est affichée ; l'onglet *Fiches PDF* produit
+des documents mis en page.
+
+## Fiches PDF
+
+L'onglet compose un document, en affiche l'aperçu et l'enregistre en PDF par la fenêtre d'impression du
+navigateur (destination « Enregistrer au format PDF », A4, marges par défaut). Le nom de fichier proposé
+reprend le titre et la date.
+
+| Document | Adresse | Contenu |
+|---|---|---|
+| Territoire | `#/fiches/territoire` | Chiffres clés, secteurs, carte des communes (indicateur au choix), créations et fermetures, types et âges, 20 principaux employeurs, tableau des communes. Option : faire suivre les fiches des 38 communes. |
+| Commune(s) | `#/fiches/commune/14117,14225` ou `…/toutes` | Une fiche par commune : celle de l'onglet *Communes*, plus la carte des établissements et leur liste par secteur. |
+| Sélection, secteur | `#/fiches/selection` | La sélection en cours de l'*Annuaire* (bouton « Fiche PDF » sous la carte) : critères, chiffres, répartition par commune et par activité, carte, liste. Le détail d'un secteur, dans l'onglet *Secteurs*, y mène aussi. |
+| Entreprise(s) | `#/fiches/entreprise/<siren>,<siren>` | La fiche entreprise, une par page, avec ses notes de visite. « Ajouter au dossier PDF » sur une fiche entreprise en réunit jusqu'à 30 (dossier gardé dans le navigateur). |
+
+Réglages : titre, couverture et sommaire, carte, liste des établissements (aucune, employeurs seulement — par
+défaut —, tous sauf les SCI, tous), notes de visite. Les entrepreneurs individuels sont comptés dans les
+chiffres mais jamais listés. Pour un logo sur la couverture et en tête des fiches, déposer `img/logo.svg`
+(ou `img/logo.png`) dans le dépôt.
+
+Bon à savoir : le bouton attend que les cartes et les compléments d'entreprise soient chargés (les 38 communes
+prennent une à deux minutes). Les numéros de page s'impriment avec Chrome et Edge, pas avec Firefox. Les
+cartes utilisent le Plan IGN.
 
 Les statistiques (`statistiques.py`) comptent tous les établissements actifs, **entrepreneurs
 individuels compris** : ceux-ci n'apparaissent que dans les comptages, jamais nominativement.

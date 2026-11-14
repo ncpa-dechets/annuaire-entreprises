@@ -1,17 +1,12 @@
 /* Onglet Annuaire : carte, filtres, liste, exports. */
 import {$, esc, norm, nb, dateFr, num, sirFmt, toast, debounce, telecharger, estEmployeur, estApprox, PRECISIONS,
   multiSelect, SECTIONS, COULEURS, TYPES, TYPES_DEFAUT, E, parSiret, communesGJ, feuille, jour, ligneBodacc,
-  bonneBoite, potentielParSiret, fondPlanIGN} from "./commun.js";
+  bonneBoite, potentielParSiret, fondPlanIGN, rayonEffectif} from "./commun.js";
 
 const etat = {proportionnel:true, tri:{col:"emin", sens:-1}, rendus:0, selection:null};
 let filtres = [];
 let msCommunes, msDivisions, secteursCoches = new Set(), typesCoches = new Set(TYPES_DEFAUT);
-function rayon(e){
-  if (!etat.proportionnel) return 5;
-  if (e.emin === null) return 3;
-  const m = (e.emin + e.emax) / 2;
-  return m < 1 ? 3 : Math.min(30, 3 + 1.5 * Math.sqrt(m));
-}
+const rayon = e => etat.proportionnel ? rayonEffectif(e) : 5;
 
 /* =========================================================================
    Carte
@@ -156,7 +151,7 @@ function surligner(e, centrer){
    ========================================================================= */
 /* Filtre par codes d'activité, posé par un lien d'un autre onglet (ex. « Pharmacie ») et affiché en tête des filtres. */
 function activites(codes, libelle){
-  etat.nafs = codes;
+  etat.nafs = codes; etat.nafsLib = codes ? libelle || "" : "";
   const b = $("f-naf"); b.hidden = !codes;
   if (codes){ b.innerHTML = `<span>Activité : <b>${esc(libelle || [...codes].join(", "))}</b></span><button type="button" class="btn">Retirer</button>`;
     b.querySelector("button").onclick = () => { activites(null); appliquer(); }; }
@@ -343,8 +338,36 @@ export function initAnnuaire(){
   });
   $("exp-xlsx").onclick = exportExcel;
   $("exp-geojson").onclick = exportGeojson;
+  $("exp-pdf").onclick = () => { location.hash = "#/fiches/selection"; };
   const bf = $("btn-filtres");
   bf.onclick = () => { const v = $("volet").classList.toggle("visible"); bf.setAttribute("aria-expanded", String(v)); };
+}
+
+/* Sélection en cours, pour la fiche PDF « sélection » : établissements filtrés et critères en clair.
+   null tant que l'annuaire n'a pas été ouvert. */
+export function selection(){
+  const f = etat.f;
+  if (!f) return null;
+  const c = [], presentes = [...document.querySelectorAll("#f-secteurs input")].map(i => i.value);
+  const secteurs = presentes.filter(s => secteursCoches.has(s)), partiel = secteurs.length < presentes.length;
+  const divLib = d => E.find(e => e.div === d)?.divl || d;
+  const pl = (n, mot) => `${mot}${n > 1 ? "s" : ""}`;
+  if (etat.nafs) c.push(`Activité : ${etat.nafsLib || [...etat.nafs].join(", ")}`);
+  if (partiel) c.push(secteurs.length ? `${pl(secteurs.length, "Secteur")} : ${secteurs.map(s => SECTIONS[s]).join(", ")}` : "Aucun secteur coché");
+  if (f.divisions.size) c.push(`${pl(f.divisions.size, "Activité détaillée")} : ${[...f.divisions].map(divLib).join(", ")}`);
+  if (f.communes.size) c.push(`${pl(f.communes.size, "Commune")} : ${[...f.communes].join(", ")}`);
+  if (f.mots.length) c.push(`Recherche « ${$("f-texte").value.trim()} »`);
+  if (f.seuil !== null) c.push(`${nb(f.seuil)} ${pl(f.seuil, "salarié")} et plus`);
+  if (f.employeurs) c.push("Employeurs uniquement");
+  if (f.sieges) c.push("Sièges uniquement");
+  if (f.depuis) c.push(`Créés depuis le ${dateFr(f.depuis)}`);
+  const types = TYPES.filter(t => typesCoches.has(t));
+  if (types.length !== TYPES_DEFAUT.size || types.some(t => !TYPES_DEFAUT.has(t))) c.push(`Structures : ${types.join(", ") || "aucune"}`);
+  let titre = etat.nafs ? (etat.nafsLib || "Activités choisies") : partiel && secteurs.length === 1 ? SECTIONS[secteurs[0]]
+    : f.divisions.size === 1 ? divLib([...f.divisions][0]) : "Sélection d'établissements";
+  if (f.communes.size === 1) titre += ` – ${[...f.communes][0]}`;
+  return {etabs:filtres.slice(), criteres:c, titre, communes:[...f.communes], secteurs:partiel ? secteurs : [],
+    nafs:etat.nafs ? [...etat.nafs] : [], simple:!f.mots.length && !f.divisions.size && f.seuil === null && !f.employeurs && !f.sieges && !f.depuis};
 }
 
 /* Appelé quand l'onglet redevient visible : la carte doit recalculer sa taille. */

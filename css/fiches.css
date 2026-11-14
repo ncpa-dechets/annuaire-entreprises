@@ -1,0 +1,99 @@
+/* ---- Atelier Fiches PDF : choix du document, réglages et aperçu A4 ----
+   La largeur du document est celle de la zone imprimable d'une page A4 (210 mm moins deux marges de 13 mm) :
+   les cartes et tableaux ont ainsi la même taille dans l'aperçu et sur le papier. */
+#v-fiches{background:#ecebe6}
+.fi-choix{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-top:14px}
+.fi-carton{background:var(--blanc);border:1px solid var(--bord);border-radius:8px;padding:14px 16px}
+.fi-carton h3{margin-top:0}
+.fi-communes{columns:2;font-size:13px;margin:6px 0 10px}
+.fi-communes label{display:flex;gap:6px;align-items:center;padding:2px 0;break-inside:avoid;cursor:pointer}
+.fi-dossier{list-style:none;padding:0;margin:6px 0 12px}
+.fi-dossier li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #eeeee9;font-size:13px}
+
+.fi-atelier{display:grid;grid-template-columns:250px auto;gap:24px;justify-content:center;align-items:start}
+.fi-reglages{position:sticky;top:0;background:var(--blanc);border:1px solid var(--bord);border-radius:8px;padding:14px 16px;font-size:13px}
+.fi-reglages h2{font-size:16px;margin:12px 0 4px}
+.fi-reglages label.case{display:flex;gap:7px;align-items:center;margin:9px 0;cursor:pointer}
+.fi-reglages .principal{width:100%;margin-top:16px;padding:9px;background:var(--rouge);border-color:var(--rouge);color:#fff;font-weight:700;font-size:14px}
+.fi-reglages .principal:hover{background:var(--rouge-f);color:#fff}
+.fi-reglages .principal:disabled{opacity:.6;cursor:wait}
+.fi-reglages p.note{margin:8px 0 0}
+.fi-apercu{min-width:0;overflow-x:auto}
+
+.fi-doc{width:210mm;font-size:12px}
+.fi-doc .feuille{background:var(--blanc);width:210mm;min-height:297mm;padding:13mm;margin:0 0 18px;box-shadow:0 1px 6px rgba(0,0,0,.18)}
+.fi-doc .no-print{display:none !important}
+.fi-doc .notes-visite{display:block;break-inside:avoid;margin-top:18px}
+.fi-doc .notes-visite .lignes{height:150px;background:repeating-linear-gradient(to bottom,transparent 0 29px,#bbb 29px 30px);border-top:1px solid #bbb}
+.fi-doc .cadre{max-height:none;overflow:visible}
+/* La page imprimée fait moins de 820 px de large : neutraliser la mise en page mobile de style.css */
+.fi-doc .barres .l{grid-template-columns:minmax(120px,38%) 1fr auto}
+.fi-doc .barres .lib{grid-column:auto}
+.fi-doc .val{min-width:64px}
+.fi-doc .deux{grid-template-columns:1fr 1fr;gap:16px}
+.fi-doc .gros b{font-size:19px}
+.fi-doc .gros div{min-width:0}
+.fi-doc .trois{grid-template-columns:1fr 1.2fr 1fr;gap:14px}
+.fi-doc .en-carte{height:240px}
+.fi-doc th{position:static}
+/* Les blocs peuvent se poursuivre sur la page suivante (sinon un long bloc laisse une page presque vide) ; pas les lignes */
+.fi-doc .bloc{break-inside:auto}
+.fi-doc tr,.fi-doc .barres .l,.fi-doc .gros,.fi-doc .colonnes,.fi-doc .puces span{break-inside:avoid}
+.fi-doc .barres .lib{font-size:12px}
+.fi-doc h3,.fi-doc h4{break-after:avoid}
+.fi-doc a.lien{color:var(--txt)}
+
+/* Couverture */
+.fi-couv{display:flex;flex-direction:column;justify-content:space-between;border-top:8px solid var(--rouge)}
+.fi-doc .feuille.fi-couv{height:297mm}
+.fi-couv-haut{font-size:14px;color:var(--mut)}
+.fi-couv-haut img{display:block;max-height:28mm;max-width:70mm;margin-bottom:10px}
+.fi-couv-haut .sur{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--rouge);font-weight:700;margin-bottom:2px}
+.fi-couv h1{font-size:34px;line-height:1.15;margin:0 0 10px;border-left:6px solid var(--vert);padding-left:14px}
+.fi-couv-milieu > p{font-size:16px;color:var(--mut);margin:0 0 18px 20px;max-width:150mm}
+.fi-couv-milieu h3{margin:26px 0 6px 20px;font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut)}
+.fi-sommaire{columns:2;column-gap:12mm;margin:0 0 0 20px;padding-left:18px;font-size:12.5px;line-height:1.6}
+.fi-couv-bas{font-size:11px;color:var(--mut);border-top:1px solid var(--bord);padding-top:8px;line-height:1.5}
+
+/* En-tête de chaque fiche */
+.fi-entete{display:flex;gap:12px;align-items:center;font-size:10.5px;color:var(--mut);border-bottom:2px solid var(--rouge);padding-bottom:4px;margin-bottom:10px}
+.fi-entete img{height:7mm}
+.fi-entete b{color:var(--rouge);letter-spacing:.06em;text-transform:uppercase;font-size:9.5px;white-space:nowrap}
+.fi-entete .fi-titre{flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fi-doc h2.fi-h{font-size:22px;margin:0 0 2px}
+
+/* Cartes et légendes */
+.fi-carte{height:110mm;border:1px solid var(--bord);border-radius:6px;background:#f2f2ef}
+.fi-carte.petite{height:80mm;background:var(--blanc)}
+.fi-carte .leaflet-control-attribution{font-size:8px}
+.fi-bloc-carte{break-inside:avoid}
+.fi-leg{font-size:11px;gap:2px 12px;margin:5px 0 0}
+.fi-rond{display:inline-block;border-radius:50%;background:#bbb;border:1px solid #fff;vertical-align:middle}
+
+/* Listes */
+.fi-groupe{display:flex;align-items:center;gap:6px;margin:12px 0 4px}
+.fi-table{font-size:10.5px;margin-bottom:6px;table-layout:fixed}
+.fi-table th,.fi-table td{padding:3px 6px}
+.fi-table th:nth-child(1){width:27%}.fi-table th:nth-child(2){width:27%}.fi-table th:nth-child(3){width:28%}
+.fi-table th:nth-child(4){width:12%}.fi-table th:nth-child(5){width:6%}
+.fi-table tbody tr{cursor:default}
+.fi-compar{font-size:10px}
+.fi-compar th{cursor:default;padding:4px 4px}
+.fi-compar td{padding:3px 4px}
+.fi-compar td .evt{white-space:normal;align-items:flex-start}
+.fi-compar td .evt .pastille{margin-top:3px}
+
+@media print{
+  body[data-vue="fiches"] .barre{display:none}
+  #v-fiches{background:none}
+  .fi-atelier{display:block}
+  .fi-doc{width:auto}
+  .fi-doc .feuille{width:auto;min-height:0;padding:0;margin:0;box-shadow:none}
+  .fi-doc .feuille + .feuille{break-before:page}
+  .fi-doc .feuille.fi-couv{height:266mm}
+  .fi-carte .leaflet-control-attribution{background:rgba(255,255,255,.8)}
+  @page{
+    @bottom-left{content:"Entreprises du territoire – NCPA";font-size:8pt;color:#777}
+    @bottom-right{content:counter(page) " / " counter(pages);font-size:8pt;color:#777}
+  }
+}

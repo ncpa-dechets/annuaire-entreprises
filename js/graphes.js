@@ -64,6 +64,13 @@ export function couleurClasse(k, seuils){
   return DEGRADE[n === 1 ? 2 : Math.round(k * (DEGRADE.length - 1) / (n - 1))];
 }
 
+/* Légende d'une carte en classes : intitulé de l'indicateur, puis une case par classe. */
+export function legendeClasses(lib, seuils, fmt){
+  const bornes = [null, ...seuils];
+  return `<div class="leg carte"><b>${esc(lib)}</b>${bornes.map((b, k) => `<span><span class="carre" style="background:${couleurClasse(k, seuils)}"></span>${
+    k === 0 ? (seuils.length ? `moins de ${fmt(seuils[0])}` : "toutes les communes") : k === bornes.length - 1 ? `${fmt(b)} et plus` : `${fmt(b)} à ${fmt(seuils[k])}`}</span>`).join("")}</div>`;
+}
+
 /* Infobulle commune à tous les graphiques : survol, toucher ou focus clavier d'un élément [data-bulle]. */
 export function activerBulles(){
   const b = document.createElement("div"); b.className = "bulle"; b.hidden = true; b.setAttribute("role", "status");

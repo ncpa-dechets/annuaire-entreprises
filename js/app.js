@@ -11,14 +11,15 @@ import {themes} from "./themes/index.js";
 import {activerBulles} from "./graphes.js";
 import {nouveautes} from "./nouveautes.js";
 import {ficheEntreprise, initRecherche} from "./entreprise.js";
+import {fiches} from "./fiches.js";
 
-const ROUTES = {nouveautes:"v-nouveautes", entreprise:"v-entreprise", synthese:"v-synthese", communes:"v-communes", secteurs:"v-secteurs", dynamique:"v-bodacc", vie:"v-bodacc", themes:"v-themes", annuaire:"v-annuaire", methode:"v-qualite"};
+const ROUTES = {nouveautes:"v-nouveautes", entreprise:"v-entreprise", synthese:"v-synthese", communes:"v-communes", secteurs:"v-secteurs", dynamique:"v-bodacc", vie:"v-bodacc", themes:"v-themes", annuaire:"v-annuaire", fiches:"v-fiches", methode:"v-qualite"};
 let courante = "", annuairePret = false;
 
 function montrer(){
   // Les ancres internes d'une page (#p-bodacc…) ne changent pas d'onglet
   if (courante && location.hash && !location.hash.startsWith("#/")) return;
-  const [nom, param] = location.hash.replace(/^#\/?/, "").split("/");
+  const [nom, ...reste] = location.hash.replace(/^#\/?/, "").split("/"), param = reste[0];
   const route = ROUTES[nom] ? nom : "nouveautes", id = ROUTES[route];
   courante = route;
   document.body.dataset.vue = route;
@@ -33,6 +34,7 @@ function montrer(){
   if (route === "themes") themes(param);
   if (route === "dynamique" || route === "vie"){ dynamique(); vieEntreprises(); }
   if (route === "methode" && !$("q-contenu").innerHTML) qualite();
+  if (route === "fiches") fiches(reste);
 }
 
 function aller(route){
@@ -47,9 +49,11 @@ function demarrer(){
   activerBulles();
   window.addEventListener("hashchange", montrer);
   document.addEventListener("click", ev => {
-    const el = ev.target.closest?.("[data-voir], [data-annuaire-commune], [data-annuaire-secteur], [data-annuaire-nafs], [data-imprimer], [data-retour]");
+    const el = ev.target.closest?.("[data-voir], [data-annuaire-commune], [data-annuaire-secteur], [data-annuaire-nafs], [data-imprimer], [data-retour], [data-fiche-secteur]");
     if (!el) return;
     if (el.hasAttribute("data-retour")){ history.length > 1 ? history.back() : (location.hash = "#/annuaire"); }
+    else if (el.dataset.ficheSecteur){ aller("annuaire");   // la fiche d'un secteur est la fiche de la sélection correspondante de l'annuaire
+      filtrer({secteur:el.dataset.ficheSecteur, commune:el.dataset.ficheCommune}); location.hash = "#/fiches/selection"; }
     else if (el.dataset.voir){ aller("annuaire"); voir(el.dataset.voir); }
     else if (el.dataset.annuaireCommune || el.dataset.annuaireSecteur || el.dataset.annuaireNafs){ aller("annuaire");
       filtrer({commune:el.dataset.annuaireCommune, secteur:el.dataset.annuaireSecteur, nafs:el.dataset.annuaireNafs?.split(","), libelle:el.dataset.annuaireLibelle}); }

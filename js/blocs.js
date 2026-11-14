@@ -92,6 +92,17 @@ export function tableAnnonces(code, combien){
     </tbody></table></div>`;
 }
 
+/* Liste des établissements, par secteur. groupes : [[section, établissements]] (voir grouperParSecteur). */
+export function tableEtablissements(groupes, {commune = false} = {}){
+  if (!groupes.length) return `<p class="note">Aucun établissement à lister.</p>`;
+  const eff = e => !e.trl || e.trl === "Non renseigné" ? "–" : esc(e.trl);
+  return groupes.map(([s, l]) => `<h4 class="sous fi-groupe"><span class="pastille" style="background:${COULEURS[s] || "#999"}"></span>${esc(SECTIONS[s] || s)} <small>(${nb(l.length)})</small></h4>
+    <table class="fi-table"><thead><tr><th>Établissement</th><th>Activité</th><th>Adresse</th><th>Effectif</th><th>Créé</th></tr></thead><tbody>
+    ${l.map(e => `<tr><td>${lienEntreprise(e.siret.slice(0, 9), e.nom)}${e.siege === "Oui" ? "" : ` <span class="sansloc">(étab.)</span>`}</td><td>${esc(e.nafl)}</td>
+      <td>${esc(e.adr)}${commune ? `, ${esc(e.com)}` : ""}</td><td class="num">${eff(e)}</td><td class="num">${e.crea ? e.crea.slice(0, 4) : ""}</td></tr>`).join("")}
+    </tbody></table>`).join("");
+}
+
 export function pied(){
   return `<p class="source pied">Sources : Insee, répertoire SIRENE (établissements actifs${complet() ? ", entrepreneurs individuels compris dans les comptages" : ""}) ;
     BODACC (annonces légales) ; Urssaf (emploi salarié privé) ; populations municipales Insee. Données du ${dateLongue(meta.date_maj)}.

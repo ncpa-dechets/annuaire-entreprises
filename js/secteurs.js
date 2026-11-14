@@ -99,7 +99,9 @@ export function secteurs(){
 
 function blocDetail(e){
   const s = e.sections[detail], A = annees(), i = A.length - 1, an = derniereAnnee();
-  const lien = `<a class="lien no-print" data-annuaire-secteur="${detail}"${code ? ` data-annuaire-commune="${esc(stats.communes[code].nom)}"` : ""}>Voir les établissements de ce secteur dans l'annuaire →</a>`;
+  const com = code ? esc(stats.communes[code].nom) : "";
+  const lien = `<a class="lien no-print" data-annuaire-secteur="${detail}"${com ? ` data-annuaire-commune="${com}"` : ""}>Voir les établissements de ce secteur dans l'annuaire →</a>
+    <br><a class="lien no-print" data-fiche-secteur="${detail}"${com ? ` data-fiche-commune="${com}"` : ""}>Fiche PDF de ce secteur (chiffres, carte et liste) →</a>`;
   if (!s) return `<div class="detail-sec"><h3>${esc(SECTIONS[detail] || detail)}</h3><p class="note">Aucun salarié du privé recensé par l'Urssaf dans ce secteur.</p>${lien}</div>`;
   const apes = e.apes.filter(a => a.sec === detail && (a.eff[i] || a.eff[i - 5] || a.etab[i])).sort((a, b) => b.eff[i] - a.eff[i]);
   return `<div class="detail-sec"><h3>${esc(SECTIONS[detail] || detail)}</h3>
