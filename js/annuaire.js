@@ -226,7 +226,7 @@ function trier(){
   });
 }
 function ligne(e){
-  return `<tr data-s="${e.siret}"${e.siret === etat.selection ? ' class="sel"' : ""}><td><b>${esc(e.nom)}</b>${e.m ? "" : '<span class="sansloc">(sans position)</span>'}</td>
+  return `<tr data-s="${e.siret}"${e.siret === etat.selection ? ' class="sel"' : ""}><td><b>${esc(e.nom)}</b>${e.m ? "" : '<span class="sansloc" title="Pas de position sur la carte : un clic ouvre la fiche entreprise">(sans position · fiche →)</span>'}</td>
     <td>${esc(e.nafl)}</td><td>${esc(e.com)}</td><td>${esc(e.adr)}</td><td class="num">${esc(e.trl)}</td><td>${e.crea ? e.crea.slice(0,4) : ""}</td></tr>`;
 }
 function listeDebut(){
@@ -330,7 +330,11 @@ export function initAnnuaire(){
     const c = ev.target; if (c.scrollTop + c.clientHeight > c.scrollHeight - 300 && etat.rendus < filtres.length) listeSuite();
   });
   $("tb-liste").addEventListener("click", ev => {
-    const s = ev.target.closest("tr[data-s]")?.dataset.s; if (s) surligner(parSiret.get(s), true);
+    const s = ev.target.closest("tr[data-s]")?.dataset.s; if (!s) return;
+    const e = parSiret.get(s);
+    // Sans position, pas de bulle sur la carte : on ouvre directement la fiche entreprise.
+    if (!e.m){ location.hash = `#/entreprise/${e.siret.slice(0, 9)}`; return; }
+    surligner(e, true);
   });
   document.querySelectorAll("th[data-tri]").forEach(th => th.onclick = () => {
     const c = th.dataset.tri; etat.tri = {col:c, sens: etat.tri.col === c ? -etat.tri.sens : (c === "emin" || c === "crea" ? -1 : 1)};
