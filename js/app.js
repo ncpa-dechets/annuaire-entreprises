@@ -9,19 +9,23 @@ import {secteurs} from "./secteurs.js";
 import {dynamique} from "./dynamique.js";
 import {themes} from "./themes/index.js";
 import {activerBulles} from "./graphes.js";
+import {nouveautes} from "./nouveautes.js";
+import {ficheEntreprise, initRecherche} from "./entreprise.js";
 
-const ROUTES = {synthese:"v-synthese", communes:"v-communes", secteurs:"v-secteurs", dynamique:"v-bodacc", vie:"v-bodacc", themes:"v-themes", annuaire:"v-annuaire", methode:"v-qualite"};
+const ROUTES = {nouveautes:"v-nouveautes", entreprise:"v-entreprise", synthese:"v-synthese", communes:"v-communes", secteurs:"v-secteurs", dynamique:"v-bodacc", vie:"v-bodacc", themes:"v-themes", annuaire:"v-annuaire", methode:"v-qualite"};
 let courante = "", annuairePret = false;
 
 function montrer(){
   // Les ancres internes d'une page (#p-bodacc…) ne changent pas d'onglet
   if (courante && location.hash && !location.hash.startsWith("#/")) return;
   const [nom, param] = location.hash.replace(/^#\/?/, "").split("/");
-  const route = ROUTES[nom] ? nom : "synthese", id = ROUTES[route];
+  const route = ROUTES[nom] ? nom : "nouveautes", id = ROUTES[route];
   courante = route;
   document.body.dataset.vue = route;
   document.querySelectorAll(".onglets a").forEach(a => a.setAttribute("aria-selected", String(a.dataset.vue === id)));
   document.querySelectorAll(".vue").forEach(v => v.hidden = v.id !== id);
+  if (route === "nouveautes") nouveautes();
+  if (route === "entreprise") ficheEntreprise(param);
   if (route === "synthese") synthese();
   if (route === "communes") communes(param);
   if (route === "annuaire"){ if (annuairePret) redimensionner(); else { initAnnuaire(); annuairePret = true; } }
@@ -39,12 +43,14 @@ function demarrer(){
   $("maj").innerHTML = `Données Insee<br>du ${dateLongue(meta.date_maj)}`;
   $("src-maj").textContent = `Mise à jour du ${dateLongue(meta.date_maj)}.`;
   initVie();
+  initRecherche();
   activerBulles();
   window.addEventListener("hashchange", montrer);
   document.addEventListener("click", ev => {
-    const el = ev.target.closest?.("[data-voir], [data-annuaire-commune], [data-annuaire-secteur], [data-annuaire-nafs], [data-imprimer]");
+    const el = ev.target.closest?.("[data-voir], [data-annuaire-commune], [data-annuaire-secteur], [data-annuaire-nafs], [data-imprimer], [data-retour]");
     if (!el) return;
-    if (el.dataset.voir){ aller("annuaire"); voir(el.dataset.voir); }
+    if (el.hasAttribute("data-retour")){ history.length > 1 ? history.back() : (location.hash = "#/annuaire"); }
+    else if (el.dataset.voir){ aller("annuaire"); voir(el.dataset.voir); }
     else if (el.dataset.annuaireCommune || el.dataset.annuaireSecteur || el.dataset.annuaireNafs){ aller("annuaire");
       filtrer({commune:el.dataset.annuaireCommune, secteur:el.dataset.annuaireSecteur, nafs:el.dataset.annuaireNafs?.split(","), libelle:el.dataset.annuaireLibelle}); }
     else window.print();

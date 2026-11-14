@@ -81,7 +81,7 @@ export function multiSelect(hote, {vide, pluriel, recherche = true, onChange}){
    Données
    ========================================================================= */
 export let E = [], meta = {}, journal = [], communesGJ = null, stats = null, emploi = null, tourisme = null, offres = null, bmo = null, bonneBoite = null, B = [];
-export const parSiret = new Map(), bodaccParSiren = new Map(), etabParSiren = new Map();
+export const parSiret = new Map(), bodaccParSiren = new Map(), etabParSiren = new Map(), etabsParSiren = new Map();
 export const potentielParSiret = new Map();
 export const aPosition = e => e.lat !== null && e.lon !== null;
 
@@ -122,7 +122,8 @@ export async function charger(){
       if (e && la !== null && lo !== null){ e.lat = la; e.lon = lo; e.loc = "Corrigée manuellement"; e.prec = "Vérifiée"; }
     });
   }
-  E.forEach(e => { e.q = norm([e.nom, e.rs, e.siret, e.adr, e.com, e.nafl, e.divl, e.naf].join(" ")); parSiret.set(e.siret, e); });
+  E.forEach(e => { e.q = norm([e.nom, e.rs, e.siret, e.adr, e.com, e.nafl, e.divl, e.naf].join(" ")); parSiret.set(e.siret, e);
+    const s = e.siret.slice(0, 9); if (!etabsParSiren.has(s)) etabsParSiren.set(s, []); etabsParSiren.get(s).push(e); });
   journal = jr.trim() ? Papa.parse(jr, {header:true, skipEmptyLines:true}).data : [];
   chargerBodacc(bod);
 }
@@ -158,6 +159,35 @@ export function chargerBodacc(texte){
   E.forEach(e => { const s = e.siret.slice(0, 9), d = etabParSiren.get(s);
     if (!d || (e.siege === "Oui" && d.siege !== "Oui")) etabParSiren.set(s, e); });
 }
+
+/* =========================================================================
+   Entreprises (un SIREN) : index de recherche, liens vers la fiche
+   ========================================================================= */
+// Établissement qui représente l'entreprise : le siège s'il est sur le territoire, sinon le plus gros
+export const principal = etabs => [...etabs].sort((a, b) => (b.siege === "Oui") - (a.siege === "Oui") || (b.emin ?? -1) - (a.emin ?? -1))[0];
+export const lienEntreprise = (siren, nom) => siren ? `<a class="lien" href="#/entreprise/${esc(siren)}">${esc(nom)}</a>` : esc(nom);
+
+let INDEX = null;
+/* Une entrée par SIREN : entreprises de l'annuaire, puis celles qui ne sont connues que par le BODACC. */
+export function entreprises(){
+  if (INDEX) return INDEX;
+  INDEX = [];
+  etabsParSiren.forEach((etabs, siren) => {
+    const p = principal(etabs);
+    INDEX.push({siren, nom:p.nom, com:p.com, act:p.nafl, n:etabs.length, emin:Math.max(...etabs.map(e => e.emin ?? -1)),
+      q:norm([siren, ...new Set(etabs.flatMap(e => [e.nom, e.rs, e.siret, e.com]))].join(" "))});
+  });
+  bodaccParSiren.forEach((l, siren) => {
+    if (etabsParSiren.has(siren)) return;
+    const b = l[0];
+    INDEX.push({siren, nom:b.nom, com:b.com, act:b.act, n:0, emin:b.emin ?? -1, bodacc:true, q:norm([siren, b.nom, b.com].join(" "))});
+  });
+  return INDEX;
+}
+
+/* Fond Plan IGN en tuiles : sert de secours à l'annuaire et de fond aux fiches (il s'imprime). */
+export const fondPlanIGN = () => L.tileLayer("https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&STYLE=normal&FORMAT=image%2Fpng&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}",
+  {maxZoom:19, attribution:"&copy; IGN / Géoplateforme"});
 
 export function ligneBodacc(e){
   const l = bodaccParSiren.get(e.siret.slice(0, 9)); if (!l || !l.length) return "";

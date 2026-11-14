@@ -1,6 +1,6 @@
 /* Onglet Vie des entreprises : annonces BODACC et mouvements de l'annuaire. */
 import {$, esc, norm, nb, dateFr, toast, debounce, SECTIONS, E, parSiret, journal, B, EVTS, EVT, etabParSiren,
-  feuille, jour} from "./commun.js";
+  feuille, jour, lienEntreprise} from "./commun.js";
 
 let evtsCoches = new Set(EVTS.filter(x => x[3]).map(x => x[0]));
 
@@ -25,7 +25,7 @@ function mouvementsSirene(f){
   $("s-chiffres").innerHTML = `<div><b>${nb(ent.length)}</b><span>nouveaux établissements</span></div>
     <div><b>${nb(sor.length)}</b><span>établissements sortis</span></div>`;
   const tab = (rows, lien) => rows.length ? `<div class="cadre"><table><thead><tr><th>Date</th><th>Nom</th><th>Commune</th><th>Activité</th><th>Effectif</th></tr></thead><tbody>` +
-    rows.map(r => `<tr><td class="num">${dateFr(r.date)}</td><td>${lien && parSiret.has(r.siret) ? `<a class="lien" data-voir="${esc(r.siret)}">${esc(r.nom)}</a>` : esc(r.nom)}</td>
+    rows.map(r => `<tr><td class="num">${dateFr(r.date)}</td><td>${lienEntreprise(r.siret.slice(0, 9), r.nom)}</td>
       <td>${esc(r.commune)}</td><td>${esc(r.naf_libelle)}</td><td class="num">${esc(r.tranche_libelle)}</td></tr>`).join("") + `</tbody></table></div>`
     : `<p class="note">Aucun mouvement sur cette période.</p>`;
   $("s-contenu").innerHTML = `<div class="deux"><div><h4 class="sous">Nouveaux établissements</h4>${tab(ent, true)}</div>
@@ -55,7 +55,7 @@ function choisirMois(m){
   vieEntreprises();
 }
 // Effectif : « 3 à 5 salariés » + année et origine (établissements locaux, ou entreprise entière si hors annuaire)
-const effBodacc = b => !b.srcEff ? `<span style="color:var(--mut)">${esc(b.eff || "Non renseigné")}</span>`
+export const effBodacc = b => !b.srcEff ? `<span style="color:var(--mut)">${esc(b.eff || "Non renseigné")}</span>`
   : `${esc(b.eff)}<br><span class="sansloc" style="margin:0">${b.srcEff.startsWith("Entreprise") ? "toute l'entreprise" : "sur le territoire"}${b.aeff ? ", " + esc(b.aeff) : ""}</span>`;
 
 export function vieEntreprises(){
@@ -89,8 +89,7 @@ export function vieEntreprises(){
 
   grapheBodacc(f);
 
-  const nomLien = b => { const e = b.sirens.map(s => etabParSiren.get(s)).find(Boolean);
-    return e ? `<a class="lien" data-voir="${esc(e.siret)}" title="Voir sur la carte">${esc(b.nom)}</a>` : esc(b.nom); };
+  const nomLien = b => lienEntreprise(b.sirens.find(s => etabParSiren.has(s)) || b.sirens[0], b.nom);
   $("b-contenu").innerHTML = lignes.length ? `<div class="cadre" style="max-height:600px"><table><thead><tr><th>Date</th><th>Événement</th><th>Nom</th>
     <th>Commune</th><th>Effectif</th><th>Activité</th><th>Détail</th><th></th></tr></thead><tbody>` + lignes.map(b => `<tr>
       <td class="num">${dateFr(b.date)}</td>

@@ -1,5 +1,5 @@
 /* Blocs réutilisés par la Synthèse et les fiches commune : chiffres clés, secteurs, dynamique, employeurs. */
-import {esc, nb, dateFr, dateLongue, SECTIONS, COULEURS, stats, meta, EVT} from "./commun.js";
+import {esc, nb, dateFr, dateLongue, SECTIONS, COULEURS, stats, meta, EVT, lienEntreprise} from "./commun.js";
 import {chiffres, employeurs, procedures, annonces, FAM_EI} from "./stats.js";
 import {aEmploi, emploiDe, derniereAnnee, evolution, fmtEvol} from "./emploi.js";
 import {barres, colonnes, legende, pct, signe, C_STRUCT, C_EI, C_CREA, C_FERM} from "./graphes.js";
@@ -78,7 +78,7 @@ export function tableEmployeurs(code, combien){
   const l = employeurs(code, combien);
   if (!l.length) return `<p class="note">Aucun établissement avec un effectif salarié connu.</p>`;
   return `<div class="cadre libre"><table><thead><tr><th>Établissement</th><th>Activité</th>${code ? "" : "<th>Commune</th>"}<th>Effectif (tranche Insee)</th></tr></thead><tbody>
-    ${l.map(e => `<tr><td><a class="lien" data-voir="${esc(e.siret)}" title="Voir sur la carte">${esc(e.nom)}</a></td><td>${esc(e.nafl)}</td>
+    ${l.map(e => `<tr><td>${lienEntreprise(e.siret.slice(0, 9), e.nom)} <a class="sansloc no-print" data-voir="${esc(e.siret)}" title="Voir sur la carte" style="cursor:pointer">carte</a></td><td>${esc(e.nafl)}</td>
       ${code ? "" : `<td>${esc(e.com)}</td>`}<td class="num">${esc(e.trl)}${e.aeff ? ` <span class="sansloc">(${esc(e.aeff)})</span>` : ""}</td></tr>`).join("")}
     </tbody></table></div>`;
 }
@@ -88,7 +88,7 @@ export function tableAnnonces(code, combien){
   if (!l.length) return `<p class="note">Aucune annonce au BODACC sur deux ans.</p>`;
   return `<div class="cadre libre"><table><thead><tr><th>Date</th><th>Événement</th><th>Nom</th><th>Activité</th></tr></thead><tbody>
     ${l.map(b => `<tr><td class="num">${dateFr(b.date)}</td><td><span class="evt"><span class="pastille" style="background:${EVT[b.evt]?.c || "#999"}"></span>${esc(b.evt)}</span></td>
-      <td><a class="lien" href="${esc(b.url)}" target="_blank" rel="noopener">${esc(b.nom)}</a></td><td class="detail">${esc(b.act)}</td></tr>`).join("")}
+      <td>${lienEntreprise(b.sirens[0], b.nom)} <a class="sansloc no-print" href="${esc(b.url)}" target="_blank" rel="noopener">annonce</a></td><td class="detail">${esc(b.act)}</td></tr>`).join("")}
     </tbody></table></div>`;
 }
 

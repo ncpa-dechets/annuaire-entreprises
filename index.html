@@ -20,8 +20,14 @@
     <div class="sur">Développement économique</div>
     <h1>Entreprises du territoire</h1>
   </div>
+  <div class="recherche" role="search">
+    <input id="r-texte" type="search" role="combobox" autocomplete="off" aria-autocomplete="list" aria-expanded="false" aria-controls="r-liste"
+      placeholder="Rechercher une entreprise…" aria-label="Rechercher une entreprise : nom, SIREN ou SIRET">
+    <ul id="r-liste" role="listbox" aria-label="Entreprises trouvées" hidden></ul>
+  </div>
   <nav class="onglets" role="tablist">
-    <a role="tab" aria-selected="true" href="#/synthese" data-vue="v-synthese">Synthèse</a>
+    <a role="tab" aria-selected="true" href="#/nouveautes" data-vue="v-nouveautes">Quoi de neuf</a>
+    <a role="tab" aria-selected="false" href="#/synthese" data-vue="v-synthese">Synthèse</a>
     <a role="tab" aria-selected="false" href="#/communes" data-vue="v-communes">Communes</a>
     <a role="tab" aria-selected="false" href="#/secteurs" data-vue="v-secteurs">Secteurs</a>
     <a role="tab" aria-selected="false" href="#/dynamique" data-vue="v-bodacc">Dynamique</a>
@@ -33,8 +39,35 @@
 </header>
 
 <main>
+  <!-- ===================== QUOI DE NEUF ===================== -->
+  <section id="v-nouveautes" class="vue page">
+    <div class="inner">
+      <div class="tete-page"><div><h2>Quoi de neuf sur le territoire</h2><p class="note" id="n-sous"></p></div>
+        <div class="no-print"><button class="btn" id="n-copier">Copier le résumé</button> <button class="btn" id="n-export">Télécharger (Excel)</button>
+          <button class="btn" data-imprimer>Imprimer ou enregistrer en PDF</button></div></div>
+      <div class="outils no-print">
+        <label>Période<select id="n-periode"><option value="7">7 derniers jours</option><option value="30" selected>30 derniers jours</option>
+          <option value="90">90 derniers jours</option></select></label>
+        <label>Commune<select id="n-commune"><option value="">Toutes les communes</option></select></label>
+        <label class="case"><input type="checkbox" id="n-sci" checked> Masquer les SCI</label>
+        <label class="case"><input type="checkbox" id="n-pp"> Masquer les commerçants en nom propre</label>
+      </div>
+      <div class="gros" id="n-chiffres"></div>
+      <p class="note" id="n-note"></p>
+      <div id="n-contenu"></div>
+      <p class="source pied">Sources : BODACC (annonces légales, entreprises inscrites au registre du commerce) ; Insee, répertoire SIRENE
+        (dates de création et comparaison nocturne de l'annuaire, hors entrepreneurs individuels). Les annonces paraissent quelques jours à quelques
+        semaines après l'acte. Les effectifs sont des tranches déclarées à l'Insee.</p>
+    </div>
+  </section>
+
+  <!-- ===================== FICHE ENTREPRISE ===================== -->
+  <section id="v-entreprise" class="vue page" hidden>
+    <div class="inner" id="en-contenu"></div>
+  </section>
+
   <!-- ===================== SYNTHÈSE ===================== -->
-  <section id="v-synthese" class="vue page">
+  <section id="v-synthese" class="vue page" hidden>
     <div class="inner" id="sy-contenu"></div>
   </section>
 

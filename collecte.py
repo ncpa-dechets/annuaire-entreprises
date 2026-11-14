@@ -238,22 +238,48 @@ def transformer(e, naf_lib, noms_communes=None):
 # ---------------------------------------------------------------------------
 # Journal des changements
 # ---------------------------------------------------------------------------
+COLONNES_JOURNAL = ["date", "evenement", "siret", "nom", "commune", "code_commune", "naf_libelle", "section",
+                    "tranche_libelle", "type_structure", "detail"]
+
+
+def _tranche(v):
+    """Code de tranche d'effectif, « NN » quand il est absent."""
+    v = str(v or "").strip()
+    return v if v and v.lower() != "nan" else "NN"
+
+
+def changements_effectif(ancien, nouveau):
+    """Établissements présents les deux jours dont la tranche d'effectif a changé.
+    La colonne detail donne l'ancienne et la nouvelle tranche : « 1 ou 2 salariés → 6 à 9 salariés »."""
+    if "tranche_effectif" not in ancien.columns or "tranche_effectif" not in nouveau.columns:
+        return nouveau.iloc[0:0].assign(evenement="", detail="")
+    a = ancien.drop_duplicates("siret").set_index("siret")["tranche_effectif"].map(_tranche)
+    n = nouveau.drop_duplicates("siret").set_index("siret")["tranche_effectif"].map(_tranche)
+    communs = a.index.intersection(n.index)
+    differents = communs[(a[communs] != n[communs]).to_numpy()]
+    lib = lambda t: TRANCHES.get(t, (t,))[0]
+    ch = nouveau[nouveau["siret"].isin(differents)].drop_duplicates("siret").copy()
+    ch["detail"] = [f"{lib(a[s])} → {lib(n[s])}" for s in ch["siret"]]
+    return ch.assign(evenement="Changement d'effectif")
+
+
 def mettre_a_jour_journal(ancien, nouveau, jour):
     fj = DATA / "journal.csv"
-    cols = ["date", "evenement", "siret", "nom", "commune", "code_commune", "naf_libelle", "section",
-            "tranche_libelle", "type_structure"]
-    journal = pd.read_csv(fj, dtype=str) if fj.exists() else pd.DataFrame(columns=cols)
+    cols = COLONNES_JOURNAL
+    journal = pd.read_csv(fj, dtype=str, keep_default_na=False) if fj.exists() else pd.DataFrame(columns=cols)
+    journal = journal.reindex(columns=cols, fill_value="")   # anciens journaux, sans la colonne detail
     if ancien is None:
         return journal                       # premier passage : pas de comparaison possible
     a, n = set(ancien["siret"]), set(nouveau["siret"])
-    entrees = nouveau[nouveau["siret"].isin(n - a)].assign(evenement="Nouvel établissement")
-    sorties = ancien[ancien["siret"].isin(a - n)].assign(evenement="Établissement sorti")
-    ajout = pd.concat([entrees, sorties]).assign(date=jour)[cols]
+    entrees = nouveau[nouveau["siret"].isin(n - a)].assign(evenement="Nouvel établissement", detail="")
+    sorties = ancien[ancien["siret"].isin(a - n)].assign(evenement="Établissement sorti", detail="")
+    effectifs = changements_effectif(ancien, nouveau)
+    ajout = pd.concat([entrees, sorties, effectifs]).assign(date=jour).reindex(columns=cols, fill_value="")
     journal = pd.concat([journal, ajout], ignore_index=True)
     limite = (datetime.date.fromisoformat(jour) - datetime.timedelta(days=JOURNAL_JOURS)).isoformat()
     journal = journal[journal["date"] >= limite].sort_values(["date", "evenement", "siret"])
     journal.to_csv(fj, index=False, lineterminator="\n")
-    log(f"   journal : {len(entrees)} nouveaux, {len(sorties)} sortis")
+    log(f"   journal : {len(entrees)} nouveaux, {len(sorties)} sortis, {len(effectifs)} changements d'effectif")
     return journal
 
 

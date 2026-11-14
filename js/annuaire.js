@@ -1,7 +1,7 @@
 /* Onglet Annuaire : carte, filtres, liste, exports. */
 import {$, esc, norm, nb, dateFr, num, sirFmt, toast, debounce, telecharger, estEmployeur, estApprox, PRECISIONS,
   multiSelect, SECTIONS, COULEURS, TYPES, TYPES_DEFAUT, E, parSiret, communesGJ, feuille, jour, ligneBodacc,
-  bonneBoite, potentielParSiret} from "./commun.js";
+  bonneBoite, potentielParSiret, fondPlanIGN} from "./commun.js";
 
 const etat = {proportionnel:true, tri:{col:"emin", sens:-1}, rendus:0, selection:null};
 let filtres = [];
@@ -23,8 +23,7 @@ function initCarte(){
     {maxNativeZoom:19, maxZoom:20, attribution:"&copy; IGN / Géoplateforme"});
   // Fond « Plan » : OpenFreeMap Positron. Il demande WebGL : si le poste ne le permet pas,
   // ou si le style ne se charge pas, la carte bascule sur le Plan IGN pour ne pas rester vide.
-  const secours = () => L.tileLayer("https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&STYLE=normal&FORMAT=image%2Fpng&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}",
-    {maxZoom:19, attribution:"&copy; IGN / Géoplateforme"});
+  const secours = fondPlanIGN;
   const webgl = (() => { try { const c = document.createElement("canvas"); return !!(c.getContext("webgl2") || c.getContext("webgl")); } catch(e){ return false; } })();
   planCouche = (webgl && L.maplibreGL) ? L.maplibreGL({style:"https://tiles.openfreemap.org/styles/positron",
     attribution:'&copy; <a href="https://openfreemap.org" target="_blank">OpenFreeMap</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">contributeurs OpenStreetMap</a>'}) : secours();
@@ -127,7 +126,8 @@ function fiche(e){
     <tr><td>Structure</td><td>${esc(e.tstr)}${e.catent ? " (" + esc(e.catent) + ")" : ""}</td></tr>
     <tr><td>SIRET</td><td>${sirFmt(e.siret)}</td></tr>${ligneBodacc(e)}${embauche}
     <tr><td>Position</td><td>${esc(PRECISIONS[e.prec] ? PRECISIONS[e.prec][0].toUpperCase() + PRECISIONS[e.prec].slice(1) : e.loc)}${e.prec ? `<br><span style="color:var(--mut)">Source : ${esc(e.loc)}</span>` : ""}</td></tr></table>
-    <a href="https://annuaire-entreprises.data.gouv.fr/etablissement/${esc(e.siret)}" target="_blank" rel="noopener">Fiche complète sur l'Annuaire des entreprises</a></div>`;
+    <a href="#/entreprise/${esc(e.siret.slice(0, 9))}">Fiche entreprise →</a><br>
+    <a href="https://annuaire-entreprises.data.gouv.fr/etablissement/${esc(e.siret)}" target="_blank" rel="noopener" style="margin-top:2px;font-weight:400">Annuaire des entreprises</a></div>`;
 }
 
 function vueEnsemble(){

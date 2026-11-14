@@ -15,7 +15,7 @@ collecte.py ─► API SIRENE + IGN + Annuaire         index.html ─► lit dat
 
 | Fichier | Rôle |
 |---|---|
-| `index.html`, `css/`, `js/` | La page. Un fichier par onglet dans `js/` : `synthese.js`, `communes.js`, `annuaire.js`, `vie.js`, `qualite.js` ; `secteurs.js`, `dynamique.js`, `themes/` (commerces, tourisme, emploi) ; `commun.js` (données et outils), `stats.js`, `emploi.js`, `blocs.js` et `graphes.js` (chiffres et graphiques), `app.js` (navigation) |
+| `index.html`, `css/`, `js/` | La page. Un fichier par onglet dans `js/` : `nouveautes.js` (Quoi de neuf), `synthese.js`, `communes.js`, `annuaire.js`, `vie.js`, `qualite.js` ; `secteurs.js`, `dynamique.js`, `themes/` (commerces, tourisme, emploi) ; `entreprise.js` (fiche entreprise et recherche de l'en-tête) ; `commun.js` (données et outils), `stats.js`, `emploi.js`, `blocs.js` et `graphes.js` (chiffres et graphiques), `app.js` (navigation) |
 | `collecte.py`, `referentiels.py` | La collecte quotidienne (API SIRENE, journal) |
 | `statistiques.py` | Les comptages du tableau de bord (`data/stats.json`) |
 | `urssaf.py` | L'emploi salarié privé par commune et par activité (`data/emploi_urssaf.json`) |
@@ -31,6 +31,15 @@ collecte.py ─► API SIRENE + IGN + Annuaire         index.html ─► lit dat
 
 ## Les onglets
 
+- **Quoi de neuf** (page d'accueil) : sur 7, 30 ou 90 jours, les entreprises en difficulté, les reprises
+  (ventes de fonds, avec le prix), les arrivées et créations, les départs et fermetures, et les effectifs qui
+  changent. Employeurs en tête de chaque rubrique. Sources : BODACC, dates de création SIRENE et journal
+  nocturne (`data/journal.csv`). « Copier le résumé » donne un texte prêt à coller dans un courriel.
+- **Fiche entreprise** (`…/#/entreprise/<siren>`, ouverte par la recherche de l'en-tête ou en cliquant sur un
+  nom d'entreprise) : établissements du territoire et carte, effectifs, annonces BODACC, mouvements SIRENE,
+  établissements de même activité, imprimable avec un encadré « Notes de visite ». Les dirigeants, comptes et
+  labels sont demandés **en direct** à l'API Recherche d'entreprises à l'ouverture de la fiche ; si elle ne
+  répond pas, la fiche s'affiche sans ces compléments.
 - **Synthèse** : chiffres clés du territoire, secteurs, carte des communes selon un indicateur au choix,
   créations et fermetures par an, principaux employeurs.
 - **Communes** : tableau comparatif triable (export Excel) ; un clic ouvre la fiche d'une commune,
@@ -162,6 +171,10 @@ la clé SIRENE reste protégée dans les secrets du dépôt.
   Un guide en bas de l'onglet explique chaque type d'annonce. Les rectificatifs
   remplacent l'annonce d'origine, les annulations la retirent. Si le BODACC ne répond pas une nuit,
   les annonces de la veille sont conservées et l'annuaire est mis à jour normalement.
+- **Journal** (`data/journal.csv`) : chaque nuit, l'annuaire est comparé à celui de la veille. Trois
+  événements : nouvel établissement, établissement sorti, changement d'effectif (colonne `detail` :
+  « 1 ou 2 salariés → 6 à 9 salariés »). L'Insee met les tranches à jour par lots : une nuit peut compter
+  beaucoup de changements d'effectif. Historique de deux ans.
 - **Garde-fou** : si une nuit l'API renvoie moins de 80 % des établissements de la veille,
   rien n'est écrasé. Pour passer outre, relancer le workflow à la main avec `forcer` = `1`.
 
