@@ -1,5 +1,5 @@
 {
- "date_maj": "2026-11-14T12:29+01:00",
+ "date_maj": "2026-11-15T12:58+01:00",
  "epci": "200065563",
  "nb_communes": 38,
  "nb_etablissements": 5007,
@@ -16,18 +16,18 @@
   "Lieu nommé": 607,
   "Non localisé": 337
  },
- "duree_secondes": 190,
+ "duree_secondes": 194,
  "source": "Insee, répertoire SIRENE (API Sirene 3.11)",
  "bodacc": {
   "date_max": "2026-11-13",
-  "nb_annonces": 1177,
+  "nb_annonces": 1176,
   "par_evenement": {
    "Création": 489,
    "Radiation": 395,
    "Immatriculation": 66,
    "Clôture de procédure": 56,
    "Suivi de procédure": 49,
-   "Vente de fonds": 46,
+   "Vente de fonds": 45,
    "Liquidation judiciaire": 41,
    "Ouverture de sauvegarde ou de redressement": 25,
    "Plan de redressement ou de sauvegarde": 10
