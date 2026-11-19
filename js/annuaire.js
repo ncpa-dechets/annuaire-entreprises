@@ -1,17 +1,37 @@
 /* Onglet Annuaire : carte, filtres, liste, exports. */
 import {$, esc, norm, nb, dateFr, num, sirFmt, toast, debounce, telecharger, estEmployeur, estApprox, PRECISIONS,
   multiSelect, SECTIONS, COULEURS, TYPES, TYPES_DEFAUT, E, parSiret, communesGJ, feuille, jour, ligneBodacc,
-  bonneBoite, potentielParSiret, fondPlanIGN, rayonEffectif} from "./commun.js";
+  fondPlanIGN, rayonEffectif} from "./commun.js";
+import {CATEGORIES, categorie, palier, PALIERS, pin, pinMini, pinCategorie, hexVide} from "./pictos.js";
+import {initPanneau, ficheEtab, listeGroupe, fermerPanneau, panneauOuvert} from "./panneau.js";
 
-const etat = {proportionnel:true, tri:{col:"emin", sens:-1}, rendus:0, selection:null};
+/* mode : « picto » (pictogrammes par activité dès le zoom SEUIL_PICTOS, cercles selon l'effectif en deçà),
+   « eff » (cercles selon l'effectif) ou « egal » (cercles identiques). */
+const SEUIL_PICTOS = 15;
+const etat = {mode:"picto", affiche:null, tri:{col:"emin", sens:-1}, rendus:0, selection:null};
 let filtres = [];
 let msCommunes, msDivisions, secteursCoches = new Set(), typesCoches = new Set(TYPES_DEFAUT);
-const rayon = e => etat.proportionnel ? rayonEffectif(e) : 5;
+const rayon = e => etat.mode === "egal" ? 5 : rayonEffectif(e);
+const pictosActifs = () => etat.mode === "picto" && map.getZoom() >= SEUIL_PICTOS;
+
+/* Établissements au même emplacement (même immeuble, ou même rue quand la position est approximative) :
+   un seul marqueur, avec leur nombre. Le plus gros employeur donne son pictogramme. */
+let groupes = new Map(), groupeDe = new Map();
+const cle = e => `${e.lat},${e.lon}`;
+function grouper(){
+  groupes = new Map(); groupeDe = new Map();
+  filtres.forEach(e => { if (!e.m) return; const k = cle(e); if (!groupes.has(k)) groupes.set(k, []); groupes.get(k).push(e); });
+  groupes.forEach(g => { g.sort((a, b) => (b.emin ?? -1) - (a.emin ?? -1) || (b.siege === "Oui") - (a.siege === "Oui") || a.nom.localeCompare(b.nom, "fr"));
+    g.forEach(e => groupeDe.set(e.siret, g)); });
+}
+const infobulle = g => g.length === 1 ? esc(g[0].nom)
+  : `<b>${nb(g.length)} établissements ici</b><br>${g.slice(0, 6).map(e => esc(e.nom)).join("<br>")}${g.length > 6 ? `<br>et ${nb(g.length - 6)} autres…` : ""}`;
 
 /* =========================================================================
    Carte
    ========================================================================= */
-let map, groupe, rendu, communesCouche, anneau = null, planCouche, ortho, legTailles;
+let map, calque, groupe, pictos, rendu, communesCouche, anneau = null, planCouche, ortho, legende;
+const marqueurs = new Map();   // emplacement -> {sig, mk} : pictogrammes déjà créés
 function initCarte(){
   map = L.map("map", {preferCanvas:true});
   ortho = L.tileLayer("https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&STYLE=normal&FORMAT=image%2Fjpeg&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}",
@@ -44,40 +64,40 @@ function initCarte(){
   communesCouche = L.geoJSON(communesGJ, {style:styleCom(false), interactive:false}).addTo(map);
   map.on("baselayerchange", e => communesCouche.setStyle(styleCom(e.layer === ortho)));
   rendu = L.canvas({padding:.5});
-  groupe = L.layerGroup().addTo(map);
+  groupe = L.layerGroup();    // cercles (canevas)
+  pictos = L.layerGroup();    // pictogrammes (seulement ceux de la vue)
+  calque = L.layerGroup([groupe, pictos]).addTo(map);
   ctlCouches.addOverlay(communesCouche, "Limites communales");
-  ctlCouches.addOverlay(groupe, "Établissements");
+  ctlCouches.addOverlay(calque, "Établissements");
 
   E.forEach(e => {
     if (e.lat === null || e.lon === null) return;
     e.m = L.circleMarker([e.lat, e.lon], {renderer:rendu, color:"#fff", weight:.8});
-    e.m.bindPopup(() => fiche(e), {maxWidth:320});
-    e.m.bindTooltip(() => esc(e.nom), {direction:"top"});
-    e.m.on("click", () => surligner(e, false));
+    e.m.bindTooltip(() => infobulle(groupeDe.get(e.siret) || [e]), {direction:"top"});
+    e.m.on("click", () => cliquer(e));
   });
   styliser();
 
-  // Contrôles : vue d'ensemble, légende des tailles
+  // Contrôles : vue d'ensemble, légende (tailles et positions approximatives)
   const Vue = L.Control.extend({options:{position:"topleft"}, onAdd(){
     const b = L.DomUtil.create("button", "ctl"); b.textContent = "Vue d'ensemble";
     b.onclick = vueEnsemble; L.DomEvent.disableClickPropagation(b); return b; }});
   new Vue().addTo(map);
-  legTailles = L.control({position:"bottomleft"});
-  legTailles.onAdd = () => {
-    const d = L.DomUtil.create("div", "ctl");
-    d.innerHTML = `<div class="tailles">` + [10,50,250].map(v => { const r = Math.min(30, 3 + 1.5*Math.sqrt(v));
-      return `<div><span style="width:${2*r}px;height:${2*r}px"></span>${v} sal.</div>`; }).join("") +
-      `</div><div style="color:var(--mut);margin-top:4px">Cercles pâles : effectif nul ou inconnu</div>`;
+  legende = L.control({position:"bottomleft"});
+  legende.onAdd = () => {
+    const d = L.DomUtil.create("div", "ctl legende");
+    L.DomEvent.disableClickPropagation(d);
+    // Zoomer sur l'établissement affiché le plus proche du centre, pour ne pas tomber dans un champ
+    d.addEventListener("click", ev => {
+      if (!ev.target.closest("[data-zoomer]")) return;
+      const c = map.getCenter(); let proche = null, dist = Infinity;
+      filtres.forEach(e => { if (!e.m) return; const x = map.distance(c, [e.lat, e.lon]); if (x < dist){ dist = x; proche = e; } });
+      map.setView(proche ? [proche.lat, proche.lon] : c, SEUIL_PICTOS + 1);
+    });
     return d;
   };
-  legTailles.addTo(map);
-  const legPrec = L.control({position:"bottomleft"});
-  legPrec.onAdd = () => {
-    const d = L.DomUtil.create("div", "ctl");
-    d.innerHTML = `<span class="evide"></span>Cercle évidé : position approximative (rue ou lieu-dit)`;
-    return d;
-  };
-  legPrec.addTo(map);
+  legende.addTo(map);
+  map.on("zoomend moveend", () => dessiner());
 
   // Clic droit : coordonnées à copier (pour corrections_localisation.csv)
   map.on("contextmenu", ev => {
@@ -95,34 +115,78 @@ function initCarte(){
 
 function styliser(){
   E.forEach(e => { if (!e.m) return;
-    const pale = etat.proportionnel && !(e.emin >= 1);
+    const pale = etat.mode !== "egal" && !(e.emin >= 1);
     const c = COULEURS[e.sec] || "#999";
     // Position approximative : cercle évidé, bordé de la couleur du secteur
     e.m.setStyle(estApprox(e) ? {fillColor:c, fillOpacity:.15, color:c, weight:1.6}
                               : {fillColor:c, fillOpacity: pale ? .45 : .82, color:"#fff", weight:.8});
     e.m.setRadius(rayon(e));
   });
-  if (legTailles) etat.proportionnel ? legTailles.addTo(map) : legTailles.remove();
 }
 
-function fiche(e){
-  const rs = e.rs && e.rs !== e.nom ? `<div class="rs">${esc(e.rs)}</div>` : "";
-  const eff = esc(e.trl) + (e.aeff ? ` <span style="color:var(--mut)">(${esc(e.aeff)})</span>` : "");
-  const potentiel = potentielParSiret.get(e.siret);
-  const embauche = potentiel ? `<tr><td>Embauche</td><td>${potentiel.fort_potentiel === true ? "Fort potentiel estimé" : "Potentiel estimé"}
-    ${Number.isFinite(potentiel.indice) ? ` · indice ${nb(potentiel.indice)}/100` : ""}<br>
-    <span style="color:var(--mut)">Estimation à 6 mois, pas une offre.<br>La Bonne Boîte · consulté le ${dateFr(bonneBoite.date)}</span></td></tr>` : "";
-  return `<div class="fiche"><div class="n">${esc(e.nom)}</div>${rs}
-    <div class="act" style="border-color:${COULEURS[e.sec]}">${esc(e.nafl || "Activité non renseignée")}${e.naf ? ` <span style="color:var(--mut)">(${esc(e.naf)})</span>` : ""}</div>
-    <table><tr><td>Adresse</td><td>${esc(e.adr)}${e.cplt ? "<br>" + esc(e.cplt) : ""}<br>${esc(e.cp)} ${esc(e.com)}</td></tr>
-    <tr><td>Effectif</td><td>${eff}</td></tr>
-    <tr><td>Créé le</td><td>${dateFr(e.crea)}</td></tr>
-    <tr><td>Établissement</td><td>${e.siege === "Oui" ? "Siège" : "Établissement secondaire"}</td></tr>
-    <tr><td>Structure</td><td>${esc(e.tstr)}${e.catent ? " (" + esc(e.catent) + ")" : ""}</td></tr>
-    <tr><td>SIRET</td><td>${sirFmt(e.siret)}</td></tr>${ligneBodacc(e)}${embauche}
-    <tr><td>Position</td><td>${esc(PRECISIONS[e.prec] ? PRECISIONS[e.prec][0].toUpperCase() + PRECISIONS[e.prec].slice(1) : e.loc)}${e.prec ? `<br><span style="color:var(--mut)">Source : ${esc(e.loc)}</span>` : ""}</td></tr></table>
-    <a href="#/entreprise/${esc(e.siret.slice(0, 9))}">Fiche entreprise →</a><br>
-    <a href="https://annuaire-entreprises.data.gouv.fr/etablissement/${esc(e.siret)}" target="_blank" rel="noopener" style="margin-top:2px;font-weight:400">Annuaire des entreprises</a></div>`;
+/* Dessine les établissements filtrés : cercles sur le canevas, ou pictogrammes de la vue en cours.
+   force : la sélection a changé (filtres, mode). */
+function dessiner(force = false){
+  if (!map) return;
+  if (pictosActifs()){
+    if (etat.affiche !== "pictos" || force){ groupe.clearLayers(); etat.affiche = "pictos"; }
+    dessinerPictos();
+  } else if (etat.affiche !== "cercles" || force){
+    pictos.clearLayers(); groupe.clearLayers();
+    // Grands cercles d'abord pour que les petits restent cliquables
+    filtres.filter(e => e.m).sort((a,b) => rayon(b) - rayon(a)).forEach(e => groupe.addLayer(e.m));
+    etat.affiche = "cercles";
+  }
+  majAnneau(); majLegende();
+}
+
+function dessinerPictos(){
+  const b = map.getBounds().pad(.25), vus = new Set();
+  groupes.forEach((g, k) => {
+    if (!b.contains([g[0].lat, g[0].lon])) return;
+    vus.add(k);
+    const sig = g.map(e => e.siret).join();
+    let m = marqueurs.get(k);
+    if (!m || m.sig !== sig){ if (m) pictos.removeLayer(m.mk); m = {sig, g, mk:creerPin(g)}; marqueurs.set(k, m); }
+    if (!pictos.hasLayer(m.mk)) pictos.addLayer(m.mk);
+  });
+  marqueurs.forEach((m, k) => { if (!vus.has(k) && pictos.hasLayer(m.mk)) pictos.removeLayer(m.mk); });
+  marquerSelection();
+}
+
+function creerPin(g){
+  const e = g[0], p = Math.max(...g.map(palier)), l = PALIERS[p].l, h = Math.round(l * 38 / 32);
+  const html = `<div class="pin">${pin(e, {l})}${g.length > 1 ? `<span class="pin-n">${g.length > 99 ? "99+" : g.length}</span>` : ""}</div>`;
+  const mk = L.marker([e.lat, e.lon], {icon:L.divIcon({className:"pin-ic", html, iconSize:[l, h], iconAnchor:[l / 2, h]}),
+    riseOnHover:true, zIndexOffset:p * 100, keyboard:true, title:""});
+  mk.bindTooltip(() => infobulle(g), {direction:"top", offset:[0, -h + 4]});
+  mk.on("click", () => cliquer(e, g));
+  return mk;
+}
+
+function marquerSelection(){
+  marqueurs.forEach(m => m.mk.getElement()?.firstElementChild?.classList.toggle("sel", !!etat.selection && m.g.some(e => e.siret === etat.selection)));
+}
+function majAnneau(){
+  if (anneau){ map.removeLayer(anneau); anneau = null; }
+  const e = etat.selection && parSiret.get(etat.selection);
+  if (!e || !e.m || etat.affiche !== "cercles" || !groupe.hasLayer(e.m)) return;
+  anneau = L.circleMarker([e.lat, e.lon], {radius:rayon(e) + 7, color:"#B91E27", weight:3, fill:false, interactive:false}).addTo(map);
+}
+
+function majLegende(){
+  const d = legende?.getContainer(); if (!d) return;
+  const cercles = [10,50,250].map(v => { const r = Math.min(30, 3 + 1.5*Math.sqrt(v));
+    return `<div><span style="width:${2*r}px;height:${2*r}px"></span>${v} sal.</div>`; }).join("");
+  const pt = etat.affiche === "pictos";
+  d.innerHTML = pt
+    ? `<div class="tailles hex">${PALIERS.slice(1).map(p => `<div>${hexVide(p.l * .8)}${p.lib}</div>`).join("")}</div>
+       <div class="leg-l">Taille selon le nombre de salariés de l'établissement</div>
+       <div class="leg-l"><span class="pin-n leg">3</span>établissements au même emplacement</div>
+       <div class="leg-l"><span class="pin-mini">${pin({sec:"Z", naf:""}, {l:15, approx:true})}</span>Pictogramme évidé : position approximative</div>`
+    : (etat.mode === "egal" ? "" : `<div class="tailles">${cercles}</div><div class="leg-l">Cercles pâles : effectif nul ou inconnu</div>`)
+      + `<div class="leg-l"><span class="evide"></span>Cercle évidé : position approximative (rue ou lieu-dit)</div>`
+      + (etat.mode === "picto" ? `<button type="button" class="leg-zoom" data-zoomer>Zoomer pour voir les pictogrammes</button>` : "");
 }
 
 function vueEnsemble(){
@@ -131,19 +195,57 @@ function vueEnsemble(){
   else map.fitBounds(communesCouche.getBounds());
 }
 
-function surligner(e, centrer){
+/* Clic sur un marqueur : la fiche, ou la liste des établissements de l'emplacement. */
+function cliquer(e, g = groupeDe.get(e.siret) || [e]){
+  marquer(e);
+  if (g.length > 1) listeGroupe(g); else ficheEtab(e);
+}
+
+/* Met en évidence un établissement (carte et liste) ; centrer : zoomer dessus. */
+function marquer(e, centrer = false){
   etat.selection = e.siret;
-  if (!centrer) montrerDansListe(e);
+  if ($("tiroir").classList.contains("ouvert")) montrerDansListe(e);
   document.querySelectorAll("#tb-liste tr.sel").forEach(t => t.classList.remove("sel"));
   document.querySelector(`#tb-liste tr[data-s="${e.siret}"]`)?.classList.add("sel");
-  if (anneau){ map.removeLayer(anneau); anneau = null; }
-  if (!e.m){ toast("Cet établissement n'a pas de position précise."); return; }
-  anneau = L.circleMarker([e.lat, e.lon], {radius:rayon(e) + 7, color:"#B91E27", weight:3, fill:false, interactive:false}).addTo(map);
-  if (centrer){
-    map.setView([e.lat, e.lon], Math.max(map.getZoom(), 17));
-    if (!groupe.hasLayer(e.m)) groupe.addLayer(e.m);
-    setTimeout(() => e.m.openPopup(), 250);
+  if (centrer && e.m){
+    if (!filtres.includes(e)) toast("Cet établissement est masqué par les filtres en cours.");
+    centrerVisible([e.lat, e.lon], Math.max(map.getZoom(), 17));
   }
+  marquerSelection(); majAnneau();
+}
+
+/* Part de la carte cachée par la fiche latérale : à droite sur grand écran, en bas sur mobile. */
+const mobile = matchMedia("(max-width:820px)");
+function cache(){
+  if (!panneauOuvert()) return {x:0, y:0};
+  const p = $("panneau");
+  return mobile.matches ? {x:0, y:p.offsetHeight} : {x:p.offsetWidth + 20, y:0};
+}
+/* Centre un point dans la partie visible de la carte. */
+function centrerVisible(ll, z){
+  const c = cache(), p = map.project(ll, z).add([c.x / 2, c.y / 2]);
+  map.setView(map.unproject(p, z), z);
+}
+
+/* Ouvre la fiche d'un établissement (liste, liens des autres onglets) et le montre sur la carte. */
+function surligner(e, centrer){
+  ficheEtab(e, {groupe:groupeDe.get(e.siret)});
+  marquer(e, centrer);
+}
+
+function centrerSur(etabs){
+  const pts = etabs.filter(e => e.m).map(e => [e.lat, e.lon]);
+  if (!pts.length) return;
+  const c = cache();
+  if (pts.length === 1) centrerVisible(pts[0], Math.max(map.getZoom(), 17));
+  else map.fitBounds(L.latLngBounds(pts), {paddingTopLeft:[40, 40], paddingBottomRight:[40 + c.x, 40 + c.y], maxZoom:17});
+  if (etabs.some(e => !filtres.includes(e))) toast("Certains établissements sont masqués par les filtres en cours.");
+}
+
+function deselectionner(){
+  etat.selection = null;
+  document.querySelectorAll("#tb-liste tr.sel").forEach(t => t.classList.remove("sel"));
+  marquerSelection(); majAnneau();
 }
 
 /* =========================================================================
@@ -195,9 +297,7 @@ function appliquer(){
   const divs = new Map();
   E.forEach(e => { if (e.div && secteursCoches.has(e.sec)) divs.set(e.div, e.divl); });
   msDivisions.options([...divs].sort((a,b) => a[0].localeCompare(b[0])).map(([v,l]) => ({v, l:`${v} – ${l}`})));
-  // Carte : grands cercles d'abord pour que les petits restent cliquables
-  groupe.clearLayers();
-  filtres.filter(e => e.m).sort((a,b) => rayon(b) - rayon(a)).forEach(e => groupe.addLayer(e.m));
+  grouper(); dessiner(true); legendePictos();
   // Chiffres clés
   let bas = 0, haut = 0;
   filtres.forEach(e => { if (e.emin !== null){ bas += e.emin; haut += e.emax; } });
@@ -207,6 +307,23 @@ function appliquer(){
   $("k-com").textContent = nb(new Set(filtres.map(e => e.com)).size);
   $("n-liste").textContent = nb(filtres.length);
   trier(); listeDebut();
+}
+
+/* Légende des pictogrammes (volet) : les catégories de la sélection, les plus nombreuses d'abord.
+   Un clic limite l'annuaire à cette catégorie. */
+function legendePictos(){
+  const n = new Map(), sec = new Map();
+  filtres.forEach(e => { const c = categorie(e.naf).id; n.set(c, (n.get(c) || 0) + 1);
+    const s = sec.get(c) || {}; s[e.sec] = (s[e.sec] || 0) + 1; sec.set(c, s); });
+  const l = CATEGORIES.filter(c => n.has(c.id)).sort((a, b) => n.get(b.id) - n.get(a.id));
+  $("leg-pictos").innerHTML = l.length ? l.map(c => { const s = Object.entries(sec.get(c.id)).sort((a, b) => b[1] - a[1])[0][0];
+    return `<button type="button" data-cat="${c.id}" title="Afficher seulement : ${esc(c.lib)}">${pinCategorie(c, s, 20)}<span>${esc(c.lib)}</span><span class="n">${nb(n.get(c.id))}</span></button>`; }).join("")
+    : `<p class="source">Aucun établissement dans la sélection.</p>`;
+}
+function filtrerCategorie(id){
+  const c = CATEGORIES.find(x => x.id === id); if (!c) return;
+  activites(new Set(E.filter(e => categorie(e.naf) === c).map(e => e.naf)), c.lib);
+  appliquer();
 }
 
 /* =========================================================================
@@ -226,7 +343,7 @@ function trier(){
   });
 }
 function ligne(e){
-  return `<tr data-s="${e.siret}"${e.siret === etat.selection ? ' class="sel"' : ""}><td><b>${esc(e.nom)}</b>${e.m ? "" : '<span class="sansloc" title="Pas de position sur la carte : un clic ouvre la fiche entreprise">(sans position · fiche →)</span>'}</td>
+  return `<tr data-s="${e.siret}"${e.siret === etat.selection ? ' class="sel"' : ""}><td class="nom-pin">${pinMini(e, 16)}<b>${esc(e.nom)}</b>${e.m ? "" : '<span class="sansloc" title="Pas de position sur la carte : un clic ouvre sa fiche">(sans position)</span>'}</td>
     <td>${esc(e.nafl)}</td><td>${esc(e.com)}</td><td>${esc(e.adr)}</td><td class="num">${esc(e.trl)}</td><td>${e.crea ? e.crea.slice(0,4) : ""}</td></tr>`;
 }
 function listeDebut(){
@@ -303,9 +420,10 @@ function construireFiltres(){
   $("f-texte").addEventListener("input", debounce(appliquer, 200));
   ["f-effectif", "f-employeurs", "f-sieges", "f-creation"].forEach(id => $(id).addEventListener("change", appliquer));
   document.querySelectorAll('input[name="taille"]').forEach(r => r.addEventListener("change", () => {
-    etat.proportionnel = document.querySelector('input[name="taille"]:checked').value === "eff";
-    styliser(); appliquer();
+    etat.mode = document.querySelector('input[name="taille"]:checked').value;
+    styliser(); dessiner(true);
   }));
+  $("leg-pictos").onclick = ev => { const b = ev.target.closest("[data-cat]"); if (b) filtrerCategorie(b.dataset.cat); };
   $("reinit").onclick = () => {
     activites(null);
     $("f-texte").value = ""; msCommunes.vider(); msDivisions.vider(); $("f-effectif").value = "";
@@ -319,6 +437,14 @@ function construireFiltres(){
 export function initAnnuaire(){
   construireFiltres();
   initCarte();
+  initPanneau($("panneau"), {
+    voir:(e, centrer) => marquer(e, centrer), centrerSur,
+    filtrerActivite:(naf, libelle, commune) => filtrer({nafs:[naf], libelle, commune}),
+    ouvre:() => $("carte-zone").classList.add("avec-panneau"),
+    ferme:() => { $("carte-zone").classList.remove("avec-panneau"); deselectionner(); }
+  });
+  document.addEventListener("keydown", ev => {
+    if (ev.key === "Escape" && panneauOuvert() && !$("v-annuaire").hidden && !ev.target.closest?.(".ms")) fermerPanneau(); });
   appliquer();
   vueEnsemble();
   const tog = $("tog-liste");
@@ -332,9 +458,7 @@ export function initAnnuaire(){
   $("tb-liste").addEventListener("click", ev => {
     const s = ev.target.closest("tr[data-s]")?.dataset.s; if (!s) return;
     const e = parSiret.get(s);
-    // Sans position, pas de bulle sur la carte : on ouvre directement la fiche entreprise.
-    if (!e.m){ location.hash = `#/entreprise/${e.siret.slice(0, 9)}`; return; }
-    surligner(e, true);
+    surligner(e, true);   // sans position, la fiche s'ouvre sans bouger la carte
   });
   document.querySelectorAll("th[data-tri]").forEach(th => th.onclick = () => {
     const c = th.dataset.tri; etat.tri = {col:c, sens: etat.tri.col === c ? -etat.tri.sens : (c === "emin" || c === "crea" ? -1 : 1)};

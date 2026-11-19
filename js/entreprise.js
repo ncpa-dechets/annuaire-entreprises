@@ -7,7 +7,7 @@ import {compter, aActivites} from "./stats.js";
 import {effBodacc} from "./vie.js";
 
 const API = "https://recherche-entreprises.api.gouv.fr/search";
-const LABELS = [["est_rge", "RGE (rénovation énergétique)"], ["est_ess", "Économie sociale et solidaire"], ["est_qualiopi", "Qualiopi (formation)"],
+export const LABELS = [["est_rge", "RGE (rénovation énergétique)"], ["est_ess", "Économie sociale et solidaire"], ["est_qualiopi", "Qualiopi (formation)"],
   ["est_organisme_formation", "Organisme de formation"], ["est_bio", "Agriculture biologique"], ["est_siae", "Insertion par l'activité économique"],
   ["est_societe_mission", "Société à mission"], ["est_patrimoine_vivant", "Entreprise du patrimoine vivant"],
   ["est_entrepreneur_spectacle", "Entrepreneur de spectacles"], ["est_finess", "Établissement sanitaire ou social (FINESS)"]];
@@ -18,7 +18,7 @@ const TRANCHES = {NN:"Non renseigné", "00":"0 salarié", "01":"1 ou 2 salariés
 const cache = new Map();   // SIREN -> promesse de la réponse de l'API (une seule requête par session)
 let carte = null;
 
-const euros = v => v == null || isNaN(v) ? "–" : Math.abs(v) >= 1e6 ? `${(v / 1e6).toLocaleString("fr-FR", {maximumFractionDigits:1})} M€`
+export const euros = v => v == null || isNaN(v) ? "–" : Math.abs(v) >= 1e6 ? `${(v / 1e6).toLocaleString("fr-FR", {maximumFractionDigits:1})} M€`
   : Math.abs(v) >= 1e3 ? `${Math.round(v / 1e3).toLocaleString("fr-FR")} k€` : `${nb(Math.round(v))} €`;
 const phrase = t => String(t || "").split(/\.\s/)[0].replace(/\.$/, "");
 
@@ -167,7 +167,7 @@ function initCarte(h, etabs){
 /* =========================================================================
    Compléments en direct : API Recherche d'entreprises (sans clé)
    ========================================================================= */
-function interroger(siren){
+export function interroger(siren){
   if (!cache.has(siren)){
     const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 8000);
     cache.set(siren, fetch(`${API}?q=${siren}&per_page=1`, {signal:ctl.signal})

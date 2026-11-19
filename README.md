@@ -15,7 +15,7 @@ collecte.py ─► API SIRENE + IGN + Annuaire         index.html ─► lit dat
 
 | Fichier | Rôle |
 |---|---|
-| `index.html`, `css/`, `js/` | La page. Un fichier par onglet dans `js/` : `nouveautes.js` (Quoi de neuf), `synthese.js`, `communes.js`, `annuaire.js`, `vie.js`, `qualite.js` ; `secteurs.js`, `dynamique.js`, `themes/` (commerces, tourisme, emploi) ; `entreprise.js` (fiche entreprise et recherche de l'en-tête) ; `fiches.js`, `fiches-outils.js` et `cartes.js` (onglet Fiches PDF, avec `css/fiches.css`) ; `commun.js` (données et outils), `stats.js`, `emploi.js`, `blocs.js` et `graphes.js` (chiffres et graphiques), `app.js` (navigation) |
+| `index.html`, `css/`, `js/` | La page. Un fichier par onglet dans `js/` : `nouveautes.js` (Quoi de neuf), `synthese.js`, `communes.js`, `annuaire.js` (avec `pictos.js` pour les pictogrammes et `panneau.js` pour la fiche latérale), `vie.js`, `qualite.js` ; `secteurs.js`, `dynamique.js`, `themes/` (commerces, tourisme, emploi) ; `entreprise.js` (fiche entreprise et recherche de l'en-tête) ; `fiches.js`, `fiches-outils.js` et `cartes.js` (onglet Fiches PDF, avec `css/fiches.css`) ; `commun.js` (données et outils), `stats.js`, `emploi.js`, `blocs.js` et `graphes.js` (chiffres et graphiques), `app.js` (navigation) |
 | `collecte.py`, `referentiels.py` | La collecte quotidienne (API SIRENE, journal) |
 | `statistiques.py` | Les comptages du tableau de bord (`data/stats.json`) |
 | `urssaf.py` | L'emploi salarié privé par commune et par activité (`data/emploi_urssaf.json`) |
@@ -60,7 +60,27 @@ collecte.py ─► API SIRENE + IGN + Annuaire         index.html ─► lit dat
   - *Tourisme* : hébergements classés (Atout France), hébergements déclarés (SIRENE) et emploi
     touristique (Urssaf).
   - *Emploi et recrutement* : potentiels d'embauche (La Bonne Boîte), offres en cours (France Travail) et métiers recherchés (enquête BMO).
-- **Annuaire**, **Méthode et qualité** : comme avant.
+- **Annuaire** : carte, filtres et liste des établissements. Trois représentations au choix (volet,
+  *Représentation*) :
+  - *Pictogrammes par activité* (par défaut) : à partir du zoom 15, chaque établissement est un hexagone
+    de la couleur de son secteur, avec un pictogramme selon son activité (restaurant, boulangerie, artisan du
+    bâtiment, santé…) et une taille selon son nombre de salariés. En deçà, la carte garde les cercles selon
+    l'effectif (un bouton de la légende zoome sur l'établissement le plus proche). Les établissements au même
+    emplacement n'ont qu'un marqueur, avec leur nombre en pastille ; un clic en donne la liste.
+    Pictogramme évidé et bordé de pointillés : position approximative.
+  - *Cercles selon l'effectif* et *Cercles identiques* : la carte d'avant.
+
+  La correspondance entre codes NAF et pictogrammes est dans `js/pictos.js` (`CATEGORIES`, la première
+  catégorie qui convient l'emporte) ; les icônes viennent de [Lucide](https://lucide.dev) (licence ISC) et
+  sont copiées dans ce fichier. La *Légende des pictogrammes* du volet compte les catégories de la sélection ;
+  un clic n'affiche que l'une d'elles.
+
+  Un clic sur un établissement (carte ou liste) ouvre une **fiche latérale** : identité, SIREN et SIRET à
+  copier, adresse, activité, autres établissements de l'entreprise sur le territoire, dirigeants et comptes
+  (demandés en direct à l'API Recherche d'entreprises), BODACC et mouvements, documents (avis de situation
+  SIRENE de l'Insee, fiche INPI, Annuaire des entreprises, dossier PDF), établissements de même activité dans la
+  commune. Les sections se replient ; leur état est gardé dans le navigateur. Échap ferme la fiche.
+- **Méthode et qualité** : comme avant.
 
 - **Fiches PDF** : compose un document A4 à enregistrer en PDF (voir plus bas).
 

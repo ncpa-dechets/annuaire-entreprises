@@ -148,11 +148,17 @@
         </select>
       </details>
 
-      <h2>Taille des points</h2>
-      <div class="radios">
-        <label><input type="radio" name="taille" value="eff" checked> Selon l'effectif</label>
-        <label><input type="radio" name="taille" value="egal"> Identique</label>
+      <h2>Représentation</h2>
+      <div class="radios col">
+        <label><input type="radio" name="taille" value="picto" checked> Pictogrammes par activité <span class="aide">en zoomant ; taille selon l'effectif</span></label>
+        <label><input type="radio" name="taille" value="eff"> Cercles selon l'effectif</label>
+        <label><input type="radio" name="taille" value="egal"> Cercles identiques</label>
       </div>
+      <details class="plus leg-pictos-d">
+        <summary>Légende des pictogrammes</summary>
+        <p class="source" style="margin:6px 0">Couleur : secteur d'activité. Un clic n'affiche que cette activité.</p>
+        <div class="leg-pictos" id="leg-pictos"></div>
+      </details>
 
       <button class="reinit" id="reinit">Réinitialiser les filtres</button>
       <p class="source">Source : Insee, répertoire SIRENE (établissements actifs, hors entrepreneurs individuels).
@@ -160,7 +166,10 @@
     </aside>
 
     <div id="zone">
-      <div id="map" role="region" aria-label="Carte des établissements"></div>
+      <div id="carte-zone">
+        <div id="map" role="region" aria-label="Carte des établissements"></div>
+        <aside id="panneau" class="pfiche" hidden aria-label="Fiche de l'établissement"></aside>
+      </div>
       <div id="tiroir">
         <div class="tete">
           <button class="tog" id="tog-liste" aria-expanded="false" aria-controls="corps-liste">Liste des établissements (<span id="n-liste">0</span>)</button>
