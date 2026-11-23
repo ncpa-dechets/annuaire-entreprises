@@ -1,9 +1,9 @@
 {
- "date_maj": "2026-11-22T13:34+01:00",
+ "date_maj": "2026-11-23T15:34+01:00",
  "epci": "200065563",
  "nb_communes": 38,
  "nb_etablissements": 5007,
- "nb_entrepreneurs_individuels_exclus": 11244,
+ "nb_entrepreneurs_individuels_exclus": 11246,
  "localisation": {
   "SIRENE": 3150,
   "Géocodage IGN": 888,
@@ -16,7 +16,7 @@
   "Lieu nommé": 607,
   "Non localisé": 337
  },
- "duree_secondes": 187,
+ "duree_secondes": 194,
  "source": "Insee, répertoire SIRENE (API Sirene 3.11)",
  "bodacc": {
   "date_max": "2026-11-20",
