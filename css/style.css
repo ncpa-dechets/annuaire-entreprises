@@ -277,12 +277,14 @@ table.compar tfoot td{background:var(--fond);border-top:2px solid var(--bord);po
   #sy-carte{height:300px}
 }
 
-/* ---- Impression : portrait A4 du territoire ou d'une commune ---- */
+/* ---- Impression : portrait A4 du territoire ou d'une commune ----
+   Marges de page nulles : le navigateur n'a plus de place pour ses en-têtes et pieds de page (date, titre, URL, numéros).
+   La marge de 13 mm est portée par le contenu et répétée sur chaque page (box-decoration-break). */
 @media print{
-  @page{size:A4;margin:13mm}
+  @page{size:A4;margin:0}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   html,body{height:auto;overflow:visible}
-  body{display:block;font-size:12px}
+  body{display:block;font-size:12px;padding:13mm;-webkit-box-decoration-break:clone;box-decoration-break:clone}
   .onglets,#btn-filtres,.maj,.no-print,.btn,#toast,#chargement,.bulle{display:none !important}
   .barre{padding:0 0 6px;margin-bottom:10px}
   main{position:static}

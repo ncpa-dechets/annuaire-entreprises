@@ -88,12 +88,10 @@
   #v-fiches{background:none}
   .fi-atelier{display:block}
   .fi-doc{width:auto}
-  .fi-doc .feuille{width:auto;min-height:0;padding:0;margin:0;box-shadow:none}
+  /* La page n'a pas de marge (voir style.css) : chaque feuille porte la sienne, répétée si elle déborde */
+  body[data-vue="fiches"]{padding:0}
+  .fi-doc .feuille{width:auto;min-height:0;padding:13mm;margin:0;box-shadow:none;-webkit-box-decoration-break:clone;box-decoration-break:clone}
   .fi-doc .feuille + .feuille{break-before:page}
-  .fi-doc .feuille.fi-couv{height:266mm}
+  .fi-doc .feuille.fi-couv{height:296mm}
   .fi-carte .leaflet-control-attribution{background:rgba(255,255,255,.8)}
-  @page{
-    @bottom-left{content:"Entreprises du territoire – NCPA";font-size:8pt;color:#777}
-    @bottom-right{content:counter(page) " / " counter(pages);font-size:8pt;color:#777}
-  }
 }
