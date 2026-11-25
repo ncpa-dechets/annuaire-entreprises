@@ -97,6 +97,21 @@ main{min-height:0;position:relative}
 label.lib{display:block;font-size:13px;font-weight:600;margin:12px 0 4px}
 .liens{font-size:12px;float:right;font-weight:400}
 .liens button{border:0;background:none;color:var(--rouge);cursor:pointer;padding:0 0 0 8px;text-decoration:underline}
+/* Bloc repliable du volet (secteurs d'activité) : l'en-tête reprend le style des titres h2 */
+details.pliable{margin:18px 0 0;border-bottom:1px solid var(--bord)}
+details.pliable>summary{list-style:none;display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 0 8px;
+  font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);user-select:none}
+details.pliable>summary::-webkit-details-marker{display:none}
+details.pliable>summary:hover{color:var(--txt)}
+details.pliable>summary:focus-visible{outline:2px solid var(--rouge);outline-offset:2px;border-radius:3px}
+details.pliable .resume{margin-left:auto;font-size:11px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--mut);
+  background:var(--vert-c);border-radius:10px;padding:1px 8px}
+details.pliable .resume.partiel{background:var(--rouge);color:#fff}
+details.pliable .chev{width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;
+  transform:rotate(-45deg);transition:transform .15s;margin:0 4px 0 2px;flex:none}
+details.pliable[open] .chev{transform:rotate(45deg) translate(-2px,-2px)}
+details.pliable .pliable-corps{padding-bottom:10px}
+details.pliable .liens{float:none;text-align:right;margin:-2px 0 4px}
 .secteurs label,.cases label{display:flex;align-items:center;gap:7px;padding:3px 2px;cursor:pointer;font-size:13px;line-height:1.25;border-radius:4px}
 .secteurs label:hover,.cases label:hover{background:var(--vert-c)}
 .secteurs .pt{width:12px;height:12px;border-radius:50%;flex:none;box-shadow:0 0 0 1px rgba(0,0,0,.15)}

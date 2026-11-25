@@ -125,8 +125,13 @@
       <label class="lib">Communes</label>
       <div class="ms" id="f-communes"></div>
 
-      <h2>Secteurs d'activité <span class="liens"><button id="sec-tout">Tout</button><button id="sec-rien">Aucun</button></span></h2>
-      <div class="secteurs" id="f-secteurs"></div>
+      <details class="pliable" id="d-secteurs">
+        <summary><span>Secteurs d'activité</span><span class="resume" id="sec-resume"></span><span class="chev" aria-hidden="true"></span></summary>
+        <div class="pliable-corps">
+          <div class="liens"><button id="sec-tout">Tout</button><button id="sec-rien">Aucun</button></div>
+          <div class="secteurs" id="f-secteurs"></div>
+        </div>
+      </details>
 
       <label class="lib">Activités détaillées</label>
       <div class="ms" id="f-divisions"></div>

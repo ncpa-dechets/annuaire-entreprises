@@ -293,6 +293,10 @@ function appliquer(){
     const s = l.dataset.s, n = cpt[s] || 0;
     l.querySelector(".n").textContent = nb(n); l.classList.toggle("vide", !n);
   });
+  // Résumé affiché dans l'en-tête repliable des secteurs
+  const nSec = document.querySelectorAll("#f-secteurs input").length, nCoches = secteursCoches.size, r = $("sec-resume");
+  r.textContent = nCoches === nSec ? "Tous" : nCoches ? `${nCoches} sur ${nSec}` : "Aucun";
+  r.classList.toggle("partiel", nCoches < nSec);
   // Activités détaillées proposées : celles des secteurs cochés
   const divs = new Map();
   E.forEach(e => { if (e.div && secteursCoches.has(e.sec)) divs.set(e.div, e.divl); });
@@ -413,6 +417,10 @@ function construireFiltres(){
   const cocherSecteurs = v => { document.querySelectorAll("#f-secteurs input").forEach(i => { i.checked = v; v ? secteursCoches.add(i.value) : secteursCoches.delete(i.value); }); appliquer(); };
   $("sec-tout").onclick = () => cocherSecteurs(true);
   $("sec-rien").onclick = () => cocherSecteurs(false);
+  // Bloc des secteurs repliable : replié par défaut, l'état choisi est gardé dans ce navigateur
+  const dSec = $("d-secteurs"), CLE_SEC = "ncpa-volet-secteurs-ouvert";
+  try { dSec.open = localStorage.getItem(CLE_SEC) === "1"; } catch(e){}
+  dSec.addEventListener("toggle", () => { try { localStorage.setItem(CLE_SEC, dSec.open ? "1" : "0"); } catch(e){} });
 
   $("f-types").innerHTML = TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}"${TYPES_DEFAUT.has(t) ? " checked" : ""}> ${esc(t)}</label>`).join("");
   $("f-types").onchange = ev => { ev.target.checked ? typesCoches.add(ev.target.value) : typesCoches.delete(ev.target.value); appliquer(); };
