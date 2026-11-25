@@ -26,6 +26,8 @@ export const nb = n => Number(n).toLocaleString("fr-FR");
 export const dateFr = iso => iso ? iso.slice(0,10).split("-").reverse().join("/") : "–";
 export const MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
 export const dateLongue = iso => { const d = new Date(iso); return isNaN(d) ? "" : `${d.getDate()} ${MOIS[d.getMonth()]} ${d.getFullYear()}`; };
+const MOIS_C = ["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+export const dateCourte = iso => { const d = new Date(iso); return isNaN(d) ? "" : `${d.getDate()} ${MOIS_C[d.getMonth()]} ${d.getFullYear()}`; };
 export const num = v => { const x = parseFloat(String(v ?? "").replace(",", ".")); return isNaN(x) ? null : x; };
 export const sirFmt = s => String(s).replace(/^(\d{3})(\d{3})(\d{3})(\d{5})$/, "$1 $2 $3 $4");
 export function toast(m){ const t = $("toast"); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(()=>t.hidden = true, 3200); }

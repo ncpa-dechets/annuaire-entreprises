@@ -1,6 +1,6 @@
 /* Démarrage et navigation entre les onglets (adresse de la forme #/communes/14117). */
 import "./theme.js";
-import {charger, $, meta, dateLongue} from "./commun.js";
+import {charger, $, meta, dateLongue, dateCourte, dateFr} from "./commun.js";
 import {initAnnuaire, redimensionner, voir, filtrer} from "./annuaire.js";
 import {initVie, vieEntreprises} from "./vie.js";
 import {qualite} from "./qualite.js";
@@ -15,7 +15,11 @@ import {ficheEntreprise, initRecherche} from "./entreprise.js";
 import {fiches} from "./fiches.js";
 
 const ROUTES = {nouveautes:"v-nouveautes", entreprise:"v-entreprise", synthese:"v-synthese", communes:"v-communes", secteurs:"v-secteurs", dynamique:"v-bodacc", vie:"v-bodacc", themes:"v-themes", annuaire:"v-annuaire", fiches:"v-fiches", methode:"v-qualite"};
+// Contexte du menu principal (Territoire, Vie économique, Explorer) auquel appartient chaque route ; « aide » = lien « ? »
+const GROUPES = {synthese:"territoire", communes:"territoire", secteurs:"territoire", nouveautes:"vie", dynamique:"vie", vie:"vie",
+  annuaire:"explorer", entreprise:"explorer", themes:"explorer", fiches:"explorer", methode:"aide"};
 let courante = "", annuairePret = false;
+const marquer = (a, oui) => oui ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current");
 
 function montrer(){
   // Les ancres internes d'une page (#p-bodacc…) ne changent pas d'onglet
@@ -24,7 +28,11 @@ function montrer(){
   const route = ROUTES[nom] ? nom : "nouveautes", id = ROUTES[route];
   courante = route;
   document.body.dataset.vue = route;
-  document.querySelectorAll(".onglets a").forEach(a => a.setAttribute("aria-selected", String(a.dataset.vue === id)));
+  const groupe = GROUPES[route];
+  document.body.dataset.groupe = groupe;
+  document.querySelectorAll(".contextes a").forEach(a => marquer(a, a.dataset.groupe === groupe));
+  document.querySelectorAll(".volets a").forEach(a => marquer(a, a.dataset.vue === id));
+  marquer($("btn-aide"), groupe === "aide");
   document.querySelectorAll(".vue").forEach(v => v.hidden = v.id !== id);
   if (route === "nouveautes") nouveautes();
   if (route === "entreprise") ficheEntreprise(param);
@@ -43,7 +51,8 @@ function aller(route){
 }
 
 function demarrer(){
-  $("maj").innerHTML = `Données Insee<br>du ${dateLongue(meta.date_maj)}`;
+  $("maj").innerHTML = `<span class="long">Données Insee du ${dateCourte(meta.date_maj)}</span><span class="court">Insee ${dateFr(meta.date_maj)}</span>`;
+  $("maj").title = `Répertoire SIRENE de l'Insee, données du ${dateLongue(meta.date_maj)} (mise à jour quotidienne)`;
   $("src-maj").textContent = `Mise à jour du ${dateLongue(meta.date_maj)}.`;
   initVie();
   initRecherche();

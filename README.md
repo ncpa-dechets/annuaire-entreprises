@@ -31,6 +31,18 @@ collecte.py ─► API SIRENE + IGN + Annuaire         index.html ─► lit dat
 
 ## Les onglets
 
+Le menu a deux niveaux. En haut à droite, trois contextes, chacun avec ses pages sur la ligne du dessous :
+
+| Contexte | Pages |
+|---|---|
+| **Territoire** | Synthèse · Communes · Secteurs |
+| **Vie économique** | Quoi de neuf · Dynamique |
+| **Explorer** | Annuaire · Thèmes · Fiches PDF |
+
+Le bouton rond **?** ouvre *Méthode et qualité*, depuis n'importe quelle page. L'en-tête affiche aussi en
+permanence la date des données Insee. Les adresses des pages (`#/synthese`, `#/communes/14117`…) n'ont pas
+changé. La correspondance entre pages et contextes est dans `js/app.js` (`GROUPES`).
+
 - **Quoi de neuf** (page d'accueil) : sur 7, 30 ou 90 jours, les entreprises en difficulté, les reprises
   (ventes de fonds, avec le prix), les arrivées et créations, les départs et fermetures, et les effectifs qui
   changent. Employeurs en tête de chaque rubrique. Sources : BODACC, dates de création SIRENE et journal
