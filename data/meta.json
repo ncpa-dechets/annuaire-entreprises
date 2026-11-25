@@ -1,9 +1,9 @@
 {
- "date_maj": "2026-11-24T15:52+01:00",
+ "date_maj": "2026-11-25T15:18+01:00",
  "epci": "200065563",
  "nb_communes": 38,
  "nb_etablissements": 5007,
- "nb_entrepreneurs_individuels_exclus": 11249,
+ "nb_entrepreneurs_individuels_exclus": 11252,
  "localisation": {
   "SIRENE": 3151,
   "Géocodage IGN": 888,
@@ -16,21 +16,21 @@
   "Lieu nommé": 607,
   "Non localisé": 336
  },
- "duree_secondes": 207,
+ "duree_secondes": 191,
  "source": "Insee, répertoire SIRENE (API Sirene 3.11)",
  "bodacc": {
-  "date_max": "2026-11-20",
-  "nb_annonces": 1177,
+  "date_max": "2026-11-25",
+  "nb_annonces": 1185,
   "par_evenement": {
-   "Création": 488,
+   "Création": 492,
    "Radiation": 398,
-   "Immatriculation": 68,
+   "Immatriculation": 69,
    "Clôture de procédure": 54,
    "Suivi de procédure": 48,
-   "Vente de fonds": 45,
+   "Vente de fonds": 46,
    "Liquidation judiciaire": 41,
-   "Ouverture de sauvegarde ou de redressement": 25,
-   "Plan de redressement ou de sauvegarde": 10
+   "Ouverture de sauvegarde ou de redressement": 26,
+   "Plan de redressement ou de sauvegarde": 11
   }
  },
  "urssaf": {
