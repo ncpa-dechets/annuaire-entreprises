@@ -1,20 +1,22 @@
 /* Onglet Synthèse : portrait chiffré de tout le territoire. */
 import {$, esc, nb, communesGJ, stats, meta} from "./commun.js";
 import {chiffres, listeCommunes} from "./stats.js";
-import {classes, classeDe, couleurClasse, legendeClasses} from "./graphes.js";
+import {classes, classeDe, couleurClasse, legendeClasses, legendeCercles, FOND_SYMB} from "./graphes.js";
+import {cerclesCommunes} from "./cartes.js";
 import {aEmploi, emploiDe} from "./emploi.js";
 import {avertissement, chiffresCles, blocSecteurs, blocFlux, blocFamilles, blocAges, tableEmployeurs, pied} from "./blocs.js";
 
-// Indicateurs proposés sur la carte des communes : [clé, libellé, calcul, format, réservé aux données complètes]
+// Indicateurs proposés sur la carte des communes : [clé, libellé, calcul, format, réservé aux données complètes, nature]
+// Nature (règle de sémiologie) : « abs » = valeur absolue, en cercles proportionnels ; « rel » = ratio ou part, en aplats de couleur.
 export const INDICATEURS = [
-  ["etab", "Établissements actifs", c => c.n, nb],
-  ["dens", "Établissements pour 1 000 habitants", c => c.pop ? 1000 * c.n / c.pop : null, v => nb(Math.round(v))],
-  ["emp", "Établissements employeurs", c => c.emp, nb],
-  ["salp", "Salariés du privé (Urssaf)", (c, code) => aEmploi() ? emploiDe(code).eff.at(-1) : null, nb],
-  ["crea", "Créations sur 12 mois", c => c.crea12, nb],
-  ["ei", "Part d'entrepreneurs individuels", c => c.n ? 100 * c.ei / c.n : null, v => `${Math.round(v)} %`, true],
+  ["etab", "Établissements actifs", c => c.n, nb, false, "abs"],
+  ["dens", "Établissements pour 1 000 habitants", c => c.pop ? 1000 * c.n / c.pop : null, v => nb(Math.round(v)), false, "rel"],
+  ["emp", "Établissements employeurs", c => c.emp, nb, false, "abs"],
+  ["salp", "Salariés du privé (Urssaf)", (c, code) => aEmploi() ? emploiDe(code).eff.at(-1) : null, nb, false, "abs"],
+  ["crea", "Créations sur 12 mois", c => c.crea12, nb, false, "abs"],
+  ["ei", "Part d'entrepreneurs individuels", c => c.n ? 100 * c.ei / c.n : null, v => `${Math.round(v)} %`, true, "rel"],
 ];
-let carte, couche, fait = false;
+let carte, couche, cercles, fait = false;
 
 export function synthese(){
   if (fait){ carte?.invalidateSize(); cadrer(); return; }
@@ -64,14 +66,22 @@ function initCarte(){
 }
 
 function colorier(){
-  const [, lib, calcul, fmt] = INDICATEURS.find(i => i[0] === $("sy-ind").value);
+  const [, lib, calcul, fmt, , nature] = INDICATEURS.find(i => i[0] === $("sy-ind").value);
   const val = Object.fromEntries(listeCommunes().map(k => [k.code, calcul(chiffres(k.code), k.code)]));
+  const bulle = (p, v) => `<b>${esc(p.nom)}</b><br>${esc(lib)} : ${v == null ? "non disponible" : fmt(v)}`;
+  cercles?.couche.remove(); cercles = null;
+  if (nature === "abs"){
+    cercles = cerclesCommunes(carte, val, {bulle, clic:p => { location.hash = `#/communes/${p.code}`; }});
+    couche.eachLayer(l => { l.setStyle({fillColor:FOND_SYMB}); l.unbindTooltip(); l.bindTooltip(bulle(l.feature.properties, val[l.feature.properties.code]), {sticky:true}); });
+    $("sy-leg").innerHTML = legendeCercles(lib, cercles.echelle, fmt);
+    return;
+  }
   const seuils = classes(Object.values(val));
   couche.eachLayer(l => {
     const p = l.feature.properties, v = val[p.code];
     l.setStyle({fillColor: v == null ? "#eee" : couleurClasse(classeDe(v, seuils), seuils)});
     l.unbindTooltip();
-    l.bindTooltip(`<b>${esc(p.nom)}</b><br>${esc(lib)} : ${v == null ? "non disponible" : fmt(v)}`, {sticky:true});
+    l.bindTooltip(bulle(p, v), {sticky:true});
   });
   $("sy-leg").innerHTML = legendeClasses(lib, seuils, fmt);
 }

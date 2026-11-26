@@ -1,10 +1,11 @@
 /* Thème Commerces et services de proximité : ce qui existe et ce qui manque dans chaque commune. */
 import {$, esc, nb, communesGJ, stats, feuille, jour} from "../commun.js";
 import {listeCommunes, compter, compterCategorie, aActivites} from "../stats.js";
-import {classes, classeDe, couleurClasse} from "../graphes.js";
+import {legendeCercles, FOND_SYMB} from "../graphes.js";
+import {cerclesCommunes} from "../cartes.js";
 import {pied} from "../blocs.js";
 
-let choix = "", carte, couche, centres = null;
+let choix = "", carte, couche, cercles, centres = null;
 
 const categories = () => stats?.proximite || [];
 const nbCat = (code, cat) => compterCategorie(code, cat).n;
@@ -78,7 +79,7 @@ export function commerces(h){
   couche.eachLayer(l => {
     l.on("click", () => { location.hash = `#/communes/${l.feature.properties.code}`; });
     l.on("mouseover", () => l.setStyle({color:"#1e1e1e", weight:2}).bringToFront());
-    l.on("mouseout", () => l.setStyle({color:"#bbb", weight:1}));
+    l.on("mouseout", () => l.setStyle({color:"#fff", weight:1.2}));
   });
   carte.fitBounds(couche.getBounds(), {padding:[4, 4]});
   $("pc-cat").onchange = ev => { choix = ev.target.value; detail(); };
@@ -95,17 +96,18 @@ export function commerces(h){
 function detail(){
   const cat = categories().find(c => c.cle === choix), coms = listeCommunes();
   const val = Object.fromEntries(coms.map(k => [k.code, nbCat(k.code, cat)]));
-  const seuils = classes(Object.values(val).filter(v => v > 0), 4);
+  // Un nombre de commerces est une valeur absolue : cercles proportionnels, fond neutre (pas de cercle = aucun)
+  const bulle = (p, v) => `<b>${esc(p.nom)}</b><br>${esc(cat.libelle)} : ${v ? nb(v) : "aucun"}`;
+  cercles?.couche.remove();
+  cercles = cerclesCommunes(carte, val, {bulle, clic:p => { location.hash = `#/communes/${p.code}`; }});
   couche.eachLayer(l => {
-    const p = l.feature.properties, v = val[p.code] || 0;
-    l.setStyle({color:"#bbb", weight:1, fillColor: v ? couleurClasse(classeDe(v, seuils), seuils) : "#fff"});
+    const p = l.feature.properties;
+    l.setStyle({color:"#fff", weight:1.2, fillColor:FOND_SYMB});
     l.unbindTooltip();
-    l.bindTooltip(`<b>${esc(p.nom)}</b><br>${esc(cat.libelle)} : ${v ? nb(v) : "aucun"}`, {sticky:true});
+    l.bindTooltip(bulle(p, val[p.code] || 0), {sticky:true});
   });
-  const bornes = [null, ...seuils];
-  $("pc-leg").innerHTML = `<div class="leg carte"><b>${esc(cat.libelle)} : nombre par commune</b><span><span class="carre" style="background:#fff"></span>aucun</span>${
-    bornes.map((b, i) => `<span><span class="carre" style="background:${couleurClasse(i, seuils)}"></span>${
-      i === 0 ? (seuils.length ? (seuils[0] > 2 ? `1 à ${seuils[0] - 1}` : "1") : "1 et plus") : i === bornes.length - 1 ? `${b} et plus` : (seuils[i] - 1 > b ? `${b} à ${seuils[i] - 1}` : `${b}`)}</span>`).join("")}</div>`;
+  $("pc-leg").innerHTML = legendeCercles(`${cat.libelle} : nombre par commune`, cercles.echelle, nb,
+    `<span><span class="carre" style="background:${FOND_SYMB}"></span>Sans cercle : aucun</span>`);
   const dep = coms.filter(k => !val[k.code]).map(k => ({...k, proche:plusProche(k.code, cat)})).sort((a, b) => (b.pop || 0) - (a.pop || 0));
   const hab = dep.reduce((s, k) => s + (k.pop || 0), 0), tot = compter("", cat.codes), reel = compterCategorie("", cat);
   $("pc-titre").textContent = `${cat.libelle} : ${dep.length} commune${dep.length > 1 ? "s" : ""} sans`;

@@ -1,5 +1,6 @@
 /* Cartes fixes des fiches à imprimer : établissements sur fond Plan IGN, communes colorées selon un indicateur. */
 import {esc, nb, SECTIONS, COULEURS, estApprox, communesGJ, fondPlanIGN, rayonEffectif} from "./commun.js";
+import {echelleCercles, C_SYMB} from "./graphes.js";
 
 const OPTIONS = {zoomControl:false, attributionControl:true, zoomSnap:.25, scrollWheelZoom:false, doubleClickZoom:false,
   boxZoom:false, keyboard:false, fadeAnimation:false, zoomAnimation:false, markerZoomAnimation:false};
@@ -42,6 +43,45 @@ export function legendeCarte(etabs){
     <div class="leg fi-leg">${[10, 50, 250].map(v => `<span>${cercle(v)}${v} salariés</span>`).join("")}
       <span>Points pâles : sans salarié connu</span><span><span class="evide"></span>Position approximative</span>
       ${sans ? `<span>${nb(sans)} établissement${sans > 1 ? "s" : ""} sans position</span>` : ""}</div>`;
+}
+
+/* Centre de gravité du contour extérieur d'une commune (en degrés : l'écart est négligeable à cette échelle). */
+const centres = new Map();
+export function centreCommune(f){
+  const code = f.properties.code;
+  if (!centres.has(code)){
+    const anneau = f.geometry.type === "Polygon" ? f.geometry.coordinates[0]
+      : f.geometry.coordinates.map(p => p[0]).sort((a, b) => b.length - a.length)[0];
+    let a = 0, x = 0, y = 0;
+    for (let i = 0, j = anneau.length - 1; i < anneau.length; j = i++){
+      const [x0, y0] = anneau[j], [x1, y1] = anneau[i], k = x0 * y1 - x1 * y0;
+      a += k; x += (x0 + x1) * k; y += (y0 + y1) * k;
+    }
+    centres.set(code, a ? [y / (3 * a), x / (3 * a)] : L.geoJSON(f).getBounds().getCenter());
+  }
+  return centres.get(code);
+}
+
+/* Rayon du plus grand cercle, proportionné à la taille de la carte. */
+export function rayonMax(el){
+  const c = Math.min(el.clientWidth, el.clientHeight);
+  return c ? Math.max(12, Math.min(26, Math.round(c / 14))) : 20;
+}
+
+/* Cercles proportionnels posés au centre de chaque commune. valeurs = {code Insee: nombre}.
+   Les plus grands sont dessinés d'abord pour que les petits restent visibles. */
+export function cerclesCommunes(carte, valeurs, {rMax = rayonMax(carte.getContainer()), bulle, clic} = {}){
+  const echelle = echelleCercles(Object.values(valeurs), rMax);
+  const pts = communesGJ.features.map(f => ({f, v:valeurs[f.properties.code]})).filter(x => x.v > 0).sort((a, b) => b.v - a.v);
+  const couche = L.layerGroup(pts.map(({f, v}) => {
+    const m = L.circleMarker(centreCommune(f), {radius:echelle(v), color:"#fff", weight:1, fillColor:C_SYMB, fillOpacity:.85, interactive:!!(bulle || clic)});
+    if (bulle) m.bindTooltip(bulle(f.properties, v), {sticky:true});
+    if (clic){ m.on("click", () => clic(f.properties));
+      m.on("mouseover", () => m.setStyle({color:"#1e1e1e", weight:2}));
+      m.on("mouseout", () => m.setStyle({color:"#fff", weight:1})); }
+    return m;
+  })).addTo(carte);
+  return {couche, echelle};
 }
 
 /* Communes colorées : couleurs = {code Insee: couleur}. Pas de fond de carte, donc rien à attendre. */

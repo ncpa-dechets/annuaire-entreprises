@@ -71,6 +71,38 @@ export function legendeClasses(lib, seuils, fmt){
     k === 0 ? (seuils.length ? `moins de ${fmt(seuils[0])}` : "toutes les communes") : k === bornes.length - 1 ? `${fmt(b)} et plus` : `${fmt(b)} à ${fmt(seuils[k])}`}</span>`).join("")}</div>`;
 }
 
+/* Symboles proportionnels (valeurs absolues : effectifs, nombres d'établissements…). La surface du cercle est
+   proportionnelle à la valeur, donc le rayon à sa racine carrée ; le plus grand cercle mesure rMax pixels. */
+export const C_SYMB = "#c8443f", FOND_SYMB = "#efeee9";
+export const R_MIN = 2;
+export function echelleCercles(valeurs, rMax){
+  const max = Math.max(0, ...valeurs.filter(x => x != null && isFinite(x)));
+  const r = v => v > 0 && max > 0 ? Math.max(R_MIN, rMax * Math.sqrt(v / max)) : 0;
+  r.max = max; r.rMax = rMax;
+  return r;
+}
+// Valeur « ronde » de légende : 2 chiffres significatifs pour la plus grande, 1, 2 ou 5 pour les autres
+const rond2 = v => { const p = 10 ** Math.max(0, Math.floor(Math.log10(v)) - 1); return Math.floor(v / p) * p; };
+const rond125 = v => { const p = 10 ** Math.floor(Math.log10(v)), m = v / p; return (m >= 7 ? 10 : m >= 3.2 ? 5 : m >= 1.4 ? 2 : 1) * p; };
+
+/* Légende des cercles proportionnels : cercles emboîtés posés sur une même base, valeurs en regard. */
+export function legendeCercles(lib, echelle, fmt, complement = ""){
+  const {max, rMax} = echelle;
+  if (!(max > 0)) return `<div class="leg carte"><b>${esc(lib)}</b><span>Aucune valeur à représenter</span>${complement}</div>`;
+  const vals = [...new Set([rond2(max), rond125(max / 4), rond125(max / 16), 1])].filter(v => v >= 1 && v <= max).slice(0, 3);
+  const W = 2 * rMax + 14 + 70, H = 2 * rMax + 3, cx = rMax + 1, base = H - 1;
+  let yPrec = -Infinity, svg = "";
+  vals.forEach(v => {
+    const r = echelle(v), haut = base - 2 * r, y = Math.max(haut, yPrec + 11);
+    yPrec = y;
+    svg += `<circle cx="${cx}" cy="${base - r}" r="${r}" fill="${C_SYMB}" fill-opacity=".18" stroke="${C_SYMB}" stroke-width="1.2"/>
+      <polyline points="${cx},${haut} ${2 * rMax + 6},${haut} ${2 * rMax + 10},${y}" fill="none" stroke="#777" stroke-width=".8"/>
+      <text x="${2 * rMax + 13}" y="${y + 3.5}" font-size="11" fill="currentColor">${esc(fmt(v))}</text>`;
+  });
+  return `<div class="leg carte"><b>${esc(lib)}</b><span><svg width="${W}" height="${H + 4}" viewBox="0 -4 ${W} ${H + 4}" role="img" aria-label="Taille des cercles">${svg}</svg></span>${complement}
+    <span class="note petit" style="flex-basis:100%;margin:0">Surface des cercles proportionnelle à la valeur.</span></div>`;
+}
+
 /* Infobulle commune à tous les graphiques : survol, toucher ou focus clavier d'un élément [data-bulle]. */
 export function activerBulles(){
   const b = document.createElement("div"); b.className = "bulle"; b.hidden = true; b.setAttribute("role", "status");

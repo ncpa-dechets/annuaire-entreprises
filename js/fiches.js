@@ -3,13 +3,13 @@
 import {$, esc, nb, dateLongue, jour, meta, stats, E, estEmployeur, etabsParSiren, bodaccParSiren, principal, dossier, basculerDossier} from "./commun.js";
 import {chiffres, listeCommunes, compter} from "./stats.js";
 import {lireAdresse, filtrerListe, grouperParSecteur, nomFichier, LISTES, MAX_ENTREPRISES} from "./fiches-outils.js";
-import {carteEtablissements, carteCommunes, legendeCarte} from "./cartes.js";
+import {carteEtablissements, carteCommunes, cerclesCommunes, legendeCarte} from "./cartes.js";
 import {corpsFicheCommune, introCommune, tableComparatif} from "./communes.js";
 import {INDICATEURS} from "./synthese.js";
 import {selection} from "./annuaire.js";
 import {rendreFiche} from "./entreprise.js";
 import {avertissement, chiffresCles, blocSecteurs, blocFlux, blocFamilles, blocAges, tableEmployeurs, tableEtablissements, pied} from "./blocs.js";
-import {barres, classes, classeDe, couleurClasse, legendeClasses, C_STRUCT, pct} from "./graphes.js";
+import {barres, classes, classeDe, couleurClasse, legendeClasses, legendeCercles, FOND_SYMB, C_STRUCT, pct} from "./graphes.js";
 
 // Réglages du document ; le titre est propre à chaque document, les autres réglages sont gardés d'un document à l'autre
 const opts = {titre:"", couverture:true, sommaire:true, carte:true, liste:"emp", notes:true, suite:false, ind:"etab"};
@@ -246,8 +246,15 @@ function docTerritoire(){
   return {titre:"Portrait économique du territoire", sous:intro + (opts.suite ? " Avec la fiche de chaque commune." : ""), feuilles};
 }
 
-function monterChoro(el, [, lib, calcul, fmt]){
+function monterChoro(el, [, lib, calcul, fmt, , nature]){
   const val = Object.fromEntries(listeCommunes().map(k => [k.code, calcul(chiffres(k.code), k.code)]));
+  if (nature === "abs"){   // valeur absolue : cercles proportionnels sur fond neutre
+    const r = carteCommunes(el.querySelector("[data-choro]"), Object.fromEntries(Object.keys(val).map(k => [k, FOND_SYMB])));
+    const {echelle} = cerclesCommunes(r.carte, val, {bulle:(p, v) => `<b>${esc(p.nom)}</b><br>${esc(lib)} : ${fmt(v)}`});
+    cartes.push(r.carte);
+    el.querySelector("[data-leg]").innerHTML = legendeCercles(lib, echelle, fmt);
+    return r.pret;
+  }
   const seuils = classes(Object.values(val));
   const couleurs = Object.fromEntries(Object.entries(val).map(([k, v]) => [k, v == null ? "#eee" : couleurClasse(classeDe(v, seuils), seuils)]));
   const r = carteCommunes(el.querySelector("[data-choro]"), couleurs);
