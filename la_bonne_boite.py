@@ -73,8 +73,14 @@ class Client:
                 data = r.json()
             except ValueError:
                 raise RuntimeError("La Bonne Boîte : réponse JSON illisible") from None
-            if not isinstance(data, dict) or not isinstance(data.get("items"), list):
-                raise RuntimeError("La Bonne Boîte : format de réponse inattendu (items manquant)")
+            if not isinstance(data, dict):
+                raise RuntimeError(f"La Bonne Boîte : format de réponse inattendu ({type(data).__name__} au lieu d'un objet)")
+            # La documentation (schéma OfficeScoreResponse) autorise items à null : aucun SIRET du lot n'est connu.
+            if data.get("items") is None and data.get("hits") in (0, None) and ("items" in data or "hits" in data):
+                return []
+            if not isinstance(data.get("items"), list):
+                cles = ", ".join(sorted(map(str, data))) or "aucune"
+                raise RuntimeError(f"La Bonne Boîte : format de réponse inattendu (items manquant ; clés reçues : {cles})")
             if data.get("hits") is not None and str(data["hits"]) != str(len(data["items"])):
                 raise RuntimeError("La Bonne Boîte : réponse incomplète (hits différent du nombre de résultats)")
             attendus = set(sirets)

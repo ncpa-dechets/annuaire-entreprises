@@ -164,6 +164,11 @@ l'application : vérifier l'API souscrite et ses droits. L'accès à l'API Offre
 restreint et se demande auprès de France Travail ([fiche officielle](https://www.data.gouv.fr/dataservices/api-offres-demploi)).
 Documentation La Bonne Boîte : [fiche officielle](https://www.data.gouv.fr/dataservices/api-la-bonne-boite).
 
+**Marché du travail v1** (`marche_travail.py`, autorisations `api_stats-offres-demandes-emploiv1 offresetdemandesemploi`)
+remplace les offres détaillées par des statistiques trimestrielles (offres, demandeurs, tension). Première étape :
+la collecte lit les référentiels de l'API (types de territoire, codes des territoires proches, paramètres des
+indicateurs) et les enregistre dans `data/marche_travail_referentiel.json`, pour fixer ensuite les paramètres réels.
+
 Sans ces secrets, la collecte fonctionne normalement et la page signale que les offres ne sont
 pas disponibles. L'enquête Besoins en main-d'œuvre ne demande aucune clé ; ses bassins d'emploi
 se règlent par la variable `BMO_BASSINS` de `france_travail.py` (par défaut Caen et Lisieux).

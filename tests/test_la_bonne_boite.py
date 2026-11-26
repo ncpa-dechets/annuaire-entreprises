@@ -68,6 +68,17 @@ class ClientTests(unittest.TestCase):
                 with self.assertRaises(RuntimeError):
                     lbb.Client("id", "secret").chercher([S1])
 
+    def test_items_null_documente_vaut_lot_sans_resultat(self):
+        for corps in [{"hits": 0, "items": None}, {"hits": None, "items": None}, {"items": None}, {"hits": 0}]:
+            with self.subTest(corps=corps):
+                self.session.get.return_value = Mock(status_code=200, headers={}, json=Mock(return_value=corps))
+                self.assertEqual(lbb.Client("id", "secret").chercher([S1, S2]), [])
+
+    def test_items_null_avec_resultats_annonces_refuse(self):
+        self.session.get.return_value = Mock(status_code=200, headers={}, json=Mock(return_value={"hits": 3, "items": None}))
+        with self.assertRaisesRegex(RuntimeError, "clés reçues : hits, items"):
+            lbb.Client("id", "secret").chercher([S1])
+
     def test_refus_acces_ne_devient_pas_une_liste_vide(self):
         self.session.get.return_value = response(403)
         with self.assertRaisesRegex(RuntimeError, "abonnement La Bonne Boîte"):
