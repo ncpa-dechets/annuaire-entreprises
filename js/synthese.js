@@ -49,7 +49,8 @@ export function synthese(){
   $("sy-ind").onchange = colorier;
 }
 
-function cadrer(){ if (carte && couche) carte.fitBounds(couche.getBounds(), {padding:[4, 4]}); }
+// Carte cachée (autre onglet) : taille nulle, un cadrage donnerait un zoom invalide et une carte vide au retour
+function cadrer(){ if (carte && couche && carte.getContainer().offsetWidth) carte.fitBounds(couche.getBounds(), {padding:[4, 4]}); }
 
 function initCarte(){
   carte = L.map("sy-carte", {zoomControl:false, attributionControl:false, dragging:false, scrollWheelZoom:false, doubleClickZoom:false,
@@ -61,7 +62,7 @@ function initCarte(){
     l.on("mouseout", () => l.setStyle({color:"#fff", weight:1.2}));
   });
   cadrer();
-  window.addEventListener("resize", () => { carte.invalidateSize(); cadrer(); });
+  window.addEventListener("resize", () => { if (carte.getContainer().offsetWidth){ carte.invalidateSize(); cadrer(); } });
   colorier();
 }
 

@@ -72,9 +72,11 @@ export function rayonMax(el){
    Les plus grands sont dessinés d'abord pour que les petits restent visibles. */
 export function cerclesCommunes(carte, valeurs, {rMax = rayonMax(carte.getContainer()), bulle, clic} = {}){
   const echelle = echelleCercles(Object.values(valeurs), rMax);
+  // Calque propre aux symboles, au-dessus des communes : le bringToFront() du survol d'une commune ne peut plus les masquer
+  if (!carte.getPane("symboles")) carte.createPane("symboles").style.zIndex = 450;
   const pts = communesGJ.features.map(f => ({f, v:valeurs[f.properties.code]})).filter(x => x.v > 0).sort((a, b) => b.v - a.v);
   const couche = L.layerGroup(pts.map(({f, v}) => {
-    const m = L.circleMarker(centreCommune(f), {radius:echelle(v), color:"#fff", weight:1, fillColor:C_SYMB, fillOpacity:.85, interactive:!!(bulle || clic)});
+    const m = L.circleMarker(centreCommune(f), {pane:"symboles", radius:echelle(v), color:"#fff", weight:1, fillColor:C_SYMB, fillOpacity:.85, interactive:!!(bulle || clic)});
     if (bulle) m.bindTooltip(bulle(f.properties, v), {sticky:true});
     if (clic){ m.on("click", () => clic(f.properties));
       m.on("mouseover", () => m.setStyle({color:"#1e1e1e", weight:2}));
