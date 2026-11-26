@@ -1,0 +1,818 @@
+{
+ "date": "2026-11-26",
+ "source": "France Travail, API Marché du travail v1 (référentiels)",
+ "types_territoire": [
+  {
+   "datMaj": "2026-09-23T11:04:01.000+02:00",
+   "codeTypeTerritoire": "BASAPE",
+   "libelleTypeTerritoire": "Bassin (APE)"
+  },
+  {
+   "datMaj": "2026-09-23T11:04:01.000+02:00",
+   "codeTypeTerritoire": "BASBMO",
+   "libelleTypeTerritoire": "Bassin (BMO)"
+  },
+  {
+   "datMaj": "2026-09-23T11:04:01.000+02:00",
+   "codeTypeTerritoire": "CLPE",
+   "libelleTypeTerritoire": "Comité local pour l'emploi"
+  },
+  {
+   "datMaj": "2026-09-23T11:04:01.000+02:00",
+   "codeTypeTerritoire": "COM",
+   "libelleTypeTerritoire": "Commune"
+  },
+  {
+   "datMaj": "2026-09-23T11:04:01.000+02:00",
+   "codeTypeTerritoire": "DEP",
+   "libelleTypeTerritoire": "Département"
+  },
+  {
+   "datMaj": "2026-09-23T11:04:01.000+02:00",
+   "codeTypeTerritoire": "EPCI",
+   "libelleTypeTerritoire": "Etablissement public de coopération intercommunale"
+  },
+  {
+   "datMaj": "2026-09-23T11:04:01.000+02:00",
+   "codeTypeTerritoire": "NAT",
+   "libelleTypeTerritoire": "Niveau National"
+  },
+  {
+   "datMaj": "2026-09-23T11:04:01.000+02:00",
+   "codeTypeTerritoire": "REG",
+   "libelleTypeTerritoire": "Région"
+  }
+ ],
+ "indicateurs": {
+  "OFF_1": [
+   {
+    "codeIndicateur": "OFF_1",
+    "libelleIndicateur": "Nombre et % d'offres par origine (Pole-emploi / Toutes offres) x caractéristiques, % par activités (Rome, Secteur, Savoir-être, Compétence)",
+    "disponibiliteIndicateur": 1,
+    "listeTypesTerritoiresIndicateur": [
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeTerritoire": "NAT",
+      "libelleTypeTerritoire": "Niveau National"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeTerritoire": "REG",
+      "libelleTypeTerritoire": "Région"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeTerritoire": "DEP",
+      "libelleTypeTerritoire": "Département"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeTerritoire": "COM",
+      "libelleTypeTerritoire": "Commune"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeTerritoire": "BASBMO",
+      "libelleTypeTerritoire": "Bassin (BMO)"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeTerritoire": "EPCI",
+      "libelleTypeTerritoire": "Etablissement public de coopération intercommunale"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeTerritoire": "CLPE",
+      "libelleTypeTerritoire": "Comité local pour l'emploi"
+     }
+    ],
+    "listeTypesActivitesIndicateur": [
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeActivite": "CUMUL",
+      "libelleTypeActivite": "Cumul (toutes activités)"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeActivite": "ETRE",
+      "libelleTypeActivite": "Savoir-être"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeActivite": "MACRO_COMP",
+      "libelleTypeActivite": "Macro compétence"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeActivite": "NAF21",
+      "libelleTypeActivite": "Secteur d'activité (NAF21)"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeActivite": "NAF5",
+      "libelleTypeActivite": "Secteur d'activité (NAF5)"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeActivite": "NAF88",
+      "libelleTypeActivite": "Secteur d'activité (NAF88)"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeActivite": "OBJECTIF",
+      "libelleTypeActivite": "Objectif"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeActivite": "ROME",
+      "libelleTypeActivite": "Métier (ROME)"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeActivite": "FILIERE",
+      "libelleTypeActivite": "Filière d'activité"
+     }
+    ],
+    "listeTypesPeriodesIndicateur": [
+     {
+      "datMaj": "2026-09-23T11:04:30.000+02:00",
+      "codeTypePeriode": "TRIMESTRE",
+      "libelleTypePeriode": "Trimestre",
+      "profondeurMax": "12"
+     }
+    ],
+    "listeTypesNomenclaturesIndicateur": [
+     {
+      "datMaj": "2026-09-23T11:04:12.000+02:00",
+      "codeTypeNomenclature": "ORIGINEOFF",
+      "libelleTypeNomenclature": "Origine des offres d'emploi (PE, Partenaire .)",
+      "listeValeursNomenclaturesIndicateur": [
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "PE",
+        "libelleNomenclature": "Offres France Travail"
+       },
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "PE-CUMUL12MOIS",
+        "libelleNomenclature": "Cumul 12 derniers mois offres France Travail"
+       },
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "TOFF",
+        "libelleNomenclature": "Toutes offres"
+       },
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "TOFF-CUMUL12MOIS",
+        "libelleNomenclature": "Cumul 12 derniers mois toutes offres"
+       }
+      ]
+     }
+    ],
+    "listeTypesValeurs": [
+     {
+      "datMaj": "2026-09-23T11:04:31.000+02:00",
+      "valeurPrincipale": "O",
+      "codeTypeValeur": "NB_ET_PCT",
+      "numOrdre": 1,
+      "libValeur": "Nombre et % de répartition de ce nombre par caractéristiques.",
+      "libelleValeurSpecifique": "Nombre et % d'offres par origine (Pole-emploi / Toutes offres) et caractéristiques"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:31.000+02:00",
+      "valeurPrincipale": "N",
+      "codeTypeValeur": "PCT_ACT",
+      "numOrdre": 2,
+      "libValeur": "% par activité : c'est le poids d'une valeur sur une activité donnée par rapport au total des valeurs (cumul toutes actvités). Il est éventuellement décliné en caractéristiques.",
+      "libelleValeurSpecifique": "% par activités (Rome, Secteur, Savoir-être, Compétence)"
+     }
+    ],
+    "listeTypesCracteristiqueIndicateur": [
+     {
+      "datMaj": "2026-09-23T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "TYPECTR",
+      "libelleTypeCaracteristique": "Types de contrats"
+     },
+     {
+      "datMaj": "2026-09-23T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "TAILLEETAB",
+      "libelleTypeCaracteristique": "Tailles entreprises"
+     },
+     {
+      "datMaj": "2026-09-23T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "TYPECTRxTAILLEETAB",
+      "libelleTypeCaracteristique": "Types de contrats X Tailles entreprises"
+     },
+     {
+      "datMaj": "2026-09-23T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "NIVFORM",
+      "libelleTypeCaracteristique": "Formation initiale (niveau de formation)"
+     },
+     {
+      "datMaj": "2026-09-23T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "SALAIRE",
+      "libelleTypeCaracteristique": "Salaire"
+     },
+     {
+      "datMaj": "2026-09-23T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "NIVQUAL",
+      "libelleTypeCaracteristique": "Qualification (niveau de qualification)"
+     },
+     {
+      "datMaj": "2026-09-23T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "NIVQUAL2T",
+      "libelleTypeCaracteristique": "Qualification_cadre_ouvrier"
+     },
+     {
+      "datMaj": "2026-09-23T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "NIVEXP",
+      "libelleTypeCaracteristique": "Experience métier (niveau d'expérience)"
+     },
+     {
+      "datMaj": "2026-09-23T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "CPDE",
+      "libelleTypeCaracteristique": "Caractéristiques particulières DE"
+     }
+    ]
+   }
+  ],
+  "DE_1": [
+   {
+    "codeIndicateur": "DE_1",
+    "libelleIndicateur": "Nombre et % de DE par catégories x caractéristiques, % par activités (Rome, Compétence)",
+    "disponibiliteIndicateur": 1,
+    "listeTypesTerritoiresIndicateur": [
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeTerritoire": "NAT",
+      "libelleTypeTerritoire": "Niveau National"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeTerritoire": "REG",
+      "libelleTypeTerritoire": "Région"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeTerritoire": "DEP",
+      "libelleTypeTerritoire": "Département"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeTerritoire": "BASBMO",
+      "libelleTypeTerritoire": "Bassin (BMO)"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeTerritoire": "EPCI",
+      "libelleTypeTerritoire": "Etablissement public de coopération intercommunale"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeTerritoire": "COM",
+      "libelleTypeTerritoire": "Commune"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeTerritoire": "CLPE",
+      "libelleTypeTerritoire": "Comité local pour l'emploi"
+     }
+    ],
+    "listeTypesActivitesIndicateur": [
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeActivite": "CUMUL",
+      "libelleTypeActivite": "Cumul (toutes activités)"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeActivite": "ETRE",
+      "libelleTypeActivite": "Savoir-être"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeActivite": "MACRO_COMP",
+      "libelleTypeActivite": "Macro compétence"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeActivite": "OBJECTIF",
+      "libelleTypeActivite": "Objectif"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeActivite": "ROME",
+      "libelleTypeActivite": "Métier (ROME)"
+     }
+    ],
+    "listeTypesPeriodesIndicateur": [
+     {
+      "datMaj": "2026-09-23T11:04:30.000+02:00",
+      "codeTypePeriode": "TRIMESTRE",
+      "libelleTypePeriode": "Trimestre",
+      "profondeurMax": "40"
+     }
+    ],
+    "listeTypesNomenclaturesIndicateur": [
+     {
+      "datMaj": "2026-09-23T11:04:12.000+02:00",
+      "codeTypeNomenclature": "CATCAND",
+      "libelleTypeNomenclature": "Catégories de candidats (inclus les catégories de DE)",
+      "listeValeursNomenclaturesIndicateur": [
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "A",
+        "libelleNomenclature": "Demandeurs d'Emploi en catégorie A"
+       },
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "ABC",
+        "libelleNomenclature": "Demandeurs d'Emploi en catégories A,B ou C"
+       },
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "ABCDE",
+        "libelleNomenclature": "Demandeurs d'Emploi en catégories A,B,C,D et E"
+       },
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "ABCDEFG",
+        "libelleNomenclature": "Demandeurs d'Emploi toutes catégories"
+       },
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "B",
+        "libelleNomenclature": "Demandeurs d'Emploi en catégorie B"
+       },
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "C",
+        "libelleNomenclature": "Demandeurs d'Emploi en catégorie C"
+       },
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "D",
+        "libelleNomenclature": "Demandeurs d'Emploi en catégorie D"
+       },
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "E",
+        "libelleNomenclature": "Demandeurs d'Emploi en catégorie E"
+       },
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "F",
+        "libelleNomenclature": "Demandeurs d'Emploi en catégorie F"
+       },
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "G",
+        "libelleNomenclature": "Demandeurs d'Emploi en catégorie G"
+       }
+      ]
+     }
+    ],
+    "listeTypesValeurs": [
+     {
+      "datMaj": "2026-09-23T11:04:31.000+02:00",
+      "valeurPrincipale": "O",
+      "codeTypeValeur": "NB_ET_PCT",
+      "numOrdre": 1,
+      "libValeur": "Nombre et % de répartition de ce nombre par caractéristiques.",
+      "libelleValeurSpecifique": "Nombre et % de DE par catégories et caractéristiques"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:31.000+02:00",
+      "valeurPrincipale": "N",
+      "codeTypeValeur": "PCT_ACT",
+      "numOrdre": 2,
+      "libValeur": "% par activité : c'est le poids d'une valeur sur une activité donnée par rapport au total des valeurs (cumul toutes actvités). Il est éventuellement décliné en caractéristiques.",
+      "libelleValeurSpecifique": "% par activités (Rome, Compétence)"
+     }
+    ],
+    "listeTypesCracteristiqueIndicateur": [
+     {
+      "datMaj": "2026-09-21T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "GENRE",
+      "libelleTypeCaracteristique": "Sexe (H/F)"
+     },
+     {
+      "datMaj": "2026-09-21T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "AGE",
+      "libelleTypeCaracteristique": "Tranches d'ages"
+     },
+     {
+      "datMaj": "2026-09-21T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "GENRExAGE",
+      "libelleTypeCaracteristique": "Sexe (H /F) X Tranches d'ages"
+     },
+     {
+      "datMaj": "2026-09-21T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "NIVFORM",
+      "libelleTypeCaracteristique": "Formation initiale (niveau de formation)"
+     },
+     {
+      "datMaj": "2026-09-21T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "CHOMANC",
+      "libelleTypeCaracteristique": "Ancienneté inscription chômage"
+     },
+     {
+      "datMaj": "2026-09-21T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "NIVQUAL",
+      "libelleTypeCaracteristique": "Qualification (niveau de qualification)"
+     },
+     {
+      "datMaj": "2026-09-21T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "NIVQUAL2T",
+      "libelleTypeCaracteristique": "Qualification_cadre_ouvrier"
+     },
+     {
+      "datMaj": "2026-09-21T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "NIVEXP",
+      "libelleTypeCaracteristique": "Experience métier (niveau d'expérience)"
+     },
+     {
+      "datMaj": "2026-09-21T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "THOE",
+      "libelleTypeCaracteristique": "Travailleurs handicapés bénéficiaires de l'obligation d'emploi"
+     },
+     {
+      "datMaj": "2026-09-21T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "CPDE",
+      "libelleTypeCaracteristique": "Caractéristiques particulières DE"
+     }
+    ]
+   }
+  ],
+  "PERSP_2": [
+   {
+    "codeIndicateur": "PERSP_2",
+    "libelleIndicateur": "PERSPECTIVES Employeur",
+    "disponibiliteIndicateur": 1,
+    "listeTypesTerritoiresIndicateur": [
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeTerritoire": "NAT",
+      "libelleTypeTerritoire": "Niveau National"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeTerritoire": "REG",
+      "libelleTypeTerritoire": "Région"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeTerritoire": "DEP",
+      "libelleTypeTerritoire": "Département"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeTerritoire": "BASBMO",
+      "libelleTypeTerritoire": "Bassin (BMO)"
+     }
+    ],
+    "listeTypesActivitesIndicateur": [
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeActivite": "CUMUL",
+      "libelleTypeActivite": "Cumul (toutes activités)"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeActivite": "ROME",
+      "libelleTypeActivite": "Métier (ROME)"
+     }
+    ],
+    "listeTypesPeriodesIndicateur": [
+     {
+      "datMaj": "2026-09-23T11:04:30.000+02:00",
+      "codeTypePeriode": "ANNEE",
+      "libelleTypePeriode": "Année",
+      "profondeurMax": "10"
+     }
+    ],
+    "listeTypesNomenclaturesIndicateur": [
+     {
+      "datMaj": "2026-09-23T11:04:12.000+02:00",
+      "codeTypeNomenclature": "TYPE_TENSION",
+      "libelleTypeNomenclature": "7 indicateurs de tension : principal(PERSPECTIVE) + 6 complémentaires",
+      "listeValeursNomenclaturesIndicateur": [
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "ATTR_SALARIALE",
+        "libelleNomenclature": "Attractivité salariale"
+       },
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "COND_TRAVAIL",
+        "libelleNomenclature": "Conditions de travail"
+       },
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "DUR_EMPL",
+        "libelleNomenclature": "Durabilité de l'emploi"
+       },
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "INT_EMB",
+        "libelleNomenclature": "Intensité d'embauche"
+       },
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "MAIN_OEUVRE",
+        "libelleNomenclature": "Manque de main d'oeuvre"
+       },
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "MISMATCH_GEO",
+        "libelleNomenclature": "Inadéquation géographique"
+       },
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "PERSPECTIVE",
+        "libelleNomenclature": "Indicateur principal tension"
+       },
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "SPECIF_FORM_EMPL",
+        "libelleNomenclature": "Lien formation - métier"
+       }
+      ]
+     }
+    ],
+    "listeTypesValeurs": [
+     {
+      "datMaj": "2026-09-23T11:04:31.000+02:00",
+      "valeurPrincipale": "O",
+      "codeTypeValeur": "DOMAINE",
+      "numOrdre": 1,
+      "libValeur": "Domaine de valeurs, ordonnées ou non.",
+      "libelleValeurSpecifique": "Perspectives de recrutement Employeur"
+     }
+    ],
+    "listeTypesCracteristiqueIndicateur": null
+   }
+  ],
+  "EMB_1": [
+   {
+    "codeIndicateur": "EMB_1",
+    "libelleIndicateur": "Nombre et % d'embauches par Catégorie Candidat x durée d'emploi x caractéristiques, % par activités (Rome, Secteur)",
+    "disponibiliteIndicateur": 1,
+    "listeTypesTerritoiresIndicateur": [
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeTerritoire": "NAT",
+      "libelleTypeTerritoire": "Niveau National"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeTerritoire": "REG",
+      "libelleTypeTerritoire": "Région"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeTerritoire": "DEP",
+      "libelleTypeTerritoire": "Département"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeTerritoire": "BASBMO",
+      "libelleTypeTerritoire": "Bassin (BMO)"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeTerritoire": "EPCI",
+      "libelleTypeTerritoire": "Etablissement public de coopération intercommunale"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeTerritoire": "COM",
+      "libelleTypeTerritoire": "Commune"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeTerritoire": "CLPE",
+      "libelleTypeTerritoire": "Comité local pour l'emploi"
+     }
+    ],
+    "listeTypesActivitesIndicateur": [
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeActivite": "CUMUL",
+      "libelleTypeActivite": "Cumul (toutes activités)"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeActivite": "NAF21",
+      "libelleTypeActivite": "Secteur d'activité (NAF21)"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeActivite": "NAF5",
+      "libelleTypeActivite": "Secteur d'activité (NAF5)"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeActivite": "NAF88",
+      "libelleTypeActivite": "Secteur d'activité (NAF88)"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeActivite": "ROME",
+      "libelleTypeActivite": "Métier (ROME)"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:23.000+02:00",
+      "codeTypeActivite": "FILIERE",
+      "libelleTypeActivite": "Filière d'activité"
+     }
+    ],
+    "listeTypesPeriodesIndicateur": [
+     {
+      "datMaj": "2026-09-23T11:04:30.000+02:00",
+      "codeTypePeriode": "TRIMESTRE",
+      "libelleTypePeriode": "Trimestre",
+      "profondeurMax": "12"
+     }
+    ],
+    "listeTypesNomenclaturesIndicateur": [
+     {
+      "datMaj": "2026-09-23T11:04:12.000+02:00",
+      "codeTypeNomenclature": "CATCANDxDUREEEMP",
+      "libelleTypeNomenclature": "Catégories de candidats X Durée d'emploi",
+      "listeValeursNomenclaturesIndicateur": [
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "ABCDEFG-SUP1M",
+        "libelleNomenclature": "Demandeurs d'Emploi toutes catégories - Contrats > 1 mois"
+       },
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "ABCDEFG-TOUTE",
+        "libelleNomenclature": "Demandeurs d'Emploi toutes catégories - Toutes durées de contrat"
+       },
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "TOUT-SUP1M",
+        "libelleNomenclature": "Candidats inscrits à France Travail ou non - Contrats > 1 mois"
+       },
+       {
+        "datMaj": "2026-09-23T11:04:31.000+02:00",
+        "valeurNomenclature": "TOUT-TOUTE",
+        "libelleNomenclature": "Candidats inscrits à France Travail ou non - Toutes durées de contrat"
+       }
+      ]
+     }
+    ],
+    "listeTypesValeurs": [
+     {
+      "datMaj": "2026-09-23T11:04:31.000+02:00",
+      "valeurPrincipale": "O",
+      "codeTypeValeur": "NB_ET_PCT",
+      "numOrdre": 1,
+      "libValeur": "Nombre et % de répartition de ce nombre par caractéristiques.",
+      "libelleValeurSpecifique": "Nombre et % d'embauches par Catégorie Candidat (Demandeurs / Tous candidats), par durée d'emploi (> 1 mois / Toutes durées) et par caractéristiques"
+     },
+     {
+      "datMaj": "2026-09-23T11:04:31.000+02:00",
+      "valeurPrincipale": "N",
+      "codeTypeValeur": "PCT_ACT",
+      "numOrdre": 2,
+      "libValeur": "% par activité : c'est le poids d'une valeur sur une activité donnée par rapport au total des valeurs (cumul toutes actvités). Il est éventuellement décliné en caractéristiques.",
+      "libelleValeurSpecifique": "% par activités (Rome, Secteur)"
+     }
+    ],
+    "listeTypesCracteristiqueIndicateur": [
+     {
+      "datMaj": "2026-09-22T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "GENRE",
+      "libelleTypeCaracteristique": "Sexe (H/F)"
+     },
+     {
+      "datMaj": "2026-09-22T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "AGE",
+      "libelleTypeCaracteristique": "Tranches d'ages"
+     },
+     {
+      "datMaj": "2026-09-22T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "GENRExAGE",
+      "libelleTypeCaracteristique": "Sexe (H /F) X Tranches d'ages"
+     },
+     {
+      "datMaj": "2026-09-22T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "TYPECTR",
+      "libelleTypeCaracteristique": "Types de contrats"
+     },
+     {
+      "datMaj": "2026-09-22T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "TAILLEETAB",
+      "libelleTypeCaracteristique": "Tailles entreprises"
+     },
+     {
+      "datMaj": "2026-09-22T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "TYPECTRxTAILLEETAB",
+      "libelleTypeCaracteristique": "Types de contrats X Tailles entreprises"
+     },
+     {
+      "datMaj": "2026-09-22T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "NIVFORM",
+      "libelleTypeCaracteristique": "Formation initiale (niveau de formation)"
+     },
+     {
+      "datMaj": "2026-09-22T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "CHOMANC",
+      "libelleTypeCaracteristique": "Ancienneté inscription chômage"
+     },
+     {
+      "datMaj": "2026-09-22T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "NIVQUAL",
+      "libelleTypeCaracteristique": "Qualification (niveau de qualification)"
+     },
+     {
+      "datMaj": "2026-09-22T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "NIVEXP",
+      "libelleTypeCaracteristique": "Experience métier (niveau d'expérience)"
+     },
+     {
+      "datMaj": "2026-09-22T00:00:00.000+02:00",
+      "codeTypeCaracteristique": "CPDE",
+      "libelleTypeCaracteristique": "Caractéristiques particulières DE"
+     }
+    ]
+   }
+  ]
+ },
+ "territoires": {
+  "BASAPE": [],
+  "BASBMO": [
+   {
+    "codeTerritoire": "2817",
+    "libelleTerritoire": "CAEN",
+    "codeTypeTerritoire": "BASBMO"
+   },
+   {
+    "codeTerritoire": "2820",
+    "libelleTerritoire": "LISIEUX",
+    "codeTypeTerritoire": "BASBMO"
+   }
+  ],
+  "COM": [
+   {
+    "codeTerritoire": "14117",
+    "libelleTerritoire": "Cabourg",
+    "codeTypeTerritoire": "COM"
+   },
+   {
+    "codeTerritoire": "14118",
+    "libelleTerritoire": "Caen",
+    "codeTypeTerritoire": "COM"
+   },
+   {
+    "codeTerritoire": "14366",
+    "libelleTerritoire": "Lisieux",
+    "codeTypeTerritoire": "COM"
+   },
+   {
+    "codeTerritoire": "14371",
+    "libelleTerritoire": "Livarot-Pays-d'Auge",
+    "codeTypeTerritoire": "COM"
+   }
+  ],
+  "DEP": [
+   {
+    "codeTerritoire": "14",
+    "libelleTerritoire": "CALVADOS",
+    "codeTypeTerritoire": "DEP"
+   }
+  ],
+  "EPCI": [
+   {
+    "codeTerritoire": "200065563",
+    "libelleTerritoire": "CC Normandie-Cabourg-Pays d'Auge",
+    "codeTypeTerritoire": "EPCI"
+   },
+   {
+    "codeTerritoire": "200065597",
+    "libelleTerritoire": "CU Caen la Mer",
+    "codeTypeTerritoire": "EPCI"
+   },
+   {
+    "codeTerritoire": "200066017",
+    "libelleTerritoire": "CC Lieuvin Pays d'Auge",
+    "codeTypeTerritoire": "EPCI"
+   },
+   {
+    "codeTerritoire": "200069532",
+    "libelleTerritoire": "CA Lisieux Normandie",
+    "codeTypeTerritoire": "EPCI"
+   },
+   {
+    "codeTerritoire": "241800507",
+    "libelleTerritoire": "CA Bourges Plus",
+    "codeTypeTerritoire": "EPCI"
+   }
+  ]
+ },
+ "erreurs": []
+}
