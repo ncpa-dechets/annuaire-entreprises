@@ -1,36 +1,36 @@
 {
- "date_maj": "2026-11-26T14:54+01:00",
+ "date_maj": "2026-11-27T14:51+01:00",
  "epci": "200065563",
  "nb_communes": 38,
- "nb_etablissements": 5009,
- "nb_entrepreneurs_individuels_exclus": 11254,
+ "nb_etablissements": 5011,
+ "nb_entrepreneurs_individuels_exclus": 11257,
  "localisation": {
-  "SIRENE": 3154,
-  "Géocodage IGN": 888,
+  "SIRENE": 3155,
+  "Géocodage IGN": 889,
   "Annuaire des entreprises": 631,
   "Non localisé": 336
  },
  "precision": {
-  "Numéro": 3292,
+  "Numéro": 3293,
   "Rue ou lieu-dit": 774,
-  "Lieu nommé": 607,
+  "Lieu nommé": 608,
   "Non localisé": 336
  },
- "duree_secondes": 188,
+ "duree_secondes": 241,
  "source": "Insee, répertoire SIRENE (API Sirene 3.11)",
  "bodacc": {
-  "date_max": "2026-11-26",
-  "nb_annonces": 1191,
+  "date_max": "2026-11-27",
+  "nb_annonces": 1193,
   "par_evenement": {
-   "Création": 492,
-   "Radiation": 398,
+   "Création": 491,
+   "Radiation": 399,
    "Immatriculation": 69,
    "Clôture de procédure": 54,
    "Vente de fonds": 50,
    "Suivi de procédure": 49,
-   "Liquidation judiciaire": 42,
+   "Liquidation judiciaire": 43,
    "Ouverture de sauvegarde ou de redressement": 26,
-   "Plan de redressement ou de sauvegarde": 11
+   "Plan de redressement ou de sauvegarde": 12
   }
  },
  "urssaf": {
@@ -52,8 +52,8 @@
    ]
   },
   "bonne_boite": {
-   "date": "2026-11-26",
-   "interroges": 5009,
+   "date": "2026-11-27",
+   "interroges": 5011,
    "renseignes": 0,
    "fort_potentiel": 0
   },
