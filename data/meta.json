@@ -1,29 +1,29 @@
 {
- "date_maj": "2026-11-27T14:51+01:00",
+ "date_maj": "2026-11-28T13:58+01:00",
  "epci": "200065563",
  "nb_communes": 38,
- "nb_etablissements": 5011,
+ "nb_etablissements": 5015,
  "nb_entrepreneurs_individuels_exclus": 11257,
  "localisation": {
-  "SIRENE": 3155,
+  "SIRENE": 3158,
   "Géocodage IGN": 889,
-  "Annuaire des entreprises": 631,
+  "Annuaire des entreprises": 632,
   "Non localisé": 336
  },
  "precision": {
-  "Numéro": 3293,
-  "Rue ou lieu-dit": 774,
+  "Numéro": 3296,
+  "Rue ou lieu-dit": 775,
   "Lieu nommé": 608,
   "Non localisé": 336
  },
- "duree_secondes": 241,
+ "duree_secondes": 243,
  "source": "Insee, répertoire SIRENE (API Sirene 3.11)",
  "bodacc": {
   "date_max": "2026-11-27",
-  "nb_annonces": 1193,
+  "nb_annonces": 1192,
   "par_evenement": {
    "Création": 491,
-   "Radiation": 399,
+   "Radiation": 398,
    "Immatriculation": 69,
    "Clôture de procédure": 54,
    "Vente de fonds": 50,
@@ -52,8 +52,8 @@
    ]
   },
   "bonne_boite": {
-   "date": "2026-11-27",
-   "interroges": 5011,
+   "date": "2026-11-28",
+   "interroges": 5015,
    "renseignes": 0,
    "fort_potentiel": 0
   },
